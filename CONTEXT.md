@@ -65,7 +65,7 @@ A phase in the fishing loop: Cast, Wait, Bite, Strike, Reel, Net, Catch, Finishe
 ## Routes (initial build)
 
 ```
-/splash
+/       → splash (branding/intro screen)
 /menu
 /prep/venue
 /prep/lake
@@ -75,9 +75,9 @@ A phase in the fishing loop: Cast, Wait, Bite, Strike, Reel, Net, Catch, Finishe
 /results
 ```
 
-The prep route `/prep/rules` renders different content based on mode (Session picks a peg; Match sets minutes). `/prep/tackle` is navigable from both the prep flow and mid-game for tackle changes.
+The root route `/` serves as the splash screen with a full-bleed background image and Ken Burns pan/zoom animation. The prep route `/prep/rules` renders different content based on mode (Session picks a peg; Match sets minutes). `/prep/tackle` is navigable from both the prep flow and mid-game for tackle changes.
 
-1. **Splash** — branding/intro screen, auto-advances or has a "Start" button
+1. **Splash** (`/`) — branding/intro screen with full-bleed background image, Ken Burns animation, and a "Start" button
 2. **Menu** — main menu with "Go Fishing" (Session) and "Host Match" options
 3. **Prep** (nested) — venue → lake → rules → tackle
 4. **Game** — the fishing loop. During a Match, the game clock runs and bot anglers fish autonomously alongside the player. "Change Tackle" navigates to `/prep/tackle` and back.
