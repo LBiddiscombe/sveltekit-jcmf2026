@@ -64,12 +64,23 @@ A phase in the fishing loop: Cast, Wait, Bite, Strike, Reel, Net, Catch, Finishe
 
 ## Routes (initial build)
 
-The game uses five routes:
+```
+/splash
+/menu
+/prep/venue
+/prep/lake
+/prep/rules       → Session: pick a peg | Match: set time limit (minutes)
+/prep/tackle      → shared: used in Prep flow AND reachable from /game (change tackle)
+/game
+/results
+```
 
-1. **Splash** — branding/intro screen
-2. **Menu** — main menu (Go Fishing, Host Match)
-3. **Prep** — configure the outing (venue/lake/peg selection, time limit for Matches, tackle & bait). In Match mode, bots auto-fill pegs not taken by the player — no bot selection UI needed.
-4. **Game** — the fishing loop. During a Match, the game clock runs and bot anglers fish autonomously alongside the player.
+The prep route `/prep/rules` renders different content based on mode (Session picks a peg; Match sets minutes). `/prep/tackle` is navigable from both the prep flow and mid-game for tackle changes.
+
+1. **Splash** — branding/intro screen, auto-advances or has a "Start" button
+2. **Menu** — main menu with "Go Fishing" (Session) and "Host Match" options
+3. **Prep** (nested) — venue → lake → rules → tackle
+4. **Game** — the fishing loop. During a Match, the game clock runs and bot anglers fish autonomously alongside the player. "Change Tackle" navigates to `/prep/tackle` and back.
 5. **Results** — post-session/match summary. Sessions show a personal catch list (species, weight, count). Matches show a leaderboard ranked by total catch weight.
 
 ## Data
