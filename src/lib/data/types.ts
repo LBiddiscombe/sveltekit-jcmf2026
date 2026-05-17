@@ -34,6 +34,7 @@ export interface Lake {
  */
 export interface Venue {
 	name: string;
+	image: string;
 	lakes: Lake[];
 }
 

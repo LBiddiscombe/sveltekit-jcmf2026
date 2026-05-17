@@ -5,7 +5,7 @@ A web-based remake of the 1980s ZX Spectrum game "Jack Charlton's Match Fishing"
 ## Language
 
 **Venue**:
-A location with one or more fishing lakes.
+A location with one or more fishing lakes. Each venue has an `image` (filename in `$lib/assets/images/venues/`) for display on the venue picker.
 _Avoid_: Location, site
 
 **Lake**:

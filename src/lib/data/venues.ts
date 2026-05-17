@@ -3,6 +3,7 @@ import type { Venue } from './types';
 export const venues: Venue[] = [
 	{
 		name: 'JCs',
+		image: 'jcs.jpeg',
 		lakes: [
 			{
 				name: 'Match Lake',
