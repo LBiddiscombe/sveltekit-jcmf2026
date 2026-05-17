@@ -1,8 +1,7 @@
 <script lang="ts">
-	import { goto } from '$app/navigation';
-	import { page } from '$app/stores';
+	import { page } from '$app/state';
 
-	let mode = $derived($page.url.searchParams.get('mode'));
+	let mode = $derived(page.url.searchParams.get('mode'));
 </script>
 
 <div class="flex min-h-screen flex-col items-center justify-center gap-6">
@@ -11,16 +10,25 @@
 	{#if mode === 'session'}
 		<p class="text-lg text-muted">Pick your peg</p>
 		<div class="grid grid-cols-4 gap-2">
-			{#each ['1', '2', '3', '4', '5', '6', '7', '8'] as peg}
-				<button class="rounded border border-olive px-4 py-2 text-dark-teal hover:bg-surface/50">{peg}</button>
+			{#each ['1', '2', '3', '4', '5', '6', '7', '8'] as peg (peg)}
+				<button class="rounded border border-olive px-4 py-2 text-dark-teal hover:bg-surface/50"
+					>{peg}</button
+				>
 			{/each}
 		</div>
 	{:else}
 		<p class="text-lg text-muted">Set match time (minutes)</p>
-		<input type="number" value={60} class="rounded border border-olive px-4 py-2 text-center text-dark-teal" />
+		<input
+			type="number"
+			value={60}
+			class="rounded border border-olive px-4 py-2 text-center text-dark-teal"
+		/>
 	{/if}
 
-	<button onclick={() => goto(`/prep/tackle${$page.url.search}`)} class="mt-4 rounded bg-primary px-6 py-2 text-white hover:bg-primary/80">
+	<a
+		href={`/prep/tackle${page.url.search}`}
+		class="mt-4 inline-block rounded bg-primary px-6 py-2 text-center text-white no-underline hover:bg-primary/80"
+	>
 		Next
-	</button>
+	</a>
 </div>

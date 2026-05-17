@@ -7,3 +7,7 @@ bun.lockb
 
 # Miscellaneous
 /static/
+
+# Agent skill files (not project source code)
+.agents/
+skills-lock.json

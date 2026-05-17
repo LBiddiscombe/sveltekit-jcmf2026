@@ -1,6 +1,5 @@
 <script lang="ts">
-	import { goto } from '$app/navigation';
-	import { page } from '$app/stores';
+	import { page } from '$app/state';
 </script>
 
 <div class="flex min-h-screen flex-col items-center justify-center gap-6">
@@ -10,7 +9,10 @@
 		<p class="font-semibold text-dark-teal">Match Lake</p>
 		<p class="text-sm text-muted">8 pegs, mixed coarse species</p>
 	</div>
-	<button onclick={() => goto(`/prep/rules${$page.url.search}`)} class="rounded bg-primary px-6 py-2 text-white hover:bg-primary/80">
+	<a
+		href={`/prep/rules${page.url.search}`}
+		class="inline-block rounded bg-primary px-6 py-2 text-center text-white no-underline hover:bg-primary/80"
+	>
 		Next
-	</button>
+	</a>
 </div>

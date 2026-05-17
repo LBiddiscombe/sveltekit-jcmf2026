@@ -1,16 +1,16 @@
 // Type exports
 export type {
-  EnvironmentalFeatures,
-  Peg,
-  Lake,
-  Venue,
-  FishClassification,
-  Species,
-  Bait,
-  Rod,
-  Reel,
-  Line,
-  Hook
+	EnvironmentalFeatures,
+	Peg,
+	Lake,
+	Venue,
+	FishClassification,
+	Species,
+	Bait,
+	Rod,
+	Reel,
+	Line,
+	Hook
 } from './types';
 
 // Data exports
