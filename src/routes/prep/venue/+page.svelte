@@ -4,13 +4,13 @@
 </script>
 
 <div class="flex min-h-screen flex-col items-center justify-center gap-6">
-	<h1 class="text-4xl font-bold">Pick Venue</h1>
-	<p class="text-lg text-gray-500">Select a fishing venue</p>
-	<div class="rounded border p-4">
-		<p class="font-semibold">JCs</p>
-		<p class="text-sm text-gray-500">The original match fishing lake</p>
+	<h1 class="text-4xl font-bold text-dark-teal">Pick Venue</h1>
+	<p class="text-lg text-muted">Select a fishing venue</p>
+	<div class="rounded border border-olive bg-surface/30 p-4">
+		<p class="font-semibold text-dark-teal">JCs</p>
+		<p class="text-sm text-muted">The original match fishing lake</p>
 	</div>
-	<button onclick={() => goto(`/prep/lake${$page.url.search}`)} class="rounded bg-blue-600 px-6 py-2 text-white hover:bg-blue-700">
+	<button onclick={() => goto(`/prep/lake${$page.url.search}`)} class="rounded bg-primary px-6 py-2 text-white hover:bg-primary/80">
 		Next
 	</button>
 </div>
