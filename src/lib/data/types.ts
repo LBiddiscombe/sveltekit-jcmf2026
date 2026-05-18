@@ -24,6 +24,7 @@ export interface Peg {
  */
 export interface Lake {
 	name: string;
+	image?: string;
 	fishCount: number;
 	species: string[];
 	pegs: Peg[];

@@ -2,15 +2,20 @@
 	import { browser } from '$app/environment';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
+	import { SvelteURLSearchParams } from 'svelte/reactivity';
 	import { getVenues } from './venues.remote';
 
 	type VenueSummary = { name: string; image: string; lakeCount: number };
 	let venues = $state<VenueSummary[]>();
+	let redirected = $state(false);
 	const pending = getVenues().then((v) => (venues = v));
 
 	$effect(() => {
-		if (browser && venues && venues.length === 1) {
-			goto(`/prep/lake?venue=${venues[0].name}${page.url.search}`);
+		if (browser && venues && venues.length === 1 && !redirected) {
+			redirected = true;
+			const params = new SvelteURLSearchParams(page.url.searchParams);
+			params.set('venue', venues[0].name);
+			goto(`/prep/lake?${params}`);
 		}
 	});
 
@@ -21,7 +26,7 @@
 	});
 </script>
 
-{#await pending}
+{#await pending then _}
 	{#if venues && venues.length > 1}
 		<div class="flex min-h-screen flex-col items-center justify-center gap-6">
 			<h1 class="text-4xl font-bold text-dark-teal">Pick Venue</h1>
@@ -30,7 +35,11 @@
 			<div class="flex flex-col gap-3">
 				{#each venues as venue (venue.name)}
 					<button
-						onclick={() => goto(`/prep/lake?venue=${venue.name}${page.url.search}`)}
+						onclick={() => {
+							const params = new SvelteURLSearchParams(page.url.searchParams);
+							params.set('venue', venue.name);
+							goto(`/prep/lake?${params}`);
+						}}
 						class="flex w-80 cursor-pointer items-center gap-4 rounded border border-olive bg-surface/30 p-3 text-left hover:bg-surface/60"
 					>
 						<img
@@ -49,7 +58,7 @@
 			</div>
 
 			<a
-				href={`/prep/lake${page.url.search}`}
+				href={`/prep/lake?${page.url.searchParams.toString()}`}
 				class="inline-block rounded bg-primary px-6 py-2 text-center text-white no-underline hover:bg-primary/80"
 			>
 				Next

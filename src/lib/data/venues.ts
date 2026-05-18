@@ -7,6 +7,7 @@ export const venues: Venue[] = [
 		lakes: [
 			{
 				name: 'Match Lake',
+				image: 'jcs-match.jpeg',
 				fishCount: 1000,
 				species: [
 					'Barbel',
