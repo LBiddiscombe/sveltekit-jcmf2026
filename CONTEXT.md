@@ -76,19 +76,6 @@ A reactive singleton (`src/lib/game/state.svelte.ts`) holding the current game's
 
 ## Routes (initial build)
 
-```
-/       → splash (branding/intro screen)
-/menu
-/prep/venue
-/prep/lake
-/prep/rules       → Session: pick a peg | Match: set time limit (minutes)
-/prep/tackle      → shared: used in Prep flow AND reachable from /game (change tackle)
-/game
-/results
-```
-
-The root route `/` serves as the splash screen with a full-bleed background image and Ken Burns pan/zoom animation. The prep route `/prep/rules` renders different content based on mode (Session picks a peg; Match sets minutes). `/prep/tackle` is navigable from both the prep flow and mid-game for tackle changes.
-
 1. **Splash** (`/`) — branding/intro screen with full-bleed background image, Ken Burns animation, and a "Start" button
 2. **Menu** — main menu with "Go Fishing" (Session) and "Host Match" options
 3. **Prep** (nested) — venue → lake → rules → tackle
