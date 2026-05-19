@@ -2,6 +2,7 @@
 	import { page } from '$app/state';
 	import { SvelteURLSearchParams } from 'svelte/reactivity';
 	import { getLakes } from './lakes.remote';
+	import { gameState } from '$lib/game/state.svelte';
 
 	let data = $state<Awaited<ReturnType<typeof getLakes>>>();
 	const pending = getLakes({ venue: String(page.url.searchParams.get('venue') ?? '') }).then(
@@ -49,6 +50,7 @@
 				{#each data.lakes as lake (lake.name)}
 					<a
 						href={rulesUrl(lake.name)}
+						onclick={() => gameState.setLake(lake.name)}
 						class="flex w-80 items-center gap-4 rounded border border-olive bg-surface/30 p-3 no-underline hover:bg-surface/60"
 					>
 						<img src={lakeImg(lake.image)} alt="" class="h-16 w-16 rounded object-cover" />

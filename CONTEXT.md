@@ -50,8 +50,20 @@ A person playing the game.
 **AnglerBot**:
 An NPC angler controlled by the game, with a defined skill level that influences tackle choices, strike timing, and landing success. Each bot has a name and a skill level — no additional personality or flavor in the initial build. Bots are available in Match mode only.
 
-**Angler State**:
-A phase in the fishing loop: Cast, Wait, Bite, Strike, Reel, Net, Catch, Finished.
+**Angler State / AnglerPhase**:
+A phase in the fishing loop: cast, wait, bite, strike, reel, net, catch, finished. Changes to tackle/bait are done out-of-band (angler drops out of the loop and returns to cast when done), not as a distinct phase.
+
+**TackleSelection**:
+The current rod, reel, line, hook, and bait chosen by an angler. Each component has an independent deterrence value affecting fish behaviour.
+
+**CaughtFish**:
+A fish that has been landed by an angler, recording its species and weight in ounces.
+
+**GamePhase**:
+The high-level stage of a game: prep (setup), draw (match-only peg assignment), fishing (the game loop), results (post-session summary).
+
+**GameState**:
+A reactive singleton (`src/lib/game/state.svelte.ts`) holding the current game's full state — mode, venue, lake, player peg, time, anglers (player + bots), and tackle selections. Created at venue selection, progressively populated through prep, and active through game → results. Exported as `gameState` and imported by any route that needs it. Designed to be replaced by a synchronised state object when multiplayer is added.
 
 ## Relationships
 

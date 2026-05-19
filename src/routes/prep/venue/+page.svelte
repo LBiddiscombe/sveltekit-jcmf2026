@@ -4,18 +4,26 @@
 	import { page } from '$app/state';
 	import { SvelteURLSearchParams } from 'svelte/reactivity';
 	import { getVenues } from './venues.remote';
+	import { gameState } from '$lib/game/state.svelte';
 
 	type VenueSummary = { name: string; image: string; lakeCount: number };
 	let venues = $state<VenueSummary[]>();
 	let redirected = $state(false);
 	const pending = getVenues().then((v) => (venues = v));
 
+	function selectVenue(name: string) {
+		const mode = (page.url.searchParams.get('mode') ?? 'session') as 'session' | 'match';
+		gameState.init(mode);
+		gameState.setVenue(name);
+		const params = new SvelteURLSearchParams(page.url.searchParams);
+		params.set('venue', name);
+		goto(`/prep/lake?${params}`);
+	}
+
 	$effect(() => {
 		if (browser && venues && venues.length === 1 && !redirected) {
 			redirected = true;
-			const params = new SvelteURLSearchParams(page.url.searchParams);
-			params.set('venue', venues[0].name);
-			goto(`/prep/lake?${params}`);
+			selectVenue(venues[0].name);
 		}
 	});
 
@@ -35,11 +43,7 @@
 			<div class="flex flex-col gap-3">
 				{#each venues as venue (venue.name)}
 					<button
-						onclick={() => {
-							const params = new SvelteURLSearchParams(page.url.searchParams);
-							params.set('venue', venue.name);
-							goto(`/prep/lake?${params}`);
-						}}
+						onclick={() => selectVenue(venue.name)}
 						class="flex w-80 cursor-pointer items-center gap-4 rounded border border-olive bg-surface/30 p-3 text-left hover:bg-surface/60"
 					>
 						<img
