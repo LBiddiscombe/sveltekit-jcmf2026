@@ -11,19 +11,19 @@
 	let redirected = $state(false);
 	const pending = getVenues().then((v) => (venues = v));
 
-	function selectVenue(name: string) {
+	function selectVenue(name: string, replaceState = false) {
 		const mode = (page.url.searchParams.get('mode') ?? 'session') as 'session' | 'match';
 		gameState.init(mode);
 		gameState.setVenue(name);
 		const params = new SvelteURLSearchParams(page.url.searchParams);
 		params.set('venue', name);
-		goto(`/prep/lake?${params}`);
+		goto(`/prep/lake?${params}`, { replaceState });
 	}
 
 	$effect(() => {
 		if (browser && venues && venues.length === 1 && !redirected) {
 			redirected = true;
-			selectVenue(venues[0].name);
+			selectVenue(venues[0].name, true);
 		}
 	});
 
