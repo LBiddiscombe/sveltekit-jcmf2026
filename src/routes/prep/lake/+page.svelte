@@ -39,10 +39,10 @@
 
 {#await pending then _}
 	{#if data}
-		<div class="flex min-h-screen flex-col items-center justify-center gap-6">
+		<div class="flex min-h-dvh flex-col items-center justify-center gap-6">
 			<div class="flex items-center gap-4">
 				<img src={venueImg(data.venue.image)} alt="" class="h-12 w-12 rounded object-cover" />
-				<h1 class="text-4xl font-bold text-dark-teal">{data.venue.name}</h1>
+				<h1 class="text-2xl font-bold text-dark-teal sm:text-3xl md:text-4xl">{data.venue.name}</h1>
 			</div>
 			<p class="text-lg text-muted">Select a lake</p>
 
@@ -51,7 +51,7 @@
 					<a
 						href={rulesUrl(lake.name)}
 						onclick={() => gameState.setLake(lake.name)}
-						class="flex w-80 items-center gap-4 rounded border border-olive bg-surface/30 p-3 no-underline hover:bg-surface/60"
+						class="flex w-full max-w-sm items-center gap-4 rounded border border-olive bg-surface/30 p-3 no-underline hover:bg-surface/60"
 					>
 						<img src={lakeImg(lake.image)} alt="" class="h-16 w-16 rounded object-cover" />
 						<div>

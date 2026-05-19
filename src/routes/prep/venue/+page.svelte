@@ -36,15 +36,15 @@
 
 {#await pending then _}
 	{#if venues && venues.length > 1}
-		<div class="flex min-h-screen flex-col items-center justify-center gap-6">
-			<h1 class="text-4xl font-bold text-dark-teal">Pick Venue</h1>
+		<div class="flex min-h-dvh flex-col items-center justify-center gap-6">
+			<h1 class="text-2xl font-bold text-dark-teal sm:text-3xl md:text-4xl">Pick Venue</h1>
 			<p class="text-lg text-muted">Select a fishing venue</p>
 
 			<div class="flex flex-col gap-3">
 				{#each venues as venue (venue.name)}
 					<button
 						onclick={() => selectVenue(venue.name)}
-						class="flex w-80 cursor-pointer items-center gap-4 rounded border border-olive bg-surface/30 p-3 text-left hover:bg-surface/60"
+						class="flex w-full max-w-sm cursor-pointer items-center gap-4 rounded border border-olive bg-surface/30 p-3 text-left hover:bg-surface/60"
 					>
 						<img
 							src={venueImages[`/src/lib/assets/images/venues/${venue.image}`] ?? ''}
@@ -63,7 +63,7 @@
 
 			<a
 				href={`/prep/lake?${page.url.searchParams.toString()}`}
-				class="inline-block rounded bg-primary px-6 py-2 text-center text-white no-underline hover:bg-primary/80"
+				class="block min-h-[44px] w-full max-w-sm rounded bg-primary px-6 py-3 text-center leading-[44px] text-white no-underline hover:bg-primary/80"
 			>
 				Next
 			</a>

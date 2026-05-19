@@ -35,8 +35,8 @@
 	}
 </script>
 
-<div class="flex min-h-screen flex-col items-center justify-center gap-6">
-	<h1 class="text-4xl font-bold text-dark-teal">
+<div class="flex min-h-dvh flex-col items-center justify-center gap-6">
+	<h1 class="text-2xl font-bold text-dark-teal sm:text-3xl md:text-4xl">
 		{mode === 'match' ? 'Match in Progress' : 'Fishing'}
 	</h1>
 	<p class="text-lg text-muted">The fishing loop — cast, wait, strike, reel, net</p>
@@ -104,13 +104,13 @@
 	<div class="flex flex-col gap-3">
 		<a
 			href={tackleUrl()}
-			class="inline-block rounded bg-accent px-6 py-2 text-center text-white no-underline hover:bg-accent/80"
+			class="inline-flex min-h-[44px] items-center justify-center rounded bg-accent px-6 py-3 text-center text-white no-underline hover:bg-accent/80"
 		>
 			Change Tackle
 		</a>
 		<a
 			href={`/results${page.url.search}`}
-			class="inline-block rounded bg-secondary px-6 py-2 text-center text-white no-underline hover:bg-secondary/80"
+			class="inline-flex min-h-[44px] items-center justify-center rounded bg-secondary px-6 py-3 text-center text-white no-underline hover:bg-secondary/80"
 		>
 			{mode === 'match' ? 'End Match' : 'Finish Session'}
 		</a>

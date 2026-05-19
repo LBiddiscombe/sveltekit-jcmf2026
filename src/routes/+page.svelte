@@ -4,15 +4,17 @@
 </script>
 
 <div
-	class="relative min-h-screen cursor-pointer overflow-hidden"
+	class="relative min-h-dvh cursor-pointer overflow-hidden"
 	role="button"
 	tabindex="0"
 	onclick={() => goto('/menu')}
 	onkeydown={(e) => e.key === 'Enter' && goto('/menu')}
 >
 	<img src={splashImage} alt="" class="ken-burns absolute inset-0 h-full w-full object-cover" />
-	<div class="relative z-10 flex min-h-screen flex-col items-center justify-center gap-6">
-		<p class="mt-16 animate-pulse text-3xl text-black/40">tap anywhere to begin</p>
+	<div class="relative z-10 flex min-h-dvh flex-col items-center justify-center gap-6">
+		<p class="mt-8 animate-pulse text-xl text-black/40 sm:mt-16 sm:text-3xl">
+			tap anywhere to begin
+		</p>
 	</div>
 </div>
 

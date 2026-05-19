@@ -28,17 +28,17 @@
 	}
 </script>
 
-<div class="flex min-h-screen flex-col items-center justify-center gap-6">
-	<h1 class="text-4xl font-bold text-dark-teal">Rules</h1>
+<div class="flex min-h-dvh flex-col items-center justify-center gap-6">
+	<h1 class="text-2xl font-bold text-dark-teal sm:text-3xl md:text-4xl">Rules</h1>
 
 	{#if mode === 'session'}
 		<p class="text-lg text-muted">Pick your peg</p>
 
-		<div class="grid w-full max-w-md grid-cols-2 gap-3 sm:grid-cols-4">
+		<div class="grid w-full max-w-md grid-cols-3 gap-3 sm:grid-cols-4">
 			{#each pegs as peg (peg.name)}
 				<button
 					onclick={() => selectPeg(peg.name)}
-					class="relative aspect-square cursor-pointer overflow-hidden rounded border-2 transition-all {selectedPeg ===
+					class="relative aspect-square w-3/4 cursor-pointer justify-self-center overflow-hidden rounded border-2 transition-all sm:w-full {selectedPeg ===
 					peg.name
 						? 'scale-105 border-primary ring-2 ring-primary ring-offset-2'
 						: 'border-olive hover:border-muted'}"
@@ -70,7 +70,7 @@
 		<button
 			onclick={goToTackle}
 			disabled={selectedPeg === null}
-			class="inline-block rounded bg-primary px-6 py-2 text-center text-white no-underline hover:bg-primary/80 disabled:cursor-not-allowed disabled:opacity-50"
+			class="inline-flex min-h-[44px] items-center justify-center rounded bg-primary px-6 py-3 text-center text-white no-underline hover:bg-primary/80 disabled:cursor-not-allowed disabled:opacity-50"
 		>
 			Next
 		</button>
@@ -84,7 +84,7 @@
 
 		<a
 			href={`/prep/tackle${page.url.search}`}
-			class="inline-block rounded bg-primary px-6 py-2 text-center text-white no-underline hover:bg-primary/80"
+			class="inline-flex min-h-[44px] items-center justify-center rounded bg-primary px-6 py-3 text-center text-white no-underline hover:bg-primary/80"
 		>
 			Next
 		</a>

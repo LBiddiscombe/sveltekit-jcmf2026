@@ -86,8 +86,8 @@
 	}
 </script>
 
-<div class="flex min-h-screen flex-col items-center justify-center gap-6 p-4">
-	<h1 class="text-4xl font-bold text-dark-teal">
+<div class="flex min-h-dvh flex-col items-center justify-center gap-6 p-4">
+	<h1 class="text-2xl font-bold text-dark-teal sm:text-3xl md:text-4xl">
 		{isMidGame ? 'Change Tackle' : 'Choose Tackle & Bait'}
 	</h1>
 	<p class="text-lg text-muted">Select your rod, reel, line, hook, and bait</p>
@@ -182,14 +182,14 @@
 		{#if isMidGame}
 			<button
 				onclick={handleCancel}
-				class="inline-block cursor-pointer rounded bg-muted px-6 py-2 text-center text-white no-underline hover:bg-muted/80"
+				class="inline-flex min-h-[44px] cursor-pointer items-center justify-center rounded bg-muted px-6 py-3 text-center text-white no-underline hover:bg-muted/80"
 			>
 				Cancel
 			</button>
 		{/if}
 		<button
 			onclick={handleConfirm}
-			class="inline-block cursor-pointer rounded bg-primary px-6 py-2 text-center text-white no-underline hover:bg-primary/80"
+			class="inline-flex min-h-[44px] cursor-pointer items-center justify-center rounded bg-primary px-6 py-3 text-center text-white no-underline hover:bg-primary/80"
 		>
 			{buttonLabel}
 		</button>
