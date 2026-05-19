@@ -106,7 +106,7 @@
 						>
 						<span class="text-sm font-bold text-dark-teal">Peg {playerPeg.name}</span>
 					</div>
-					<p class="line-clamp-3 text-xs leading-relaxed text-dark-teal sm:line-clamp-4">
+					<p class="text-xs leading-relaxed text-dark-teal">
 						{playerPeg.description}
 					</p>
 				</div>
