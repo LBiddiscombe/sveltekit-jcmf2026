@@ -6,7 +6,9 @@
 	let pegs = $derived(gameState.lake?.pegs ?? []);
 	let selectedPeg = $state<string | null>(gameState.playerPeg ?? null);
 	let selectedPegData = $derived(pegs.find((p) => p.name === selectedPeg) ?? null);
-	let matchMinutes = $state(gameState.timeLimitMinutes ?? 60);
+
+	const timePresets = [5, 10, 20, 60];
+	let selectedMinutes = $state<number | null>(null);
 
 	const pegImages = import.meta.glob<string>('$lib/assets/images/pegs/*.jpeg', {
 		eager: true,
@@ -27,9 +29,10 @@
 		goto('/prep/tackle');
 	}
 
-	function continueMatch() {
-		gameState.setMatchTimeLimit(matchMinutes);
-		goto('/prep/tackle');
+	function selectTime(minutes: number) {
+		selectedMinutes = minutes;
+		gameState.setMatchTimeLimit(minutes);
+		goto('/prep/draw');
 	}
 </script>
 
@@ -80,19 +83,20 @@
 			Next
 		</button>
 	{:else}
-		<p class="text-lg text-muted">Set match time (minutes)</p>
-		<input
-			type="number"
-			bind:value={matchMinutes}
-			min={1}
-			class="rounded border border-olive px-4 py-2 text-center text-dark-teal"
-		/>
+		<p class="text-lg text-muted">Match duration</p>
 
-		<button
-			onclick={continueMatch}
-			class="inline-flex min-h-[44px] items-center justify-center rounded bg-primary px-6 py-3 text-center text-white no-underline hover:bg-primary/80"
-		>
-			Next
-		</button>
+		<div class="flex w-full max-w-sm flex-col gap-3">
+			{#each timePresets as minutes (minutes)}
+				<button
+					onclick={() => selectTime(minutes)}
+					class="w-full cursor-pointer rounded-xl border border-olive bg-surface/30 p-4 text-left transition-all hover:bg-surface/60 {selectedMinutes ===
+					minutes
+						? 'scale-105 border-primary ring-2 ring-primary ring-offset-2'
+						: ''}"
+				>
+					<p class="text-center text-lg font-semibold text-dark-teal">{minutes} minutes</p>
+				</button>
+			{/each}
+		</div>
 	{/if}
 </div>

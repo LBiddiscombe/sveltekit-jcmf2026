@@ -1,4 +1,3 @@
-// Type exports
 export type {
 	EnvironmentalFeatures,
 	Peg,
@@ -12,9 +11,9 @@ export type {
 	Line,
 	Hook
 } from './types';
-
-// Data exports
+export type { BotAngler } from './bots';
 export { venues } from './venues';
 export { species } from './species';
 export { baits } from './baits';
 export { TackleBox } from './tackle';
+export { bots } from './bots';

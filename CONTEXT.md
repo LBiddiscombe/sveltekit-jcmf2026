@@ -45,13 +45,16 @@ _Avoid_: Practice, free play
 A competitive fishing session with a time limit and bots filling every other peg. Winner is determined by total catch weight. Flows through Prep (player sets time, peg is randomly assigned alongside bots) → Game → Results.
 
 **Angler**:
-A person playing the game.
+A person playing the game (human player or bot).
 
 **AnglerBot**:
-An NPC angler controlled by the game, with a defined skill level that influences tackle choices, strike timing, and landing success. Each bot has a name and a skill level — no additional personality or flavor in the initial build. Bots are available in Match mode only.
+An NPC angler controlled by the game, with a skill level (1–10) that influences tackle choices, strike timing, and landing success. Bots are defined in reference data (`src/lib/data/bots.ts`) with a name and fixed skill. Bots are available in Match mode only.
 
 **Angler State / AnglerPhase**:
 A phase in the fishing loop: cast, wait, bite, strike, reel, net, catch, finished. Changes to tackle/bait are done out-of-band (angler drops out of the loop and returns to cast when done), not as a distinct phase.
+
+**Draw**:
+The match-only phase where anglers are randomly assigned to pegs. The player's peg is revealed first (with a brief delay), then bot pegs appear. All anglers (player + bots) are fully populated in `gameState.anglers` before the Tackle page.
 
 **TackleSelection**:
 The current rod, reel, line, hook, and bait chosen by an angler. Each component has an independent deterrence value affecting fish behaviour.
@@ -60,7 +63,7 @@ The current rod, reel, line, hook, and bait chosen by an angler. Each component 
 A fish that has been landed by an angler, recording its species and weight in ounces.
 
 **GamePhase**:
-The high-level stage of a game: prep (setup), draw (match-only peg assignment), fishing (the game loop), results (post-session summary).
+The high-level stage of a game: prep (setup), draw (match-only peg assignment on the /prep/draw page), fishing (the game loop), results (post-session summary).
 
 **GameState**:
 A reactive singleton (`src/lib/game/state.svelte.ts`) holding the current game's full state — mode, venue, lake, player peg, time, anglers (player + bots), and tackle selections. Created at venue selection, progressively populated through prep, and active through game → results. Exported as `gameState` and imported by any route that needs it. Designed to be replaced by a synchronised state object when multiplayer is added.
@@ -79,7 +82,9 @@ Prep selection state is sourced from `gameState` (mode, venue, lake, peg, match 
 
 1. **Splash** (`/`) — branding/intro screen with full-bleed background image, Ken Burns animation, and a "Start" button
 2. **Menu** — main menu with "Go Fishing" (Session) and "Host Match" options
-3. **Prep** (nested) — venue → lake → rules → tackle
+3. **Prep** (nested):
+   - **Session**: venue → lake → rules (pick peg) → tackle → game
+   - **Match**: venue → lake → rules (pick time preset) → draw → tackle → game
 4. **Game** — the fishing loop. During a Match, the game clock runs and bot anglers fish autonomously alongside the player. "Change Tackle" navigates to `/prep/tackle` and back.
 5. **Results** — post-session/match summary. Sessions show a personal catch list (species, weight, count). Matches show a leaderboard ranked by total catch weight.
 

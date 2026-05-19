@@ -1,4 +1,4 @@
-import { baits, venues } from '$lib/data';
+import { baits, bots, venues } from '$lib/data';
 import type { Rod, Reel, Line, Hook, Bait, Venue, Lake } from '$lib/data';
 import type { GameMode } from './prep-flow';
 
@@ -31,6 +31,7 @@ export interface AnglerState {
 	id: string;
 	name: string;
 	isPlayer: boolean;
+	skill: number;
 	pegName: string;
 	phase: AnglerPhase;
 	tackle: TackleSelection;
@@ -92,6 +93,7 @@ export class GameState {
 			id: 'player',
 			name: 'You',
 			isPlayer: true,
+			skill: 0,
 			pegName: '',
 			phase: 'cast',
 			tackle: { ...defaultTackle },
@@ -172,6 +174,55 @@ export class GameState {
 
 		this.timeLimitMinutes = minutes;
 		this.timeRemainingSeconds = minutes * 60;
+	}
+
+	drawMatch() {
+		if (this.mode !== 'match') {
+			throw new Error('Draw can only happen in match mode');
+		}
+
+		// Clear bots from any previous draw so re-draws stay clean
+		this.anglers = this.anglers.filter((a) => a.isPlayer);
+
+		const lake = this.requireLake();
+		const pegs = [...lake.pegs];
+
+		// Shuffle pegs using Fisher-Yates
+		for (let i = pegs.length - 1; i > 0; i--) {
+			const j = Math.floor(Math.random() * (i + 1));
+			[pegs[i], pegs[j]] = [pegs[j], pegs[i]];
+		}
+
+		// Assign first peg to player
+		const playerPeg = pegs[0];
+		this.playerPeg = playerPeg.name;
+		const player = this.ensurePlayerAngler();
+		player.pegName = playerPeg.name;
+
+		// Assign remaining pegs to bots
+		const botPool = [...bots];
+		const botCount = pegs.length - 1;
+
+		for (let i = 0; i < botCount; i++) {
+			const botIndex = Math.floor(Math.random() * botPool.length);
+			const botDef = botPool.splice(botIndex, 1)[0];
+			const peg = pegs[i + 1];
+
+			const botAngler: AnglerState = {
+				id: `bot-${botDef.name.toLowerCase()}`,
+				name: botDef.name,
+				isPlayer: false,
+				skill: botDef.skill,
+				pegName: peg.name,
+				phase: 'cast',
+				tackle: { ...defaultTackle },
+				totalWeightOz: 0,
+				biggestFish: null,
+				catch: []
+			};
+
+			this.anglers.push(botAngler);
+		}
 	}
 
 	chooseTackle(tackle: TackleSelection) {
