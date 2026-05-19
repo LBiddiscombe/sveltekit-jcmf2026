@@ -3,10 +3,30 @@
 	import { SvelteURLSearchParams } from 'svelte/reactivity';
 	import { gameState } from '$lib/game/state.svelte';
 
+	const tackleImages = import.meta.glob<string>('$lib/assets/images/tackle/*.png', {
+		eager: true,
+		query: '?url',
+		import: 'default'
+	});
+	const baitImages = import.meta.glob<string>('$lib/assets/images/baits/*.png', {
+		eager: true,
+		query: '?url',
+		import: 'default'
+	});
+
 	let mode = $derived(page.url.searchParams.get('mode'));
 	let venueName = $derived(gameState.venueName);
 	let lakeName = $derived(gameState.lakeName);
 	let pegName = $derived(gameState.playerPeg);
+	let tackle = $derived(gameState.playerAngler?.tackle);
+
+	function img(item: { image: string }): string {
+		return tackleImages[`/src/lib/assets/images/tackle/${item.image}`] ?? '';
+	}
+
+	function baitImg(item: { image: string }): string {
+		return baitImages[`/src/lib/assets/images/baits/${item.image}`] ?? '';
+	}
 
 	function tackleUrl() {
 		const p = new SvelteURLSearchParams(page.url.searchParams);
@@ -32,6 +52,54 @@
 			<p class="font-semibold text-dark-teal">Peg {pegName}</p>
 		</div>
 	</div>
+
+	{#if tackle}
+		<div class="rounded border border-olive bg-surface/30 px-5 py-3">
+			<div class="flex items-center gap-4">
+				<div class="flex flex-col items-center gap-1">
+					<img src={img(tackle.rod)} alt={tackle.rod.name} class="h-8 w-8 rounded object-contain" />
+					<span class="text-xs text-muted">Rod</span>
+					<span class="text-xs font-semibold text-dark-teal">{tackle.rod.name}</span>
+				</div>
+				<div class="flex flex-col items-center gap-1">
+					<img
+						src={img(tackle.reel)}
+						alt={tackle.reel.name}
+						class="h-8 w-8 rounded object-contain"
+					/>
+					<span class="text-xs text-muted">Reel</span>
+					<span class="text-xs font-semibold text-dark-teal">{tackle.reel.name}</span>
+				</div>
+				<div class="flex flex-col items-center gap-1">
+					<img
+						src={img(tackle.line)}
+						alt={tackle.line.name}
+						class="h-8 w-8 rounded object-contain"
+					/>
+					<span class="text-xs text-muted">Line</span>
+					<span class="text-xs font-semibold text-dark-teal">{tackle.line.name}</span>
+				</div>
+				<div class="flex flex-col items-center gap-1">
+					<img
+						src={img(tackle.hook)}
+						alt={tackle.hook.name}
+						class="h-8 w-8 rounded object-contain"
+					/>
+					<span class="text-xs text-muted">Hook</span>
+					<span class="text-xs font-semibold text-dark-teal">{tackle.hook.name}</span>
+				</div>
+				<div class="flex flex-col items-center gap-1">
+					<img
+						src={baitImg(tackle.bait)}
+						alt={tackle.bait.name}
+						class="h-8 w-8 rounded object-contain"
+					/>
+					<span class="text-xs text-muted">Bait</span>
+					<span class="text-xs font-semibold text-dark-teal">{tackle.bait.name}</span>
+				</div>
+			</div>
+		</div>
+	{/if}
 
 	<div class="flex flex-col gap-3">
 		<a

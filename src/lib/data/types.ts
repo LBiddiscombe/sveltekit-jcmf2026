@@ -67,6 +67,7 @@ export interface Species {
  */
 export interface Bait {
 	name: string;
+	image: string;
 	minOz: number;
 	maxOz: number;
 }
@@ -76,6 +77,7 @@ export interface Bait {
  */
 export interface Rod {
 	name: string;
+	image: string;
 	deter: number;
 }
 
@@ -84,6 +86,7 @@ export interface Rod {
  */
 export interface Reel {
 	name: string;
+	image: string;
 	deter: number;
 }
 
@@ -92,6 +95,7 @@ export interface Reel {
  */
 export interface Line {
 	name: string;
+	image: string;
 	size: number;
 	minOz: number;
 	maxOz: number;
@@ -103,6 +107,7 @@ export interface Line {
  */
 export interface Hook {
 	name: string;
+	image: string;
 	size: number;
 	minOz: number;
 	maxOz: number;
