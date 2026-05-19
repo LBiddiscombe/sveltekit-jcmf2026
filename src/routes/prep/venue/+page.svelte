@@ -61,7 +61,6 @@
 					</button>
 				{/each}
 			</div>
-
 		</div>
 	{/if}
 {/await}

@@ -41,4 +41,3 @@ This is an outline of the game screens
   - Have a skill level
   - Skill determines things like tackle choice, change tackle time, strike/reel/land success
   - First names only, male and female, based on known anglers Jack (Charlton), John (Wilson), Matt (Hayes), Mick (Brown), Paul (Whitehouse), Bob (Mortimer), Ashley (Rae), Emma (Pickering), Becky (Keogh), Sarah (Taylor)
-

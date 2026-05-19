@@ -88,4 +88,3 @@ Examples: [src/lib/vitest-examples/](src/lib/vitest-examples/)
 - [README.md](README.md) — Project setup details
 - [SvelteKit Docs](https://kit.svelte.dev/) — Official framework documentation
 - [Vite Docs](https://vitejs.dev/) — Build tool configuration
-
