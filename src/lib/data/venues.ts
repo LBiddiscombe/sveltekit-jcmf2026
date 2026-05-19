@@ -29,24 +29,28 @@ export const venues: Venue[] = [
 						name: '1',
 						description:
 							'This is a sheltered swim, hidden in a cove. The sides of the bank are steep, leading to deep water close to shore. There are weed beds just visible below the surface.',
+						image: 'jcs-match-1.jpeg',
 						features: { flow: 0.1, clarity: 0.8, substrate: 0.2, vegetation: 0.7, shelter: 0.9 }
 					},
 					{
 						name: '2',
 						description:
 							'You are on a small piece of land jutting out into the lake. To your right there are a lot of lily pads, and weed beds. The rest of your swim is clear and the depth increases gradually from the stoney bank.',
+						image: 'jcs-match-2.jpeg',
 						features: { flow: 0.1, clarity: 0.8, substrate: 0.8, vegetation: 0.7, shelter: 0.5 }
 					},
 					{
 						name: '3',
 						description:
 							'This peg has a very shallow sloping bank, but the slope of the bank increases at the water line. There are a few large lily pads directly in front of you, and more lily pads and reeds to your left. The depth at 15ft out is about 7ft. The bank consists mainly of mud and the water is a little cloudy.',
+						image: 'jcs-match-3.jpeg',
 						features: { flow: 0.1, clarity: 0.3, substrate: 0.2, vegetation: 0.7, shelter: 0.5 }
 					},
 					{
 						name: '4',
 						description:
 							'You have an open swim with little reed or weed cover. The bank is muddy and the water is very cloudy. There is an island directly in front of you, with a lot of weed cover around it. The maximum depth is about 6 ft.',
+						image: 'jcs-match-4.jpeg',
 						features: { flow: 0.1, clarity: 0.3, substrate: 0.2, vegetation: 0.7, shelter: 0.5 }
 					},
 					{

@@ -1,7 +1,31 @@
 <script lang="ts">
+	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
+	import { gameState } from '$lib/game/state.svelte';
 
 	let mode = $derived(page.url.searchParams.get('mode'));
+	let pegs = $derived(gameState.lake?.pegs ?? []);
+	let selectedPeg = $state<string | null>(null);
+	let selectedPegData = $derived(pegs.find((p) => p.name === selectedPeg) ?? null);
+
+	const pegImages = import.meta.glob<string>('$lib/assets/images/pegs/*.jpeg', {
+		eager: true,
+		query: '?url',
+		import: 'default'
+	});
+
+	function pegImg(filename: string | undefined) {
+		return filename ? (pegImages[`/src/lib/assets/images/pegs/${filename}`] ?? '') : '';
+	}
+
+	function selectPeg(name: string) {
+		selectedPeg = name;
+		gameState.setPeg(name);
+	}
+
+	function goToTackle() {
+		goto(`/prep/tackle${page.url.search}`);
+	}
 </script>
 
 <div class="flex min-h-screen flex-col items-center justify-center gap-6">
@@ -9,13 +33,47 @@
 
 	{#if mode === 'session'}
 		<p class="text-lg text-muted">Pick your peg</p>
-		<div class="grid grid-cols-4 gap-2">
-			{#each ['1', '2', '3', '4', '5', '6', '7', '8'] as peg (peg)}
-				<button class="rounded border border-olive px-4 py-2 text-dark-teal hover:bg-surface/50"
-					>{peg}</button
+
+		<div class="grid w-full max-w-md grid-cols-2 gap-3 sm:grid-cols-4">
+			{#each pegs as peg (peg.name)}
+				<button
+					onclick={() => selectPeg(peg.name)}
+					class="relative aspect-square cursor-pointer overflow-hidden rounded border-2 transition-all {selectedPeg ===
+					peg.name
+						? 'scale-105 border-primary ring-2 ring-primary ring-offset-2'
+						: 'border-olive hover:border-muted'}"
 				>
+					{#if pegImg(peg.image)}
+						<img src={pegImg(peg.image)} alt="" class="h-full w-full object-cover" />
+					{:else}
+						<div
+							class="flex h-full w-full items-center justify-center border border-dashed border-muted/30 bg-surface/20"
+						>
+							<span class="text-4xl font-bold text-muted">{peg.name}</span>
+						</div>
+					{/if}
+					<div
+						class="absolute right-0 bottom-0 left-0 bg-gradient-to-t from-black/70 to-transparent px-2 pt-6 pb-1.5"
+					>
+						<span class="text-sm font-semibold text-white">Peg {peg.name}</span>
+					</div>
+				</button>
 			{/each}
 		</div>
+
+		{#if selectedPegData}
+			<div class="w-full max-w-md rounded border border-olive bg-surface/30 p-4">
+				<p class="text-sm leading-relaxed text-dark-teal">{selectedPegData.description}</p>
+			</div>
+		{/if}
+
+		<button
+			onclick={goToTackle}
+			disabled={selectedPeg === null}
+			class="inline-block rounded bg-primary px-6 py-2 text-center text-white no-underline hover:bg-primary/80 disabled:cursor-not-allowed disabled:opacity-50"
+		>
+			Next
+		</button>
 	{:else}
 		<p class="text-lg text-muted">Set match time (minutes)</p>
 		<input
@@ -23,12 +81,12 @@
 			value={60}
 			class="rounded border border-olive px-4 py-2 text-center text-dark-teal"
 		/>
-	{/if}
 
-	<a
-		href={`/prep/tackle${page.url.search}`}
-		class="mt-4 inline-block rounded bg-primary px-6 py-2 text-center text-white no-underline hover:bg-primary/80"
-	>
-		Next
-	</a>
+		<a
+			href={`/prep/tackle${page.url.search}`}
+			class="inline-block rounded bg-primary px-6 py-2 text-center text-white no-underline hover:bg-primary/80"
+		>
+			Next
+		</a>
+	{/if}
 </div>

@@ -17,6 +17,7 @@ export interface Peg {
 	name: string;
 	description: string;
 	features: EnvironmentalFeatures;
+	image?: string;
 }
 
 /**

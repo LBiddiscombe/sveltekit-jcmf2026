@@ -1,8 +1,12 @@
 <script lang="ts">
 	import { page } from '$app/state';
 	import { SvelteURLSearchParams } from 'svelte/reactivity';
+	import { gameState } from '$lib/game/state.svelte';
 
 	let mode = $derived(page.url.searchParams.get('mode'));
+	let venueName = $derived(gameState.venueName);
+	let lakeName = $derived(gameState.lakeName);
+	let pegName = $derived(gameState.playerPeg);
 
 	function tackleUrl() {
 		const p = new SvelteURLSearchParams(page.url.searchParams);
@@ -16,6 +20,19 @@
 		{mode === 'match' ? 'Match in Progress' : 'Fishing'}
 	</h1>
 	<p class="text-lg text-muted">The fishing loop — cast, wait, strike, reel, net</p>
+
+	<div class="flex items-center gap-3 rounded border border-olive bg-surface/30 px-5 py-3">
+		<div
+			class="flex h-9 w-9 items-center justify-center rounded-full bg-primary/20 text-sm font-bold text-primary"
+		>
+			{pegName}
+		</div>
+		<div>
+			<p class="text-sm text-muted">{venueName} &middot; {lakeName}</p>
+			<p class="font-semibold text-dark-teal">Peg {pegName}</p>
+		</div>
+	</div>
+
 	<div class="flex flex-col gap-3">
 		<a
 			href={tackleUrl()}
