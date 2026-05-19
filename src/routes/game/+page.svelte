@@ -1,6 +1,5 @@
 <script lang="ts">
-	import { page } from '$app/state';
-	import { SvelteURLSearchParams } from 'svelte/reactivity';
+	import { tackleFromGameUrl } from '$lib/game/prep-flow';
 	import { gameState } from '$lib/game/state.svelte';
 
 	const tackleImages = import.meta.glob<string>('$lib/assets/images/tackle/*.png', {
@@ -14,7 +13,7 @@
 		import: 'default'
 	});
 
-	let mode = $derived(page.url.searchParams.get('mode'));
+	let mode = $derived(gameState.mode);
 	let venueName = $derived(gameState.venueName);
 	let lakeName = $derived(gameState.lakeName);
 	let pegName = $derived(gameState.playerPeg);
@@ -28,11 +27,7 @@
 		return baitImages[`/src/lib/assets/images/baits/${item.image}`] ?? '';
 	}
 
-	function tackleUrl() {
-		const p = new SvelteURLSearchParams(page.url.searchParams);
-		p.set('returnTo', `/game${page.url.search}`);
-		return `/prep/tackle?${p.toString()}`;
-	}
+	const tackleUrl = tackleFromGameUrl();
 </script>
 
 <div class="flex min-h-dvh flex-col items-center justify-center gap-6">
@@ -103,13 +98,14 @@
 
 	<div class="flex flex-col gap-3">
 		<a
-			href={tackleUrl()}
+			href={tackleUrl}
 			class="inline-flex min-h-[44px] items-center justify-center rounded bg-accent px-6 py-3 text-center text-white no-underline hover:bg-accent/80"
 		>
 			Change Tackle
 		</a>
 		<a
-			href={`/results${page.url.search}`}
+			href="/results"
+			onclick={() => gameState.finishGame()}
 			class="inline-flex min-h-[44px] items-center justify-center rounded bg-secondary px-6 py-3 text-center text-white no-underline hover:bg-secondary/80"
 		>
 			{mode === 'match' ? 'End Match' : 'Finish Session'}

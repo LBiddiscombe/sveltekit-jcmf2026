@@ -1,12 +1,12 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
-	import { page } from '$app/state';
 	import { gameState } from '$lib/game/state.svelte';
 
-	let mode = $derived(page.url.searchParams.get('mode'));
+	let mode = $derived(gameState.mode);
 	let pegs = $derived(gameState.lake?.pegs ?? []);
-	let selectedPeg = $state<string | null>(null);
+	let selectedPeg = $state<string | null>(gameState.playerPeg ?? null);
 	let selectedPegData = $derived(pegs.find((p) => p.name === selectedPeg) ?? null);
+	let matchMinutes = $state(gameState.timeLimitMinutes ?? 60);
 
 	const pegImages = import.meta.glob<string>('$lib/assets/images/pegs/*.jpeg', {
 		eager: true,
@@ -20,11 +20,16 @@
 
 	function selectPeg(name: string) {
 		selectedPeg = name;
-		gameState.setPeg(name);
+		gameState.assignPeg(name);
 	}
 
 	function goToTackle() {
-		goto(`/prep/tackle${page.url.search}`);
+		goto('/prep/tackle');
+	}
+
+	function continueMatch() {
+		gameState.setMatchTimeLimit(matchMinutes);
+		goto('/prep/tackle');
 	}
 </script>
 
@@ -78,15 +83,16 @@
 		<p class="text-lg text-muted">Set match time (minutes)</p>
 		<input
 			type="number"
-			value={60}
+			bind:value={matchMinutes}
+			min={1}
 			class="rounded border border-olive px-4 py-2 text-center text-dark-teal"
 		/>
 
-		<a
-			href={`/prep/tackle${page.url.search}`}
+		<button
+			onclick={continueMatch}
 			class="inline-flex min-h-[44px] items-center justify-center rounded bg-primary px-6 py-3 text-center text-white no-underline hover:bg-primary/80"
 		>
 			Next
-		</a>
+		</button>
 	{/if}
 </div>

@@ -1,5 +1,6 @@
 import { baits, venues } from '$lib/data';
 import type { Rod, Reel, Line, Hook, Bait, Venue, Lake } from '$lib/data';
+import type { GameMode } from './prep-flow';
 
 export type GamePhase = 'prep' | 'draw' | 'fishing' | 'results';
 
@@ -48,7 +49,7 @@ const defaultTackle: TackleSelection = {
 
 export class GameState {
 	phase = $state<GamePhase>('prep');
-	mode = $state<'session' | 'match'>('session');
+	mode = $state<GameMode>('session');
 	venueName = $state('');
 	lakeName = $state('');
 	playerPeg = $state<string | undefined>();
@@ -68,7 +69,11 @@ export class GameState {
 		return this.anglers.find((a) => a.isPlayer);
 	}
 
-	init(mode: 'session' | 'match') {
+	get currentTackle(): TackleSelection {
+		return this.playerAngler?.tackle ?? { ...defaultTackle };
+	}
+
+	private reset(mode: GameMode) {
 		this.mode = mode;
 		this.phase = 'prep';
 		this.venueName = '';
@@ -79,62 +84,159 @@ export class GameState {
 		this.anglers = [];
 	}
 
-	setVenue(name: string) {
-		this.venueName = name;
-		if (!this.anglers.some((a) => a.isPlayer)) {
-			this.anglers.push({
-				id: 'player',
-				name: 'You',
-				isPlayer: true,
-				pegName: '',
-				phase: 'cast',
-				tackle: { ...defaultTackle },
-				totalWeightOz: 0,
-				biggestFish: null,
-				catch: []
-			});
+	private ensurePlayerAngler(): AnglerState {
+		const existing = this.playerAngler;
+		if (existing) return existing;
+
+		const player: AnglerState = {
+			id: 'player',
+			name: 'You',
+			isPlayer: true,
+			pegName: '',
+			phase: 'cast',
+			tackle: { ...defaultTackle },
+			totalWeightOz: 0,
+			biggestFish: null,
+			catch: []
+		};
+
+		this.anglers.push(player);
+		return player;
+	}
+
+	private requireVenue(): Venue {
+		const venue = this.venue;
+		if (!venue) {
+			throw new Error('Venue must be selected before this action');
 		}
+		return venue;
 	}
 
-	setLake(name: string) {
-		this.lakeName = name;
+	private requireLake(): Lake {
+		const lake = this.lake;
+		if (!lake) {
+			throw new Error('Lake must be selected before this action');
+		}
+		return lake;
 	}
 
-	setPeg(peg: string) {
+	startSession() {
+		this.reset('session');
+	}
+
+	startMatch() {
+		this.reset('match');
+	}
+
+	selectVenue(name: string) {
+		const venue = venues.find((v) => v.name === name);
+		if (!venue) {
+			throw new Error(`Venue not found: ${name}`);
+		}
+
+		this.venueName = venue.name;
+		this.lakeName = '';
+		this.playerPeg = undefined;
+		const player = this.ensurePlayerAngler();
+		player.pegName = '';
+	}
+
+	selectLake(name: string) {
+		const venue = this.requireVenue();
+		const lake = venue.lakes.find((l) => l.name === name);
+		if (!lake) {
+			throw new Error(`Lake not found at venue ${venue.name}: ${name}`);
+		}
+
+		this.lakeName = lake.name;
+		this.playerPeg = undefined;
+		const player = this.ensurePlayerAngler();
+		player.pegName = '';
+	}
+
+	assignPeg(peg: string) {
+		const lake = this.requireLake();
+		if (!lake.pegs.some((p) => p.name === peg)) {
+			throw new Error(`Peg not found at lake ${lake.name}: ${peg}`);
+		}
+
 		this.playerPeg = peg;
-		const player = this.playerAngler;
-		if (player) player.pegName = peg;
+		const player = this.ensurePlayerAngler();
+		player.pegName = peg;
 	}
 
-	setTimeLimit(minutes: number) {
+	setMatchTimeLimit(minutes: number) {
+		if (this.mode !== 'match') {
+			throw new Error('Match time limit can only be set in match mode');
+		}
+
 		this.timeLimitMinutes = minutes;
 		this.timeRemainingSeconds = minutes * 60;
 	}
 
-	updateTackle(tackle: TackleSelection) {
-		const player = this.playerAngler;
-		if (player) player.tackle = tackle;
+	chooseTackle(tackle: TackleSelection) {
+		const player = this.ensurePlayerAngler();
+		player.tackle = tackle;
 	}
 
-	startFishing() {
-		this.phase = this.mode === 'match' ? 'draw' : 'fishing';
-	}
+	beginFishing() {
+		this.requireVenue();
+		this.requireLake();
+		if (this.mode === 'session' && !this.playerPeg) {
+			throw new Error('Peg must be selected before fishing in session mode');
+		}
 
-	startDraw() {
-		this.phase = 'draw';
-	}
-
-	startGame() {
 		this.phase = 'fishing';
 		this.generateFish();
 	}
 
-	endGame() {
+	finishGame() {
 		this.phase = 'results';
 	}
 
 	private generateFish() {
 		/* stub — fish population generated here for all pegs */
+	}
+
+	init(mode: GameMode) {
+		if (mode === 'match') {
+			this.startMatch();
+			return;
+		}
+
+		this.startSession();
+	}
+
+	setVenue(name: string) {
+		this.selectVenue(name);
+	}
+
+	setLake(name: string) {
+		this.selectLake(name);
+	}
+
+	setPeg(peg: string) {
+		this.assignPeg(peg);
+	}
+
+	setTimeLimit(minutes: number) {
+		this.setMatchTimeLimit(minutes);
+	}
+
+	updateTackle(tackle: TackleSelection) {
+		this.chooseTackle(tackle);
+	}
+
+	startFishing() {
+		this.beginFishing();
+	}
+
+	startGame() {
+		this.beginFishing();
+	}
+
+	endGame() {
+		this.finishGame();
 	}
 }
 

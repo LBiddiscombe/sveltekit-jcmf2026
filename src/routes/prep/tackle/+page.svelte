@@ -4,6 +4,7 @@
 	import { baits } from '$lib/data';
 	import { TackleBox } from '$lib/data/tackle';
 	import type { Rod, Reel, Line, Hook, Bait } from '$lib/data';
+	import { gameReturnToPath } from '$lib/game/prep-flow';
 	import { gameState } from '$lib/game/state.svelte';
 	import PickerModal from '$lib/components/PickerModal.svelte';
 
@@ -23,7 +24,7 @@
 	const reelOptions = box.reels.filter((r) => r.name !== 'n/a');
 	const noReel = box.reels.find((r) => r.name === 'n/a')!;
 
-	let tackle = $state({ ...gameState.playerAngler!.tackle });
+	let tackle = $state({ ...gameState.currentTackle });
 
 	let isPole = $derived(tackle.rod.name === 'Pole');
 
@@ -56,10 +57,13 @@
 	let returnTo = $derived(page.url.searchParams.get('returnTo'));
 	let isMidGame = $derived(returnTo !== null);
 	let buttonLabel = $derived(isMidGame ? 'Back to Fishing' : 'Start Fishing');
-	let target = $derived(isMidGame ? returnTo! : `/game${page.url.search}`);
+	let target = $derived(isMidGame ? returnTo! : gameReturnToPath());
 
 	function handleConfirm() {
-		gameState.updateTackle(tackle);
+		gameState.chooseTackle(tackle);
+		if (!isMidGame) {
+			gameState.beginFishing();
+		}
 		goto(target);
 	}
 
