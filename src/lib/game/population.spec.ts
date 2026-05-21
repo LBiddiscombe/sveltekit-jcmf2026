@@ -9,6 +9,7 @@ const mockSpecies: Species[] = [
 		strata: ['Top', 'Middle', 'Bottom'],
 		description: '',
 		preferences: { flow: 0.3, clarity: 0.5, substrate: 0.7, vegetation: 0.6, shelter: 0.5 },
+		tolerances: {},
 		classifications: [
 			{ label: 'Small', maxOz: 8, preferredBaits: [] },
 			{ label: '', maxOz: 34, preferredBaits: [] },
@@ -22,6 +23,7 @@ const mockSpecies: Species[] = [
 		strata: ['Middle', 'Bottom'],
 		description: '',
 		preferences: { flow: 0.2, clarity: 0.6, substrate: 0.5, vegetation: 0.8, shelter: 0.6 },
+		tolerances: {},
 		classifications: [
 			{ label: 'Small', maxOz: 8, preferredBaits: [] },
 			{ label: '', maxOz: 49, preferredBaits: [] },
@@ -35,6 +37,7 @@ const mockSpecies: Species[] = [
 		strata: ['Top', 'Middle', 'Bottom'],
 		description: '',
 		preferences: { flow: 0.2, clarity: 0.6, substrate: 0.6, vegetation: 0.9, shelter: 0.8 },
+		tolerances: {},
 		classifications: [
 			{ label: 'Jack', maxOz: 80, preferredBaits: [] },
 			{ label: '', maxOz: 374, preferredBaits: [] },
@@ -77,7 +80,8 @@ describe('fishMatchScore', () => {
 	it('returns a non-zero score for a partial match', () => {
 		const species: Species = {
 			...mockSpecies[0],
-			preferences: { flow: 0.7, clarity: 0.5, substrate: 0.3, vegetation: 0.4, shelter: 0.5 }
+			preferences: { flow: 0.7, clarity: 0.5, substrate: 0.3, vegetation: 0.4, shelter: 0.5 },
+			tolerances: {}
 		};
 		const features: EnvironmentalFeatures = {
 			flow: 0.3,

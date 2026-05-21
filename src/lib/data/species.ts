@@ -8,6 +8,7 @@ export const species: Species[] = [
 		description:
 			'A powerful, bronze-sided bottom feeder with whiskers that prefers clear, moderate-flow water over gravel and moderate cover.',
 		preferences: { flow: 0.7, clarity: 0.8, substrate: 0.2, vegetation: 0.3, shelter: 0.4 },
+		tolerances: { flow: { min: 0.3, max: 1 } },
 		classifications: [
 			{
 				label: 'Small',
@@ -30,6 +31,7 @@ export const species: Species[] = [
 		description:
 			'A deep-bodied, silvery fish that thrives in slower water with soft silt, moderate clarity and healthy weed beds.',
 		preferences: { flow: 0.2, clarity: 0.4, substrate: 0.8, vegetation: 0.6, shelter: 0.5 },
+		tolerances: { flow: { min: 0, max: 0.5 } },
 		classifications: [
 			{
 				label: 'Skimmer',
@@ -60,6 +62,7 @@ export const species: Species[] = [
 		description:
 			'A large, bronze-scaled fish that prefers still or slow water with muddy silt, dense weed and plenty of cover.',
 		preferences: { flow: 0.2, clarity: 0.4, substrate: 0.9, vegetation: 0.6, shelter: 0.5 },
+		tolerances: { flow: { min: 0, max: 0.5 } },
 		classifications: [
 			{
 				label: 'Small',
@@ -82,6 +85,7 @@ export const species: Species[] = [
 		description:
 			'A sleek, dark-backed river fish that likes moderate current, cleaner water and a mix of gravelly patches with some vegetation.',
 		preferences: { flow: 0.6, clarity: 0.7, substrate: 0.3, vegetation: 0.5, shelter: 0.4 },
+		tolerances: { flow: { min: 0.3, max: 1 } },
 		classifications: [
 			{
 				label: 'Small',
@@ -104,6 +108,7 @@ export const species: Species[] = [
 		description:
 			'A compact, golden-bodied carp relative that inhabits still, weedy waters with soft silt and lush plant cover.',
 		preferences: { flow: 0.1, clarity: 0.3, substrate: 0.9, vegetation: 0.9, shelter: 0.7 },
+		tolerances: { flow: { min: 0, max: 0.3 } },
 		classifications: [
 			{
 				label: 'Small',
@@ -134,6 +139,7 @@ export const species: Species[] = [
 		description:
 			'A slender, silver shoaling fish that favours fast, clear water over gravel with moderate plant cover.',
 		preferences: { flow: 0.8, clarity: 0.8, substrate: 0.2, vegetation: 0.4, shelter: 0.4 },
+		tolerances: { flow: { min: 0.3, max: 1 } },
 		classifications: [
 			{ label: 'Tiny', maxOz: 2, preferredBaits: ['maggot', 'caster'] },
 			{ label: '', maxOz: 10, preferredBaits: ['maggot', 'caster'] },
@@ -148,6 +154,7 @@ export const species: Species[] = [
 		description:
 			'A long, snake-like hunter that prefers slow, murky water with soft mud, dense vegetation and shaded structure.',
 		preferences: { flow: 0.2, clarity: 0.3, substrate: 0.9, vegetation: 0.7, shelter: 0.8 },
+		tolerances: { flow: { min: 0, max: 0.4 } },
 		classifications: [
 			{ label: 'Small', maxOz: 16, preferredBaits: ['maggot', 'worm'] },
 			{ label: '', maxOz: 86, preferredBaits: ['maggot', 'worm', 'meat'] },
@@ -162,6 +169,7 @@ export const species: Species[] = [
 		description:
 			'A streamlined river fish with a sail-like dorsal fin that prefers fast, crystal-clear flow over clean gravel and sparse weed.',
 		preferences: { flow: 0.8, clarity: 0.9, substrate: 0.2, vegetation: 0.2, shelter: 0.3 },
+		tolerances: { flow: { min: 0.3, max: 1 } },
 		classifications: [
 			{ label: 'Small', maxOz: 8, preferredBaits: ['maggot', 'caster', 'sweetcorn'] },
 			{ label: '', maxOz: 34, preferredBaits: ['maggot', 'caster', 'worm', 'sweetcorn'] },
@@ -180,6 +188,7 @@ export const species: Species[] = [
 		description:
 			'A green-striped predator that likes clear, slow water with abundant weed and structure for ambush.',
 		preferences: { flow: 0.2, clarity: 0.6, substrate: 0.5, vegetation: 0.8, shelter: 0.6 },
+		tolerances: { flow: { min: 0, max: 0.5 } },
 		classifications: [
 			{ label: 'Small', maxOz: 8, preferredBaits: ['maggot', 'caster', 'worm'] },
 			{ label: '', maxOz: 49, preferredBaits: ['maggot', 'caster', 'worm'] },
@@ -194,6 +203,7 @@ export const species: Species[] = [
 		description:
 			'A torpedo-shaped ambush predator that prefers clear, slow water with dense weed beds and sheltered margins.',
 		preferences: { flow: 0.2, clarity: 0.6, substrate: 0.6, vegetation: 0.9, shelter: 0.8 },
+		tolerances: { flow: { min: 0, max: 0.5 } },
 		classifications: [
 			{ label: 'Jack', maxOz: 80, preferredBaits: ['worm', 'meat'] },
 			{ label: '', maxOz: 374, preferredBaits: ['worm', 'meat', 'fish'] },
@@ -208,6 +218,7 @@ export const species: Species[] = [
 		description:
 			'A schooling silver fish that favours moderate clarity, slower water and softer bottoms with some weed cover.',
 		preferences: { flow: 0.3, clarity: 0.5, substrate: 0.7, vegetation: 0.6, shelter: 0.5 },
+		tolerances: { flow: { min: 0, max: 0.6 } },
 		classifications: [
 			{ label: 'Small', maxOz: 8, preferredBaits: ['maggot', 'caster'] },
 			{
@@ -234,6 +245,7 @@ export const species: Species[] = [
 		description:
 			'A bright-bodied, surface-feeding fish that prefers clearer, slower waters with lush weed and soft silt.',
 		preferences: { flow: 0.2, clarity: 0.6, substrate: 0.8, vegetation: 0.8, shelter: 0.7 },
+		tolerances: { flow: { min: 0, max: 0.5 } },
 		classifications: [
 			{ label: 'Small', maxOz: 8, preferredBaits: ['maggot', 'caster'] },
 			{
@@ -260,6 +272,7 @@ export const species: Species[] = [
 		description:
 			'A thickset, olive-green fish that thrives in still, murky waters with deep mud, dense vegetation and shaded shelter.',
 		preferences: { flow: 0.1, clarity: 0.2, substrate: 1.0, vegetation: 0.9, shelter: 0.9 },
+		tolerances: { flow: { min: 0, max: 0.3 } },
 		classifications: [
 			{ label: 'Small', maxOz: 16, preferredBaits: ['maggot', 'caster', 'bread', 'sweetcorn'] },
 			{ label: '', maxOz: 121, preferredBaits: ['caster', 'bread', 'pellet', 'sweetcorn'] },

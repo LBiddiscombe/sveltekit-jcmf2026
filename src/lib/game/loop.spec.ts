@@ -17,6 +17,7 @@ const roach: Species = {
 	strata: ['Top', 'Middle', 'Bottom'],
 	description: '',
 	preferences: { flow: 0.3, clarity: 0.5, substrate: 0.7, vegetation: 0.6, shelter: 0.5 },
+	tolerances: {},
 	classifications: [
 		{ label: 'Small', maxOz: 8, preferredBaits: ['maggot', 'caster'] },
 		{ label: '', maxOz: 34, preferredBaits: ['maggot', 'caster', 'worm'] },
@@ -31,6 +32,7 @@ const carp: Species = {
 	strata: ['Bottom'],
 	description: '',
 	preferences: { flow: 0.2, clarity: 0.4, substrate: 0.9, vegetation: 0.6, shelter: 0.5 },
+	tolerances: {},
 	classifications: [
 		{ label: 'Small', maxOz: 64, preferredBaits: ['pellet', 'sweetcorn'] },
 		{ label: '', maxOz: 544, preferredBaits: ['pellet', 'sweetcorn'] },

@@ -1,5 +1,23 @@
 import type { EnvironmentalFeatures, Lake, Peg, Species } from '$lib/data';
 
+export function passesTolerances(species: Species, features: EnvironmentalFeatures): boolean {
+	const t = species.tolerances;
+	const f = features;
+	if (t.flow !== undefined && (f.flow < t.flow.min || f.flow > t.flow.max)) return false;
+	if (t.clarity !== undefined && (f.clarity < t.clarity.min || f.clarity > t.clarity.max))
+		return false;
+	if (t.substrate !== undefined && (f.substrate < t.substrate.min || f.substrate > t.substrate.max))
+		return false;
+	if (
+		t.vegetation !== undefined &&
+		(f.vegetation < t.vegetation.min || f.vegetation > t.vegetation.max)
+	)
+		return false;
+	if (t.shelter !== undefined && (f.shelter < t.shelter.min || f.shelter > t.shelter.max))
+		return false;
+	return true;
+}
+
 export interface FishData {
 	id: string;
 	species: string;
@@ -74,6 +92,7 @@ export function populatePeg(
 	const adjustedWeights = lake.species.map((ls) => {
 		const species = speciesMap.get(ls.name);
 		if (!species) return 0;
+		if (!passesTolerances(species, peg.features)) return 0;
 		return ls.frequency * fishMatchScore(species, peg.features);
 	});
 

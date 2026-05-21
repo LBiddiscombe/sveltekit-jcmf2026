@@ -58,6 +58,24 @@ export interface FishClassification {
 }
 
 /**
+ * Tolerance range for a single environmental dimension.
+ * If a peg's value falls outside [min, max], the species is excluded.
+ * Not all dimensions need tolerances — omitted dimensions are never a dealbreaker.
+ */
+export interface EnvironmentalTolerance {
+	min: number;
+	max: number;
+}
+
+export interface EnvironmentalTolerances {
+	flow?: EnvironmentalTolerance;
+	clarity?: EnvironmentalTolerance;
+	substrate?: EnvironmentalTolerance;
+	vegetation?: EnvironmentalTolerance;
+	shelter?: EnvironmentalTolerance;
+}
+
+/**
  * Fish species with characteristics and fishing information
  */
 export interface Species {
@@ -66,6 +84,7 @@ export interface Species {
 	strata: string[];
 	description: string;
 	preferences: EnvironmentalFeatures;
+	tolerances: EnvironmentalTolerances;
 	classifications: FishClassification[];
 }
 

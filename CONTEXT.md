@@ -25,6 +25,9 @@ A fishing spot around a lake accommodating zero or one angler. Each peg has a si
 A set of five water condition ratings (flow, clarity, substrate, vegetation, shelter) on a 0–1 scale, describing a peg's character.
 _Avoid_: Characteristics, water properties
 
+**EnvironmentalTolerances**:
+Per-species min/max ranges for any subset of environmental dimensions. If a peg's feature value falls outside a species' tolerance for that dimension, the species is **excluded entirely** from that peg (hard gate). Dimensions without a tolerance defined are never dealbreakers — the continuous match scoring handles relative desirability.
+
 **Species**:
 A type of fish (e.g. Carp, Roach, Tench). Each species has a record weight, preferred strata, preferred environmental features, and size classifications. Abundance is defined per-lake via `LakeSpecies.frequency`.
 
@@ -119,6 +122,7 @@ A pure function module responsible for generating per-peg fish arrays. Takes a l
 
 - LakeSpecies.frequency (relative abundance per species)
 - Species.preferences matched against Peg.features (which species settle at which peg)
+- **Species.tolerances**: hard exclusion gate — if a peg's feature falls outside a species' defined tolerance range, the species gets zero weight for that peg (never appears)
 - Size tier distribution (weighted toward smaller classifications)
 - Seam: injectable RNG for deterministic testing.
 
@@ -133,3 +137,4 @@ A shallow module centralising prep step URL strings so routes don't hardcode pat
 - "Zone" (3×3 grid per peg) was discussed but deferred — per-peg features only for initial build
 - "Characteristic" → **EnvironmentalFeatures** (the term used in code)
 - "SpeciesClass" → **FishClassification** (the term used in code)
+- "Hard limit" / "dealbreaker" → **EnvironmentalTolerances** — per-species min/max ranges that gate species presence at a peg (exclude entirely), separate from the continuous match scoring that governs relative abundance
