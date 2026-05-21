@@ -2,7 +2,7 @@
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
 	import { gameState } from '$lib/game/state.svelte';
-	import { modeFromSearchParams } from '$lib/game/prep-flow';
+	import { modeFromSearchParams, prepRulesUrl } from '$lib/game/prep-flow';
 	import { venues } from '$lib/data';
 
 	const venue = venues[0];
@@ -26,7 +26,7 @@
 	gameState.selectLake(lake.name);
 
 	function goToRules() {
-		goto('/prep/rules');
+		goto(prepRulesUrl());
 	}
 </script>
 

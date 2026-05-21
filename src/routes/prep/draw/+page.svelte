@@ -2,6 +2,7 @@
 	import { goto } from '$app/navigation';
 	import type { Peg } from '$lib/data';
 	import { gameState } from '$lib/game/state.svelte';
+	import { prepTackleUrl } from '$lib/game/prep-flow';
 	import { onMount } from 'svelte';
 
 	let mode = $derived(gameState.mode);
@@ -66,7 +67,7 @@
 	});
 
 	function goToTackle() {
-		goto('/prep/tackle');
+		goto(prepTackleUrl());
 	}
 </script>
 

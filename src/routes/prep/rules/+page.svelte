@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { gameState } from '$lib/game/state.svelte';
+	import { prepTackleUrl, prepDrawUrl } from '$lib/game/prep-flow';
 
 	let mode = $derived(gameState.mode);
 	let pegs = $derived(gameState.lake?.pegs ?? []);
@@ -26,13 +27,13 @@
 	}
 
 	function goToTackle() {
-		goto('/prep/tackle');
+		goto(prepTackleUrl());
 	}
 
 	function selectTime(minutes: number) {
 		selectedMinutes = minutes;
 		gameState.setMatchTimeLimit(minutes);
-		goto('/prep/draw');
+		goto(prepDrawUrl());
 	}
 
 	$effect(() => {
