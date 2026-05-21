@@ -31,6 +31,10 @@
 	let catchList = $derived(gameState.playerAngler?.catch ?? []);
 
 	let lastEventText = $state('');
+	let debugMode = $state(false);
+	let intervalId: ReturnType<typeof setInterval> | null = null;
+
+	let pegFish = $derived(gameState.getPegPopulation(gameState.playerPeg ?? ''));
 
 	function img(item: { image: string }): string {
 		return tackleImages[`/src/lib/assets/images/tackle/${item.image}`] ?? '';
@@ -101,18 +105,37 @@
 		lastEventText = '';
 	}
 
+	function toggleDebug() {
+		if (debugMode) {
+			intervalId = setInterval(() => {
+				if (gameState.playerPhase === 'waiting') {
+					gameState.tick(100);
+				}
+			}, 100);
+			debugMode = false;
+		} else {
+			if (intervalId) {
+				clearInterval(intervalId);
+				intervalId = null;
+			}
+			debugMode = true;
+		}
+	}
+
 	onMount(() => {
 		if (gameState.playerPhase === 'idle') {
 			gameState.cast();
 		}
 
-		const id = setInterval(() => {
+		intervalId = setInterval(() => {
 			if (gameState.playerPhase === 'waiting') {
 				gameState.tick(100);
 			}
 		}, 100);
 
-		return () => clearInterval(id);
+		return () => {
+			if (intervalId) clearInterval(intervalId);
+		};
 	});
 </script>
 
@@ -173,12 +196,24 @@
 				{/if}
 			</span>
 		</div>
-		<span class="text-xs text-muted">{caughtCount} caught</span>
+		<div class="flex items-center gap-2">
+			<span class="text-xs text-muted">{caughtCount} caught</span>
+			<button
+				onclick={toggleDebug}
+				class="cursor-pointer text-xs text-muted/40 hover:text-muted/80"
+			>
+				{debugMode ? 'resume' : 'debug'}
+			</button>
+		</div>
 	</div>
 
 	<!-- Action buttons -->
 	<div class="flex w-full max-w-sm flex-col items-center gap-3">
-		{#if playerPhase === 'idle'}
+		{#if debugMode}
+			<div class="w-full rounded-xl border border-yellow-400/40 bg-yellow-50/50 p-3 text-center">
+				<p class="text-xs font-medium text-yellow-700">Game paused — debug mode</p>
+			</div>
+		{:else if playerPhase === 'idle'}
 			<button
 				onclick={handleCast}
 				class="inline-flex min-h-[48px] w-full cursor-pointer items-center justify-center rounded bg-primary px-8 py-3 text-lg font-bold text-white hover:bg-primary/80"
@@ -234,6 +269,44 @@
 		{/if}
 	</div>
 
+	<!-- Debug panel -->
+	{#if debugMode}
+		<div class="w-full max-w-sm">
+			<div class="mb-1 flex items-center justify-between">
+				<h3 class="text-sm font-semibold text-dark-teal">Peg {pegName} — {pegFish.length} fish</h3>
+			</div>
+			<div
+				class="max-h-60 space-y-2 overflow-y-auto rounded-xl border border-olive bg-surface/30 p-3 text-xs"
+			>
+				{#each ['Short', 'Medium', 'Long'] as dist (dist)}
+					{@const distFish = [...pegFish.filter((f) => f.castStrength === dist)].sort(
+						(a, b) => b.weightOz - a.weightOz
+					)}
+					<div>
+						<h4 class="mb-1 font-semibold text-dark-teal">{dist} ({distFish.length})</h4>
+						{#each ['Top', 'Middle', 'Bottom'] as strata (strata)}
+							{@const strataFish = distFish.filter((f) => f.strata === strata)}
+							{#if strataFish.length > 0}
+								<div class="mb-1 ml-2">
+									<h5 class="text-muted">{strata} ({strataFish.length})</h5>
+									{#each strataFish as fish (fish.id)}
+										<div class="rounded px-2 py-0.5 text-muted even:bg-surface/10">
+											{#if fish.classificationLabel}{fish.classificationLabel}
+											{/if}
+											{fish.species}
+											{formatWeight(fish.weightOz)}
+											({fish.preferredBait})
+										</div>
+									{/each}
+								</div>
+							{/if}
+						{/each}
+					</div>
+				{/each}
+			</div>
+		</div>
+	{/if}
+
 	<!-- Tackle display (clickable) -->
 	{#if tackle}
 		<button
@@ -276,6 +349,41 @@
 						class="h-6 w-6 rounded object-contain"
 					/>
 					<span class="text-xs text-muted">{tackle.bait.name}</span>
+				</div>
+				<div class="flex flex-col items-center gap-0.5">
+					<svg viewBox="0 0 24 24" class="h-6 w-6 text-muted">
+						<circle cx="4" cy="12" r="2" fill="currentColor" />
+						<line
+							x1="6"
+							y1="12"
+							x2={tackle.castStrength === 'Short'
+								? '14'
+								: tackle.castStrength === 'Medium'
+									? '18'
+									: '22'}
+							y2="12"
+							stroke="currentColor"
+							stroke-width="2"
+							stroke-linecap="round"
+						/>
+					</svg>
+					<span class="text-xs text-muted">{tackle.castStrength}</span>
+				</div>
+				<div class="flex flex-col items-center gap-0.5">
+					<svg viewBox="0 0 24 24" class="h-6 w-6 text-muted">
+						{#each ['Top', 'Middle', 'Bottom'] as layer, i (layer)}
+							<rect
+								x="6"
+								y={4 + i * 6}
+								width="12"
+								height="4"
+								rx="1"
+								fill="currentColor"
+								opacity={tackle.strata === layer ? 1 : 0.25}
+							/>
+						{/each}
+					</svg>
+					<span class="text-xs text-muted">{tackle.strata}</span>
 				</div>
 			</div>
 		</button>

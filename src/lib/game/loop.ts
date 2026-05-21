@@ -49,15 +49,9 @@ export class FishingLoop {
 
 	private selectFish(population: FishData[]): FishData | null {
 		const candidates = population.filter((fish) => {
-			const species = this.speciesMap.get(fish.species);
-			if (!species) return false;
-			if (!species.strata.includes(this.tackle.strata)) return false;
+			if (fish.strata !== this.tackle.strata) return false;
 			if (fish.castStrength !== this.tackle.castStrength) return false;
-			const classification = species.classifications.find(
-				(c) => c.label === fish.classificationLabel
-			);
-			if (!classification) return false;
-			return classification.preferredBaits.includes(this.tackle.bait.name);
+			return fish.preferredBait === this.tackle.bait.name;
 		});
 
 		if (candidates.length === 0) return null;

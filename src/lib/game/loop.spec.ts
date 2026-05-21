@@ -61,33 +61,41 @@ const baitMismatchTackle: TackleSelection = {
 const smallRoach: FishData = {
 	id: 'fish-1',
 	species: 'Roach',
+	strata: 'Bottom',
 	classificationLabel: 'Small',
 	weightOz: 4,
-	castStrength: 'Medium'
+	castStrength: 'Medium',
+	preferredBait: 'maggot'
 };
 
 const monsterRoach: FishData = {
 	id: 'fish-2',
 	species: 'Roach',
+	strata: 'Bottom',
 	classificationLabel: 'Monster',
 	weightOz: 60,
-	castStrength: 'Medium'
+	castStrength: 'Medium',
+	preferredBait: 'maggot'
 };
 
 const smallCarp: FishData = {
 	id: 'fish-3',
 	species: 'Carp',
+	strata: 'Bottom',
 	classificationLabel: 'Small',
 	weightOz: 32,
-	castStrength: 'Medium'
+	castStrength: 'Medium',
+	preferredBait: 'pellet'
 };
 
 const mediumRoach: FishData = {
 	id: 'fish-4',
 	species: 'Roach',
+	strata: 'Bottom',
 	classificationLabel: '',
 	weightOz: 20,
-	castStrength: 'Medium'
+	castStrength: 'Medium',
+	preferredBait: 'maggot'
 };
 
 const population: FishData[] = [smallRoach, monsterRoach, smallCarp, mediumRoach];
@@ -224,9 +232,11 @@ describe('FishingLoop', () => {
 			const heavyFish: FishData = {
 				id: 'fish-heavy',
 				species: 'Carp',
+				strata: 'Bottom',
 				classificationLabel: '',
 				weightOz: 200,
-				castStrength: 'Medium'
+				castStrength: 'Medium',
+				preferredBait: 'pellet'
 			};
 			const heavyPopulation = [heavyFish];
 			// Need heavy fish to be selectable: carp prefers pellet/sweetcorn, not maggot

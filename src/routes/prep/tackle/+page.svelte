@@ -190,6 +190,31 @@
 			<p class="font-semibold text-dark-teal">Size {tackle.hook.name}</p>
 		</button>
 
+		<!-- Cast Strength -->
+		<button
+			onclick={() => openModal('cast')}
+			class="flex cursor-pointer flex-col items-center gap-2 rounded-lg border-2 border-olive bg-surface/30 p-4 transition-colors hover:bg-surface/60"
+		>
+			<svg viewBox="0 0 48 48" class="h-16 w-16 text-muted">
+				<circle cx="8" cy="24" r="4" fill="currentColor" />
+				<line
+					x1="12"
+					y1="24"
+					x2={tackle.castStrength === 'Short'
+						? '28'
+						: tackle.castStrength === 'Medium'
+							? '36'
+							: '44'}
+					y2="24"
+					stroke="currentColor"
+					stroke-width="4"
+					stroke-linecap="round"
+				/>
+			</svg>
+			<p class="text-xs text-muted">Cast</p>
+			<p class="font-semibold text-dark-teal">{tackle.castStrength}</p>
+		</button>
+
 		<!-- Strata -->
 		<button
 			onclick={() => !isLeger && openModal('strata')}
@@ -198,23 +223,21 @@
 				? 'border-olive bg-surface/10 opacity-50'
 				: 'border-olive bg-surface/30 hover:bg-surface/60'}"
 		>
-			<span class="text-2xl text-muted">
-				{tackle.strata === 'Top' ? '↗' : tackle.strata === 'Middle' ? '→' : '↘'}
-			</span>
+			<svg viewBox="0 0 48 48" class="h-16 w-16 text-muted">
+				{#each ['Top', 'Middle', 'Bottom'] as layer, i (layer)}
+					<rect
+						x="14"
+						y={8 + i * 12}
+						width="20"
+						height="8"
+						rx="2"
+						fill="currentColor"
+						opacity={tackle.strata === layer ? 1 : 0.25}
+					/>
+				{/each}
+			</svg>
 			<p class="text-xs text-muted">Strata</p>
 			<p class="font-semibold text-dark-teal">{tackle.strata}</p>
-		</button>
-
-		<!-- Cast Strength -->
-		<button
-			onclick={() => openModal('cast')}
-			class="flex cursor-pointer flex-col items-center gap-2 rounded-lg border-2 border-olive bg-surface/30 p-4 transition-colors hover:bg-surface/60"
-		>
-			<span class="text-xl font-bold text-muted">
-				{tackle.castStrength === 'Short' ? 'S' : tackle.castStrength === 'Medium' ? 'M' : 'L'}
-			</span>
-			<p class="text-xs text-muted">Cast</p>
-			<p class="font-semibold text-dark-teal">{tackle.castStrength}</p>
 		</button>
 	</div>
 

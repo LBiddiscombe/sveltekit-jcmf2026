@@ -21,9 +21,11 @@ export function passesTolerances(species: Species, features: EnvironmentalFeatur
 export interface FishData {
 	id: string;
 	species: string;
+	strata: string;
 	classificationLabel: string;
 	weightOz: number;
 	castStrength: string;
+	preferredBait: string;
 }
 
 const TIER_WEIGHTS = [0.5, 0.3, 0.15, 0.05];
@@ -114,9 +116,14 @@ export function populatePeg(
 		fish.push({
 			id: generateId(),
 			species: species.name,
+			strata: species.strata[Math.floor(rng() * species.strata.length)],
 			classificationLabel: classification.label,
 			weightOz,
-			castStrength: CAST_STRENGTHS[Math.floor(rng() * CAST_STRENGTHS.length)]
+			castStrength: CAST_STRENGTHS[Math.floor(rng() * CAST_STRENGTHS.length)],
+			preferredBait:
+				classification.preferredBaits.length > 0
+					? classification.preferredBaits[Math.floor(rng() * classification.preferredBaits.length)]
+					: ''
 		});
 	}
 
