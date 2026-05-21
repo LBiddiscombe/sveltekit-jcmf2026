@@ -1,15 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { FishingLoop } from './loop';
 import type { FishData } from './population';
-import type { EnvironmentalFeatures, Species, TackleSelection } from '$lib/data';
-
-const features: EnvironmentalFeatures = {
-	flow: 0.3,
-	clarity: 0.5,
-	substrate: 0.7,
-	vegetation: 0.6,
-	shelter: 0.5
-};
+import type { Species, TackleSelection } from '$lib/data';
 
 const roach: Species = {
 	name: 'Roach',
@@ -63,6 +55,7 @@ const smallRoach: FishData = {
 	species: 'Roach',
 	strata: 'Bottom',
 	classificationLabel: 'Small',
+	tierIndex: 0,
 	weightOz: 4,
 	castStrength: 'Medium',
 	preferredBait: 'maggot'
@@ -73,6 +66,7 @@ const monsterRoach: FishData = {
 	species: 'Roach',
 	strata: 'Bottom',
 	classificationLabel: 'Monster',
+	tierIndex: 3,
 	weightOz: 60,
 	castStrength: 'Medium',
 	preferredBait: 'maggot'
@@ -83,6 +77,7 @@ const smallCarp: FishData = {
 	species: 'Carp',
 	strata: 'Bottom',
 	classificationLabel: 'Small',
+	tierIndex: 0,
 	weightOz: 32,
 	castStrength: 'Medium',
 	preferredBait: 'pellet'
@@ -93,6 +88,7 @@ const mediumRoach: FishData = {
 	species: 'Roach',
 	strata: 'Bottom',
 	classificationLabel: '',
+	tierIndex: 1,
 	weightOz: 20,
 	castStrength: 'Medium',
 	preferredBait: 'maggot'
@@ -108,7 +104,7 @@ describe('FishingLoop', () => {
 	describe('cast — fish selection', () => {
 		it('selects a fish matching bait and strata', () => {
 			// maggot is preferred by Small Roach; Bottom strata includes Roach
-			const loop = new FishingLoop(tackle, 5, features, speciesList, () => 0.1);
+			const loop = new FishingLoop(tackle, 5, speciesList, () => 0.1);
 			const event = loop.cast(population, noopRemove);
 			expect(event).toBeNull();
 			expect(loop.phase).toBe('waiting');
@@ -118,7 +114,7 @@ describe('FishingLoop', () => {
 
 		it('returns blankCast when no fish matches bait', () => {
 			// boilie is not preferred by Roach at Small tier
-			const loop = new FishingLoop(baitMismatchTackle, 5, features, speciesList, () => 0.1);
+			const loop = new FishingLoop(baitMismatchTackle, 5, speciesList, () => 0.1);
 			const event = loop.cast(population, noopRemove);
 			expect(event).toEqual({ type: 'blankCast' });
 			expect(loop.phase).toBe('waiting');
@@ -126,20 +122,14 @@ describe('FishingLoop', () => {
 		});
 
 		it('returns blankCast when no fish matches strata', () => {
-			const loop = new FishingLoop(
-				{ ...tackle, strata: 'Surface' },
-				5,
-				features,
-				speciesList,
-				() => 0.1
-			);
+			const loop = new FishingLoop({ ...tackle, strata: 'Surface' }, 5, speciesList, () => 0.1);
 			const event = loop.cast(population, noopRemove);
 			expect(event).toEqual({ type: 'blankCast' });
 		});
 
 		it('uses RNG to pick among candidates', () => {
 			// smallRoach (Small) + mediumRoach (unnamed) both match Bottom + maggot. RNG=0 gives first, RNG=0.99 gives second.
-			const loop = new FishingLoop(tackle, 5, features, speciesList, () => 0.99);
+			const loop = new FishingLoop(tackle, 5, speciesList, () => 0.99);
 			const event = loop.cast(population, noopRemove);
 			expect(event).toBeNull();
 			// With RNG=0.99 on 2 candidates, floor(0.99*2) = 1, so index 1 = mediumRoach (fish-4)
@@ -149,7 +139,7 @@ describe('FishingLoop', () => {
 
 	describe('tick', () => {
 		it('advances remaining time', () => {
-			const loop = new FishingLoop(tackle, 5, features, speciesList, () => 0);
+			const loop = new FishingLoop(tackle, 5, speciesList, () => 0);
 			loop.cast(population, noopRemove);
 
 			const beforeMs = loop.remainingMs;
@@ -158,7 +148,7 @@ describe('FishingLoop', () => {
 		});
 
 		it('triggers bite when timer expires', () => {
-			const loop = new FishingLoop(tackle, 5, features, speciesList, () => 0);
+			const loop = new FishingLoop(tackle, 5, speciesList, () => 0);
 			loop.cast(population, noopRemove);
 
 			const event = loop.tick(loop.remainingMs);
@@ -167,7 +157,7 @@ describe('FishingLoop', () => {
 		});
 
 		it('returns null when no fish is set (blank cast)', () => {
-			const loop = new FishingLoop(baitMismatchTackle, 5, features, speciesList, () => 0);
+			const loop = new FishingLoop(baitMismatchTackle, 5, speciesList, () => 0);
 			loop.cast(population, noopRemove);
 			const event = loop.tick(5000);
 			expect(event).toBeNull();
@@ -176,7 +166,7 @@ describe('FishingLoop', () => {
 
 	describe('recast', () => {
 		it('resets to idle', () => {
-			const loop = new FishingLoop(tackle, 5, features, speciesList, () => 0);
+			const loop = new FishingLoop(tackle, 5, speciesList, () => 0);
 			loop.cast(population, noopRemove);
 			loop.recast();
 			expect(loop.phase).toBe('idle');
@@ -187,7 +177,7 @@ describe('FishingLoop', () => {
 
 	describe('strike', () => {
 		it('succeeds and transitions to reeling with favourable RNG', () => {
-			const loop = new FishingLoop(tackle, 5, features, speciesList, () => 0.3);
+			const loop = new FishingLoop(tackle, 5, speciesList, () => 0.3);
 			loop.cast(population, noopRemove);
 			loop.tick(loop.remainingMs);
 			expect(loop.phase).toBe('bite');
@@ -199,7 +189,7 @@ describe('FishingLoop', () => {
 
 		it('fails and loses fish on unfavourable RNG', () => {
 			// skill=0: threshold = 0.5 + 0 = 0.5. rng=0.6 > 0.5 → fail
-			const loop = new FishingLoop(tackle, 0, features, speciesList, () => 0.6);
+			const loop = new FishingLoop(tackle, 0, speciesList, () => 0.6);
 			loop.cast(population, noopRemove);
 			loop.tick(loop.remainingMs);
 
@@ -209,14 +199,14 @@ describe('FishingLoop', () => {
 		});
 
 		it('returns null if not in bite phase', () => {
-			const loop = new FishingLoop(tackle, 5, features, speciesList, () => 0);
+			const loop = new FishingLoop(tackle, 5, speciesList, () => 0);
 			expect(loop.strike()).toBeNull();
 		});
 	});
 
 	describe('reel', () => {
 		it('succeeds when fish weight is within line capacity', () => {
-			const loop = new FishingLoop(tackle, 5, features, speciesList, () => 0.3);
+			const loop = new FishingLoop(tackle, 5, speciesList, () => 0.3);
 			loop.cast(population, noopRemove);
 			loop.tick(loop.remainingMs);
 			loop.strike();
@@ -234,6 +224,7 @@ describe('FishingLoop', () => {
 				species: 'Carp',
 				strata: 'Bottom',
 				classificationLabel: '',
+				tierIndex: 1,
 				weightOz: 200,
 				castStrength: 'Medium',
 				preferredBait: 'pellet'
@@ -244,7 +235,7 @@ describe('FishingLoop', () => {
 				...tackle,
 				bait: { name: 'pellet', image: 'pellet.png', minOz: 4, maxOz: 512 }
 			};
-			const loop = new FishingLoop(carpTackle, 5, features, speciesList, () => 0.5);
+			const loop = new FishingLoop(carpTackle, 5, speciesList, () => 0.5);
 			loop.cast(heavyPopulation, noopRemove);
 			loop.tick(loop.remainingMs);
 			loop.strike();
@@ -256,14 +247,14 @@ describe('FishingLoop', () => {
 		});
 
 		it('returns null if not in reeling phase', () => {
-			const loop = new FishingLoop(tackle, 5, features, speciesList, () => 0);
+			const loop = new FishingLoop(tackle, 5, speciesList, () => 0);
 			expect(loop.reel()).toBeNull();
 		});
 	});
 
 	describe('net', () => {
 		it('catches the fish and records it', () => {
-			const loop = new FishingLoop(tackle, 5, features, speciesList, () => 0.3);
+			const loop = new FishingLoop(tackle, 5, speciesList, () => 0.3);
 			loop.cast(population, noopRemove);
 			loop.tick(loop.remainingMs);
 			loop.strike();
@@ -287,14 +278,14 @@ describe('FishingLoop', () => {
 		});
 
 		it('returns null if not in netting phase', () => {
-			const loop = new FishingLoop(tackle, 5, features, speciesList, () => 0);
+			const loop = new FishingLoop(tackle, 5, speciesList, () => 0);
 			expect(loop.net()).toBeNull();
 		});
 	});
 
 	describe('returnToCast', () => {
 		it('resets to idle after a catch', () => {
-			const loop = new FishingLoop(tackle, 5, features, speciesList, () => 0.3);
+			const loop = new FishingLoop(tackle, 5, speciesList, () => 0.3);
 			loop.cast(population, noopRemove);
 			loop.tick(loop.remainingMs);
 			loop.strike();
@@ -310,7 +301,7 @@ describe('FishingLoop', () => {
 
 	describe('full linear flow', () => {
 		it('cast → wait → bite → strike → reel → net → caught', () => {
-			const loop = new FishingLoop(tackle, 5, features, speciesList, () => 0.3);
+			const loop = new FishingLoop(tackle, 5, speciesList, () => 0.3);
 
 			expect(loop.phase).toBe('idle');
 

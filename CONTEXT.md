@@ -45,7 +45,7 @@ A substance used on a hook to attract and catch fish.
 The equipment an angler uses to fish — rod, reel, line, and hook. Each piece has a **deterrence** (`deter`) value: heavier/stronger tackle puts fish off (longer bite times) but can handle bigger fish during the reel.
 
 **Deterrence**:
-A numeric property on each tackle component. Higher values increase bite wait times (fish are more cautious) but enable reeling larger fish. Each component's deterrence contributes independently.
+A numeric property on each tackle component. Higher values increase the maximum possible bite wait time (fish are more cautious around heavy tackle) but enable reeling larger fish. Each component's deterrence contributes independently to the total sum used in the BiteTime formula. Scaled by ×50,000 — a total deterrence of 1.4 adds up to 70s to the wait ceiling.
 
 **Session**:
 A solo fishing outing — unlimited time, no bots, no competition. Pure fishing. Flows through Prep (player picks a peg manually, no time/bot options) → Game → Results.
@@ -117,17 +117,41 @@ These follow-on features are acknowledged in the README but excluded from the fi
 
 Fish are **pre-spawned** when a session starts — a population of Fish instances distributed across the lake's pegs. As fish are caught, stocks deplete, forcing the angler to adapt tactics. Generate-on-bite is acknowledged as a potential MVP shortcut but not the target.
 
+**FishMatchScore**:
+A 0–1 score computed from the average absolute difference between a species' environmental preferences and a peg's features. Used **only** to weight species abundance during population generation — it does NOT influence bite timing. Higher score means more fish of that species settle at that peg, but once a fish exists, bite time is independent of this score.
+
+**SpeciesCaution**:
+A per-species value (in milliseconds) representing how long the fish's maximum possible wait for a bite can be. Ranges from 2,000 (Dace — bold, fast-biting) to 12,000 (Carp — cautious, slow-biting). Used within the bite-time bracket formula.
+
+**SizeMax**:
+A per-tier value (in milliseconds) representing how much longer larger fish can take to bite. Four tiers: 2,000 (smallest), 5,000 (medium), 10,000 (large/specimen), 16,000 (monster). Stored as `tierIndex` on each `FishData` instance for fast lookup.
+
+**BiteTime**:
+The calculated milliseconds before a bite triggers, computed as:
+
+```
+biteTime = (2000 + rng₁ × 5000) + rng₂ × (deterMax + speciesMax + sizeMax)
+```
+
+Where:
+
+- The **base** (2000–7000ms) is pure randomness
+- **deterMax** = total deterrence (sum of rod + reel + line + hook) × 50,000 — heavier tackle increases the max possible wait
+- **speciesMax** = the species' inherent caution cap
+- **sizeMax** = the fish's size-tier cap
+  The three bracket factors sum to a ceiling: the actual extra wait is a random roll from 0 up to that ceiling. A Carp on max tackle can wait up to ~1m45s, while a Dace on light tackle typically waits 2–11s.
+
 **FishPopulation module** (`src/lib/game/population.ts`):
 A pure function module responsible for generating per-peg fish arrays. Takes a lake, peg, species lookup, and count; returns `FishData[]` weighted by:
 
 - LakeSpecies.frequency (relative abundance per species)
-- Species.preferences matched against Peg.features (which species settle at which peg)
+- Species.preferences × **fishMatchScore** against Peg.features (which species settle at which peg)
 - **Species.tolerances**: hard exclusion gate — if a peg's feature falls outside a species' defined tolerance range, the species gets zero weight for that peg (never appears)
 - Size tier distribution (weighted toward smaller classifications)
 - Seam: injectable RNG for deterministic testing.
 
 **FishingLoop module** (`src/lib/game/loop.ts`):
-A single-angler state machine (`cast → wait → bite → strike → reel → net → catch`) driving the core fishing mechanic. On cast, selects a candidate fish from the peg population by matching bait compatibility, strata preference, and tackle deterrence. Accepts player actions (strike, reel, recast, net) and time ticks. Emits events (bite, fish caught, fish lost). Bot AI drives the same seam with automatic decisions. Exposes `updateTackle()` so the loop's tackle can be refreshed mid-game when the player changes equipment.
+A single-angler state machine (`cast → wait → bite → strike → reel → net → catch`) driving the core fishing mechanic. On cast, selects a candidate fish from the peg population by matching bait compatibility, strata, and cast strength. Bite timing is governed by the **BiteTime** formula (species caution + size tier + tackle deterrence). Accepts player actions (strike, reel, recast, net) and time ticks. Emits events (bite, fish caught, fish lost). Bot AI drives the same seam with automatic decisions. Exposes `updateTackle()` so the loop's tackle can be refreshed mid-game when the player changes equipment.
 
 **Prep Navigation module** (`src/lib/game/prep-flow.ts`):
 A shallow module centralising prep step URL strings so routes don't hardcode paths. Kept minimal until multiplayer reframes the navigation model entirely.

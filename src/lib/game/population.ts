@@ -23,6 +23,7 @@ export interface FishData {
 	species: string;
 	strata: string;
 	classificationLabel: string;
+	tierIndex: number;
 	weightOz: number;
 	castStrength: string;
 	preferredBait: string;
@@ -118,6 +119,7 @@ export function populatePeg(
 			species: species.name,
 			strata: species.strata[Math.floor(rng() * species.strata.length)],
 			classificationLabel: classification.label,
+			tierIndex: tierIdx,
 			weightOz,
 			castStrength: CAST_STRENGTHS[Math.floor(rng() * CAST_STRENGTHS.length)],
 			preferredBait:

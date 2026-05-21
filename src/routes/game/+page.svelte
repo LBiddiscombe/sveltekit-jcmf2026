@@ -340,7 +340,7 @@
 						alt={tackle.hook.name}
 						class="h-6 w-6 rounded object-contain"
 					/>
-					<span class="text-xs text-muted">Size {tackle.hook.name}</span>
+					<span class="text-xs text-muted">{tackle.hook.name}</span>
 				</div>
 				<div class="flex flex-col items-center gap-0.5">
 					<img

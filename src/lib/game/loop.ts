@@ -1,6 +1,5 @@
-import type { EnvironmentalFeatures, Species, TackleSelection } from '$lib/data';
+import type { Species, TackleSelection } from '$lib/data';
 import type { FishData } from './population';
-import { fishMatchScore } from './population';
 
 export interface CaughtFish {
 	species: string;
@@ -36,7 +35,6 @@ export class FishingLoop {
 	constructor(
 		private tackle: TackleSelection,
 		private skill: number,
-		private pegFeatures: EnvironmentalFeatures,
 		speciesList: Species[],
 		private rng: () => number = Math.random
 	) {
@@ -58,19 +56,38 @@ export class FishingLoop {
 		return candidates[Math.floor(this.rng() * candidates.length)];
 	}
 
+	private static readonly SPECIES_CAUTION: Record<string, number> = {
+		Dace: 2000,
+		Roach: 3000,
+		Rudd: 3000,
+		Perch: 4000,
+		Grayling: 4000,
+		Bream: 5000,
+		Crucian: 5000,
+		Chub: 6000,
+		Barbel: 7000,
+		Eel: 8000,
+		Pike: 9000,
+		Tench: 10000,
+		Carp: 12000
+	};
+
+	private static readonly SIZE_MAX = [2000, 5000, 10000, 16000];
+
 	private calcBiteTime(fish: FishData): number {
 		const species = this.speciesMap.get(fish.species);
 		if (!species) return 5000;
-		const match = fishMatchScore(species, this.pegFeatures);
 		const base = 2000 + this.rng() * 5000;
-		const matchFactor = 2 - match;
 		const deterTotal =
 			this.tackle.rod.deter +
 			this.tackle.reel.deter +
 			this.tackle.line.deter +
 			this.tackle.hook.deter;
-		const deterFactor = 1 + deterTotal;
-		return Math.floor(base * matchFactor * deterFactor);
+		const deterMax = deterTotal * 50_000;
+		const speciesMax = FishingLoop.SPECIES_CAUTION[species.name] ?? 5000;
+		const tierIndex = Math.min(fish.tierIndex, FishingLoop.SIZE_MAX.length - 1);
+		const sizeMax = FishingLoop.SIZE_MAX[tierIndex];
+		return Math.floor(base + this.rng() * (deterMax + speciesMax + sizeMax));
 	}
 
 	cast(population: FishData[], _removeFn: (id: string) => void): FishingEvent | null {

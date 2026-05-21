@@ -263,7 +263,7 @@ export class GameState {
 			return;
 		}
 
-		this.playerLoop = new FishingLoop(player.tackle, player.skill, peg.features, species);
+		this.playerLoop = new FishingLoop(player.tackle, player.skill, species);
 		this.syncPlayerState();
 	}
 
