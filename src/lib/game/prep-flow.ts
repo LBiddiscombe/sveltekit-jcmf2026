@@ -4,8 +4,8 @@ export function modeFromSearchParams(searchParams: URLSearchParams): GameMode {
 	return searchParams.get('mode') === 'match' ? 'match' : 'session';
 }
 
-export function prepVenueUrl(mode: GameMode): string {
-	return `/prep/venue?mode=${mode}`;
+export function prepLakeUrl(mode: GameMode): string {
+	return `/prep/lake?mode=${mode}`;
 }
 
 export function gameReturnToPath(): string {
