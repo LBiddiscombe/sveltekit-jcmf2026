@@ -43,7 +43,9 @@ const defaultTackle: TackleSelection = {
 	reel: { name: 'Fixed Spool', image: 'reel-fixed-spool.png', deter: 0.2 },
 	line: { name: '4 lb', image: 'line.png', size: 64, minOz: 3, maxOz: 160, deter: 0.15 },
 	hook: { name: '16', image: 'hook.png', size: 16, minOz: 10, maxOz: 200, deter: 0.15 },
-	bait: baits[0]
+	bait: baits[0],
+	strata: 'Bottom',
+	castStrength: 'Medium'
 };
 
 export class GameState {
@@ -261,7 +263,7 @@ export class GameState {
 			return;
 		}
 
-		this.playerLoop = new FishingLoop(player.tackle, player.skill, peg.features, species, 'Bottom');
+		this.playerLoop = new FishingLoop(player.tackle, player.skill, peg.features, species);
 		this.syncPlayerState();
 	}
 

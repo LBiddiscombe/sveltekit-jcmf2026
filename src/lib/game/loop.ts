@@ -38,7 +38,6 @@ export class FishingLoop {
 		private skill: number,
 		private pegFeatures: EnvironmentalFeatures,
 		speciesList: Species[],
-		private targetStrata: string,
 		private rng: () => number = Math.random
 	) {
 		this.speciesMap = new Map(speciesList.map((s) => [s.name, s]));
@@ -52,7 +51,8 @@ export class FishingLoop {
 		const candidates = population.filter((fish) => {
 			const species = this.speciesMap.get(fish.species);
 			if (!species) return false;
-			if (!species.strata.includes(this.targetStrata)) return false;
+			if (!species.strata.includes(this.tackle.strata)) return false;
+			if (fish.castStrength !== this.tackle.castStrength) return false;
 			const classification = species.classifications.find(
 				(c) => c.label === fish.classificationLabel
 			);

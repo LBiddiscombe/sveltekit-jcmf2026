@@ -127,4 +127,6 @@ export interface TackleSelection {
 	line: Line;
 	hook: Hook;
 	bait: Bait;
+	strata: string;
+	castStrength: string;
 }

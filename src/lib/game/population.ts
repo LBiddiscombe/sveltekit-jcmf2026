@@ -5,9 +5,11 @@ export interface FishData {
 	species: string;
 	classificationLabel: string;
 	weightOz: number;
+	castStrength: string;
 }
 
 const TIER_WEIGHTS = [0.5, 0.3, 0.15, 0.05];
+const CAST_STRENGTHS = ['Short', 'Medium', 'Long'];
 
 let nextId = 0;
 
@@ -94,7 +96,8 @@ export function populatePeg(
 			id: generateId(),
 			species: species.name,
 			classificationLabel: classification.label,
-			weightOz
+			weightOz,
+			castStrength: CAST_STRENGTHS[Math.floor(rng() * CAST_STRENGTHS.length)]
 		});
 	}
 

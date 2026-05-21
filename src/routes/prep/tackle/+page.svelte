@@ -27,6 +27,19 @@
 	let tackle = $state({ ...gameState.currentTackle });
 
 	let isPole = $derived(tackle.rod.name === 'Pole');
+	let isLeger = $derived(tackle.rod.name === 'Leger');
+
+	const strataOptions = [
+		{ name: 'Top', image: '' },
+		{ name: 'Middle', image: '' },
+		{ name: 'Bottom', image: '' }
+	];
+
+	const castOptions = [
+		{ name: 'Short', image: '' },
+		{ name: 'Medium', image: '' },
+		{ name: 'Long', image: '' }
+	];
 
 	function selectRod(rod: Rod) {
 		tackle.rod = rod;
@@ -54,6 +67,16 @@
 		closeModal();
 	}
 
+	function selectStrata(item: { name: string }) {
+		tackle.strata = item.name;
+		closeModal();
+	}
+
+	function selectCastStrength(item: { name: string }) {
+		tackle.castStrength = item.name;
+		closeModal();
+	}
+
 	let returnTo = $derived(page.url.searchParams.get('returnTo'));
 	let isMidGame = $derived(returnTo !== null);
 	let buttonLabel = $derived(isMidGame ? 'Back to Fishing' : 'Start Fishing');
@@ -71,7 +94,9 @@
 		goto(returnTo!);
 	}
 
-	let activeModal = $state<'rod' | 'reel' | 'line' | 'hook' | 'bait' | null>(null);
+	let activeModal = $state<'rod' | 'reel' | 'line' | 'hook' | 'bait' | 'strata' | 'cast' | null>(
+		null
+	);
 
 	function openModal(type: typeof activeModal) {
 		activeModal = type;
@@ -163,6 +188,33 @@
 			/>
 			<p class="text-xs text-muted">Hook</p>
 			<p class="font-semibold text-dark-teal">Size {tackle.hook.name}</p>
+		</button>
+
+		<!-- Strata -->
+		<button
+			onclick={() => !isLeger && openModal('strata')}
+			disabled={isLeger}
+			class="flex cursor-pointer flex-col items-center gap-2 rounded-lg border-2 p-4 transition-colors {isLeger
+				? 'border-olive bg-surface/10 opacity-50'
+				: 'border-olive bg-surface/30 hover:bg-surface/60'}"
+		>
+			<span class="text-2xl text-muted">
+				{tackle.strata === 'Top' ? '↗' : tackle.strata === 'Middle' ? '→' : '↘'}
+			</span>
+			<p class="text-xs text-muted">Strata</p>
+			<p class="font-semibold text-dark-teal">{tackle.strata}</p>
+		</button>
+
+		<!-- Cast Strength -->
+		<button
+			onclick={() => openModal('cast')}
+			class="flex cursor-pointer flex-col items-center gap-2 rounded-lg border-2 border-olive bg-surface/30 p-4 transition-colors hover:bg-surface/60"
+		>
+			<span class="text-xl font-bold text-muted">
+				{tackle.castStrength === 'Short' ? 'S' : tackle.castStrength === 'Medium' ? 'M' : 'L'}
+			</span>
+			<p class="text-xs text-muted">Cast</p>
+			<p class="font-semibold text-dark-teal">{tackle.castStrength}</p>
 		</button>
 	</div>
 
@@ -257,6 +309,30 @@
 		imageBasePath="/src/lib/assets/images/baits"
 		selectedName={tackle.bait.name}
 		onselect={(item) => selectBait(item as Bait)}
+		onclose={closeModal}
+	/>
+{/if}
+
+{#if activeModal === 'strata'}
+	<PickerModal
+		title="Select Strata"
+		items={strataOptions}
+		images={{}}
+		imageBasePath=""
+		selectedName={tackle.strata}
+		onselect={(item) => selectStrata(item)}
+		onclose={closeModal}
+	/>
+{/if}
+
+{#if activeModal === 'cast'}
+	<PickerModal
+		title="Select Cast Strength"
+		items={castOptions}
+		images={{}}
+		imageBasePath=""
+		selectedName={tackle.castStrength}
+		onselect={(item) => selectCastStrength(item)}
 		onclose={closeModal}
 	/>
 {/if}

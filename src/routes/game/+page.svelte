@@ -89,7 +89,10 @@
 	function handleNet() {
 		const result = gameState.net();
 		if (result?.type === 'fishCaught') {
-			lastEventText = `Caught a ${formatWeight(result.weightOz)} ${result.classificationLabel || ''} ${result.species}!`.replace(/\s+/g, ' ').trim();
+			lastEventText =
+				`Caught a ${formatWeight(result.weightOz)} ${result.classificationLabel || ''} ${result.species}!`
+					.replace(/\s+/g, ' ')
+					.trim();
 		}
 	}
 
@@ -283,12 +286,14 @@
 		<div class="w-full max-w-sm">
 			<h3 class="mb-1 text-sm font-semibold text-dark-teal">Catch</h3>
 			<div class="space-y-1">
-			{#each catchList as fish (fish.species + fish.weightOz)}
-				<div class="flex justify-between rounded bg-surface/20 px-3 py-1.5 text-sm text-dark-teal">
-					<span>{fish.classificationLabel || ''} {fish.species}</span>
-					<span class="text-muted">{formatWeight(fish.weightOz)}</span>
-				</div>
-			{/each}
+				{#each catchList as fish (fish.species + fish.weightOz)}
+					<div
+						class="flex justify-between rounded bg-surface/20 px-3 py-1.5 text-sm text-dark-teal"
+					>
+						<span>{fish.classificationLabel || ''} {fish.species}</span>
+						<span class="text-muted">{formatWeight(fish.weightOz)}</span>
+					</div>
+				{/each}
 			</div>
 		</div>
 	{/if}
