@@ -114,6 +114,19 @@ These follow-on features are acknowledged in the README but excluded from the fi
 
 Fish are **pre-spawned** when a session starts — a population of Fish instances distributed across the lake's pegs. As fish are caught, stocks deplete, forcing the angler to adapt tactics. Generate-on-bite is acknowledged as a potential MVP shortcut but not the target.
 
+**FishPopulation module** (`src/lib/game/population.ts`):
+A pure function module responsible for generating per-peg fish arrays. Takes a lake, peg, species lookup, and count; returns `FishData[]` weighted by:
+- LakeSpecies.frequency (relative abundance per species)
+- Species.preferences matched against Peg.features (which species settle at which peg)
+- Size tier distribution (weighted toward smaller classifications)
+- Seam: injectable RNG for deterministic testing.
+
+**FishingLoop module** (`src/lib/game/loop.ts`):
+A single-angler state machine (`cast → wait → bite → strike → reel → net → catch`) driving the core fishing mechanic. On cast, selects a candidate fish from the peg population by matching bait compatibility, strata preference, and tackle deterrence. Accepts player actions (strike, reel, recast, net) and time ticks. Emits events (bite, fish caught, fish lost). Bot AI drives the same seam with automatic decisions.
+
+**Prep Navigation module** (`src/lib/game/prep-flow.ts`):
+A shallow module centralising prep step URL strings so routes don't hardcode paths. Kept minimal until multiplayer reframes the navigation model entirely.
+
 ## Resolved ambiguities
 
 - "Zone" (3×3 grid per peg) was discussed but deferred — per-peg features only for initial build

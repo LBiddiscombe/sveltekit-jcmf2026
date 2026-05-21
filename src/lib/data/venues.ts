@@ -56,13 +56,15 @@ export const venues: Venue[] = [
 					{
 						name: '5',
 						description:
-							"There is an acute bank leading to a shallow sloping bank at the water's edge. The mouth of a small river is to your right, and in front of you is an island. There are visible signs of weedbeds and the water is clear but a little choppy.",
+							"There is an acute bank leading to a shallow sloping bank at the water's edge. The mouth of a small river is to your right, and in front of you is an island. There are visible signs of weedbeds and the water is clear but a little choppy.",						
+						image: 'jcs-match-5.jpeg',
 						features: { flow: 0.5, clarity: 0.8, substrate: 0.8, vegetation: 0.7, shelter: 0.6 }
 					},
 					{
 						name: '6',
 						description:
 							'You are located at the mouth of a river. The water is slow running and murky, and contains a lot of organic debris. The maximum depth is 8 ft. Directly behind you there is a large tree.',
+						image: 'jcs-match-6.jpeg',
 						features: { flow: 0.3, clarity: 0.3, substrate: 0.2, vegetation: 0.7, shelter: 0.6 }
 					},
 					{

@@ -1,6 +1,8 @@
-import { baits, bots, venues } from '$lib/data';
+import { baits, bots, venues, species } from '$lib/data';
 import type { Rod, Reel, Line, Hook, Bait, Venue, Lake } from '$lib/data';
 import type { GameMode } from './prep-flow';
+import { populatePeg, resetIds } from './population';
+import type { FishData } from './population';
 
 export type GamePhase = 'prep' | 'draw' | 'fishing' | 'results';
 
@@ -57,6 +59,7 @@ export class GameState {
 	timeLimitMinutes = $state<number | undefined>();
 	timeRemainingSeconds = $state(0);
 	anglers = $state<AnglerState[]>([]);
+	pegPopulations = new Map<string, FishData[]>();
 
 	get venue(): Venue | undefined {
 		return this.venueName ? venues.find((v) => v.name === this.venueName) : undefined;
@@ -83,6 +86,8 @@ export class GameState {
 		this.timeLimitMinutes = undefined;
 		this.timeRemainingSeconds = 0;
 		this.anglers = [];
+		this.pegPopulations.clear();
+		resetIds();
 	}
 
 	private ensurePlayerAngler(): AnglerState {
@@ -246,7 +251,26 @@ export class GameState {
 	}
 
 	private generateFish() {
-		/* stub — fish population generated here for all pegs */
+		this.pegPopulations.clear();
+		const lake = this.requireLake();
+		const countPerPeg = Math.floor(lake.fishCount / lake.pegs.length);
+
+		for (const peg of lake.pegs) {
+			this.pegPopulations.set(peg.name, populatePeg(lake, peg, species, countPerPeg));
+		}
+	}
+
+	getPegPopulation(pegName: string): FishData[] {
+		return this.pegPopulations.get(pegName) ?? [];
+	}
+
+	removeFishFromPeg(pegName: string, fishId: string): void {
+		const pop = this.pegPopulations.get(pegName);
+		if (!pop) return;
+		this.pegPopulations.set(
+			pegName,
+			pop.filter((f) => f.id !== fishId)
+		);
 	}
 
 	init(mode: GameMode) {
