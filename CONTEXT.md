@@ -9,7 +9,14 @@ A location with one or more fishing lakes. Each venue has an `image` (filename i
 _Avoid_: Location, site
 
 **Lake**:
-A body of water within a venue, containing multiple pegs.
+A body of water within a venue, containing multiple pegs. Each lake defines which species inhabit it and their relative abundance (`frequency`).
+
+**LakeSpecies**:
+A species name and its abundance frequency within a specific lake, defined on the lake's `species` array.
+
+**Frequency**:
+A relative abundance weight (higher = more common) assigned to each species per-lake. Used when generating fish populations — species with higher frequency produce more individual fish in that lake.
+_Avoid_: Global abundance, population density
 
 **Peg**:
 A fishing spot around a lake accommodating zero or one angler. Each peg has a single set of environmental features (no zone subdivision in the initial build).
@@ -19,7 +26,7 @@ A set of five water condition ratings (flow, clarity, substrate, vegetation, she
 _Avoid_: Characteristics, water properties
 
 **Species**:
-A type of fish (e.g. Carp, Roach, Tench). Each species has a record weight, frequency weight, preferred strata, preferred environmental features, and size classifications.
+A type of fish (e.g. Carp, Roach, Tench). Each species has a record weight, preferred strata, preferred environmental features, and size classifications. Abundance is defined per-lake via `LakeSpecies.frequency`.
 
 **FishClassification**:
 A size tier within a species (e.g. Small, Specimen, Monster) with a max weight and list of preferred baits.
@@ -72,6 +79,7 @@ Prep selection state is sourced from `gameState` (mode, venue, lake, peg, match 
 ## Relationships
 
 - A **Venue** has one or more **Lakes**
+- A **Lake** has multiple **LakeSpecies** entries (each with a name and frequency)
 - A **Lake** has multiple **Pegs**
 - A **Peg** has one set of **EnvironmentalFeatures**
 - A **Species** has multiple **FishClassifications** (size tiers)
@@ -90,7 +98,7 @@ Prep selection state is sourced from `gameState` (mode, venue, lake, peg, match 
 
 ## Data
 
-**Venues**: Single venue ("JCs") with one lake ("Match Lake") for the initial build. "Carp Lake" exists in code as test/dummy data.
+**Venues**: Single venue ("JCs") with one lake ("Match Lake") for the initial build.
 
 **Weight unit**: Ounces (oz), matching the original game's imperial system.
 

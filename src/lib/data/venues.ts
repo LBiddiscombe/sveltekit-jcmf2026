@@ -10,19 +10,19 @@ export const venues: Venue[] = [
 				image: 'jcs-match.jpeg',
 				fishCount: 1000,
 				species: [
-					'Barbel',
-					'Bream',
-					'Carp',
-					'Chub',
-					'Crucian',
-					'Dace',
-					'Eel',
-					'Grayling',
-					'Perch',
-					'Pike',
-					'Roach',
-					'Rudd',
-					'Tench'
+					{ name: 'Barbel', frequency: 1 },
+					{ name: 'Bream', frequency: 5 },
+					{ name: 'Carp', frequency: 5 },
+					{ name: 'Chub', frequency: 2 },
+					{ name: 'Crucian', frequency: 2 },
+					{ name: 'Dace', frequency: 2 },
+					{ name: 'Eel', frequency: 1 },
+					{ name: 'Grayling', frequency: 1 },
+					{ name: 'Perch', frequency: 8 },
+					{ name: 'Pike', frequency: 1 },
+					{ name: 'Roach', frequency: 10 },
+					{ name: 'Rudd', frequency: 7 },
+					{ name: 'Tench', frequency: 4 }
 				],
 				pegs: [
 					{
@@ -76,31 +76,6 @@ export const venues: Venue[] = [
 						description:
 							'The water is deep at the edge and remains constant in your swim, there are weeds and reeds to you left, and a cove to your right. Straight ahead is a small piece of land jutting out into the lake.',
 						features: { flow: 0.1, clarity: 0.8, substrate: 0.2, vegetation: 0.7, shelter: 0.8 }
-					}
-				]
-			},
-			{
-				name: 'Carp Lake',
-				fishCount: 1000,
-				species: ['Carp', 'Crucian'],
-				pegs: [
-					{
-						name: '1',
-						description:
-							'This is a sheltered swim, hidden in a cove. The sides of the bank are steep, leading to deep water close to shore. There are weed beds just visible below the surface.',
-						features: { flow: 0.1, clarity: 0.8, substrate: 0.2, vegetation: 0.7, shelter: 0.9 }
-					},
-					{
-						name: '2',
-						description:
-							'You are on a small piece of land jutting out into the lake. To your right there are a lot of lily pads, and weed beds. The rest of your swim is clear and the depth increases gradually from the stoney bank.',
-						features: { flow: 0.1, clarity: 0.8, substrate: 0.8, vegetation: 0.7, shelter: 0.5 }
-					},
-					{
-						name: '3',
-						description:
-							'This peg has a very shallow sloping bank, but the slope of the bank increases at the water line. There are a few large lily pads directly in front of you, and more lily pads and reeds to your left. The depth at 15ft out is about 7ft. The bank consists mainly of mud and the water is a little cloudy.',
-						features: { flow: 0.1, clarity: 0.3, substrate: 0.2, vegetation: 0.7, shelter: 0.5 }
 					}
 				]
 			}

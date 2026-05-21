@@ -21,13 +21,21 @@ export interface Peg {
 }
 
 /**
+ * Species abundance within a lake
+ */
+export interface LakeSpecies {
+	name: string;
+	frequency: number;
+}
+
+/**
  * Lake with fishing pegs and fish species
  */
 export interface Lake {
 	name: string;
 	image?: string;
 	fishCount: number;
-	species: string[];
+	species: LakeSpecies[];
 	pegs: Peg[];
 }
 
@@ -55,7 +63,6 @@ export interface FishClassification {
 export interface Species {
 	name: string;
 	record: number;
-	frequency: number;
 	strata: string[];
 	description: string;
 	preferences: EnvironmentalFeatures;

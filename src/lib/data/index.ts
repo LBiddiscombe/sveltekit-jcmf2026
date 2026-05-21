@@ -1,6 +1,7 @@
 export type {
 	EnvironmentalFeatures,
 	Peg,
+	LakeSpecies,
 	Lake,
 	Venue,
 	FishClassification,

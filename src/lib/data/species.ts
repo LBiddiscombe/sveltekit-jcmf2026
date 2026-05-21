@@ -4,7 +4,6 @@ export const species: Species[] = [
 	{
 		name: 'Barbel',
 		record: 338,
-		frequency: 1,
 		strata: ['Bottom'],
 		description:
 			'A powerful, bronze-sided bottom feeder with whiskers that prefers clear, moderate-flow water over gravel and moderate cover.',
@@ -27,7 +26,6 @@ export const species: Species[] = [
 	{
 		name: 'Bream',
 		record: 363,
-		frequency: 5,
 		strata: ['Bottom'],
 		description:
 			'A deep-bodied, silvery fish that thrives in slower water with soft silt, moderate clarity and healthy weed beds.',
@@ -58,7 +56,6 @@ export const species: Species[] = [
 	{
 		name: 'Carp',
 		record: 1089,
-		frequency: 5,
 		strata: ['Top', 'Middle', 'Bottom'],
 		description:
 			'A large, bronze-scaled fish that prefers still or slow water with muddy silt, dense weed and plenty of cover.',
@@ -81,7 +78,6 @@ export const species: Species[] = [
 	{
 		name: 'Chub',
 		record: 149,
-		frequency: 2,
 		strata: ['Top', 'Middle'],
 		description:
 			'A sleek, dark-backed river fish that likes moderate current, cleaner water and a mix of gravelly patches with some vegetation.',
@@ -104,7 +100,6 @@ export const species: Species[] = [
 	{
 		name: 'Crucian',
 		record: 74,
-		frequency: 2,
 		strata: ['Middle', 'Bottom'],
 		description:
 			'A compact, golden-bodied carp relative that inhabits still, weedy waters with soft silt and lush plant cover.',
@@ -135,7 +130,6 @@ export const species: Species[] = [
 	{
 		name: 'Dace',
 		record: 21,
-		frequency: 2,
 		strata: ['Top', 'Middle'],
 		description:
 			'A slender, silver shoaling fish that favours fast, clear water over gravel with moderate plant cover.',
@@ -150,7 +144,6 @@ export const species: Species[] = [
 	{
 		name: 'Eel',
 		record: 172,
-		frequency: 1,
 		strata: ['Bottom'],
 		description:
 			'A long, snake-like hunter that prefers slow, murky water with soft mud, dense vegetation and shaded structure.',
@@ -165,7 +158,6 @@ export const species: Species[] = [
 	{
 		name: 'Grayling',
 		record: 68,
-		frequency: 1,
 		strata: ['Middle', 'Bottom'],
 		description:
 			'A streamlined river fish with a sail-like dorsal fin that prefers fast, crystal-clear flow over clean gravel and sparse weed.',
@@ -184,7 +176,6 @@ export const species: Species[] = [
 	{
 		name: 'Perch',
 		record: 99,
-		frequency: 8,
 		strata: ['Middle', 'Bottom'],
 		description:
 			'A green-striped predator that likes clear, slow water with abundant weed and structure for ambush.',
@@ -199,7 +190,6 @@ export const species: Species[] = [
 	{
 		name: 'Pike',
 		record: 749,
-		frequency: 1,
 		strata: ['Top', 'Middle', 'Bottom'],
 		description:
 			'A torpedo-shaped ambush predator that prefers clear, slow water with dense weed beds and sheltered margins.',
@@ -214,7 +204,6 @@ export const species: Species[] = [
 	{
 		name: 'Roach',
 		record: 68,
-		frequency: 10,
 		strata: ['Top', 'Middle', 'Bottom'],
 		description:
 			'A schooling silver fish that favours moderate clarity, slower water and softer bottoms with some weed cover.',
@@ -241,7 +230,6 @@ export const species: Species[] = [
 	{
 		name: 'Rudd',
 		record: 74,
-		frequency: 7,
 		strata: ['Top', 'Middle'],
 		description:
 			'A bright-bodied, surface-feeding fish that prefers clearer, slower waters with lush weed and soft silt.',
@@ -268,7 +256,6 @@ export const species: Species[] = [
 	{
 		name: 'Tench',
 		record: 243,
-		frequency: 4,
 		strata: ['Bottom'],
 		description:
 			'A thickset, olive-green fish that thrives in still, murky waters with deep mud, dense vegetation and shaded shelter.',
