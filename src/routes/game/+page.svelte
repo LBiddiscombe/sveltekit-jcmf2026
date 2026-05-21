@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
+	import { onMount } from 'svelte';
 	import { tackleFromGameUrl } from '$lib/game/prep-flow';
 	import { gameState } from '$lib/game/state.svelte';
 
@@ -25,6 +26,11 @@
 	let pegName = $derived(gameState.playerPeg);
 	let tackle = $derived(gameState.playerAngler?.tackle);
 	let selectedPegData = $derived(gameState.lake?.pegs.find((p) => p.name === pegName) ?? null);
+	let playerPhase = $derived(gameState.playerPhase);
+	let caughtCount = $derived(gameState.playerCaughtCount);
+	let catchList = $derived(gameState.playerAngler?.catch ?? []);
+
+	let lastEventText = $state('');
 
 	function img(item: { image: string }): string {
 		return tackleImages[`/src/lib/assets/images/tackle/${item.image}`] ?? '';
@@ -39,9 +45,76 @@
 	}
 
 	const tackleUrl = tackleFromGameUrl();
+
+	function formatWeight(oz: number): string {
+		const lb = Math.floor(oz / 16);
+		const remainder = oz % 16;
+		if (lb === 0) return `${oz} oz`;
+		if (remainder === 0) return `${lb} lb`;
+		return `${lb} lb ${remainder} oz`;
+	}
+
+	function handleCast() {
+		const result = gameState.cast();
+		if (result?.type === 'blankCast') {
+			lastEventText = 'Nothing biting yet...';
+		} else {
+			lastEventText = 'Line in the water...';
+		}
+	}
+
+	function handleRecast() {
+		gameState.recast();
+		lastEventText = '';
+	}
+
+	function handleStrike() {
+		const result = gameState.strike();
+		if (result?.type === 'fishLost') {
+			lastEventText = 'Missed it!';
+		} else {
+			lastEventText = 'Got one!';
+		}
+	}
+
+	function handleReel() {
+		const result = gameState.reel();
+		if (result?.type === 'fishLost') {
+			lastEventText = 'Fish got away!';
+		} else {
+			lastEventText = 'Reeling in...';
+		}
+	}
+
+	function handleNet() {
+		const result = gameState.net();
+		if (result?.type === 'fishCaught') {
+			lastEventText = `Caught a ${formatWeight(result.weightOz)} ${result.classificationLabel || ''} ${result.species}!`.replace(/\s+/g, ' ').trim();
+		}
+	}
+
+	function handleCastAgain() {
+		gameState.returnToCast();
+		lastEventText = '';
+	}
+
+	onMount(() => {
+		if (gameState.playerPhase === 'idle') {
+			gameState.cast();
+		}
+
+		const id = setInterval(() => {
+			if (gameState.playerPhase === 'waiting') {
+				gameState.tick(100);
+			}
+		}, 100);
+
+		return () => clearInterval(id);
+	});
 </script>
 
-<div class="flex min-h-dvh flex-col items-center gap-6 p-4">
+<div class="flex min-h-dvh flex-col items-center gap-4 p-4">
+	<!-- Peg image header -->
 	<div class="relative w-full overflow-hidden rounded-xl bg-surface/20 sm:max-w-sm">
 		<div class="aspect-square">
 			{#if selectedPegData?.image && pegImg(selectedPegData.image)}
@@ -61,58 +134,167 @@
 		</div>
 	</div>
 
+	<!-- Phase status -->
+	<div class="flex w-full max-w-sm items-center justify-between">
+		<div class="flex items-center gap-2">
+			<span
+				class="inline-block h-3 w-3 rounded-full {playerPhase === 'waiting'
+					? 'animate-pulse bg-yellow-400'
+					: playerPhase === 'bite'
+						? 'animate-ping bg-red-500'
+						: playerPhase === 'reeling' || playerPhase === 'netting'
+							? 'bg-green-500'
+							: playerPhase === 'caught'
+								? 'bg-blue-500'
+								: 'bg-muted'}"
+			></span>
+			<span class="text-sm font-medium text-dark-teal">
+				{#if playerPhase === 'idle'}
+					Ready
+				{:else if playerPhase === 'waiting' && lastEventText}
+					{lastEventText}
+				{:else if playerPhase === 'waiting'}
+					Waiting...
+				{:else if playerPhase === 'bite'}
+					Fish biting!
+				{:else if playerPhase === 'striking'}
+					Striking...
+				{:else if playerPhase === 'reeling'}
+					Reeling in...
+				{:else if playerPhase === 'netting'}
+					Netting...
+				{:else if playerPhase === 'caught' || lastEventText}
+					{lastEventText}
+				{:else}
+					{playerPhase ?? ''}
+				{/if}
+			</span>
+		</div>
+		<span class="text-xs text-muted">{caughtCount} caught</span>
+	</div>
+
+	<!-- Action buttons -->
+	<div class="flex w-full max-w-sm flex-col items-center gap-3">
+		{#if playerPhase === 'idle'}
+			<button
+				onclick={handleCast}
+				class="inline-flex min-h-[48px] w-full cursor-pointer items-center justify-center rounded bg-primary px-8 py-3 text-lg font-bold text-white hover:bg-primary/80"
+			>
+				Cast Line
+			</button>
+		{:else if playerPhase === 'waiting'}
+			<div class="flex w-full gap-3">
+				<button
+					onclick={handleRecast}
+					class="inline-flex min-h-[48px] flex-1 cursor-pointer items-center justify-center rounded bg-muted px-4 py-3 text-white hover:bg-muted/80"
+				>
+					Recast
+				</button>
+			</div>
+		{:else if playerPhase === 'bite'}
+			<button
+				onclick={handleStrike}
+				class="inline-flex min-h-[52px] w-full animate-pulse cursor-pointer items-center justify-center rounded bg-red-600 px-8 py-3 text-lg font-bold text-white hover:bg-red-700"
+			>
+				STRIKE!
+			</button>
+		{:else if playerPhase === 'reeling'}
+			<button
+				onclick={handleReel}
+				class="inline-flex min-h-[48px] w-full cursor-pointer items-center justify-center rounded bg-primary px-8 py-3 text-lg font-bold text-white hover:bg-primary/80"
+			>
+				Reel
+			</button>
+		{:else if playerPhase === 'netting'}
+			<button
+				onclick={handleNet}
+				class="inline-flex min-h-[48px] w-full cursor-pointer items-center justify-center rounded bg-green-600 px-8 py-3 text-lg font-bold text-white hover:bg-green-700"
+			>
+				Net Fish
+			</button>
+		{:else if playerPhase === 'caught' || playerPhase === 'lost'}
+			<div
+				class="w-full rounded-xl border p-4 text-center {playerPhase === 'caught'
+					? 'border-blue-400 bg-blue-50'
+					: 'border-red-300 bg-red-50'}"
+			>
+				<p class="text-lg font-bold {playerPhase === 'caught' ? 'text-blue-700' : 'text-red-700'}">
+					{lastEventText || (playerPhase === 'caught' ? 'Fish caught!' : 'Fish lost!')}
+				</p>
+			</div>
+			<button
+				onclick={handleCastAgain}
+				class="inline-flex min-h-[48px] w-full cursor-pointer items-center justify-center rounded bg-primary px-8 py-3 text-lg font-bold text-white hover:bg-primary/80"
+			>
+				Cast Again
+			</button>
+		{/if}
+	</div>
+
+	<!-- Tackle display (clickable) -->
 	{#if tackle}
 		<button
 			onclick={() => goto(tackleUrl)}
-			class="w-full cursor-pointer rounded-xl border border-olive bg-surface/30 p-4 text-left sm:max-w-sm"
+			class="w-full cursor-pointer rounded-xl border border-olive bg-surface/30 p-3 text-left sm:max-w-sm"
 		>
-			<div class="flex items-center justify-center gap-4">
-				<div class="flex flex-col items-center gap-1">
-					<img src={img(tackle.rod)} alt={tackle.rod.name} class="h-8 w-8 rounded object-contain" />
-					<span class="text-xs text-muted">Rod</span>
-					<span class="text-xs font-semibold text-dark-teal">{tackle.rod.name}</span>
+			<div class="flex items-center justify-center gap-3">
+				<div class="flex flex-col items-center gap-0.5">
+					<img src={img(tackle.rod)} alt={tackle.rod.name} class="h-6 w-6 rounded object-contain" />
+					<span class="text-xs text-muted">{tackle.rod.name}</span>
 				</div>
-				<div class="flex flex-col items-center gap-1">
+				<div class="flex flex-col items-center gap-0.5">
 					<img
 						src={img(tackle.reel)}
 						alt={tackle.reel.name}
-						class="h-8 w-8 rounded object-contain"
+						class="h-6 w-6 rounded object-contain"
 					/>
-					<span class="text-xs text-muted">Reel</span>
-					<span class="text-xs font-semibold text-dark-teal">{tackle.reel.name}</span>
+					<span class="text-xs text-muted">{tackle.reel.name}</span>
 				</div>
-				<div class="flex flex-col items-center gap-1">
+				<div class="flex flex-col items-center gap-0.5">
 					<img
 						src={img(tackle.line)}
 						alt={tackle.line.name}
-						class="h-8 w-8 rounded object-contain"
+						class="h-6 w-6 rounded object-contain"
 					/>
-					<span class="text-xs text-muted">Line</span>
-					<span class="text-xs font-semibold text-dark-teal">{tackle.line.name}</span>
+					<span class="text-xs text-muted">{tackle.line.name}</span>
 				</div>
-				<div class="flex flex-col items-center gap-1">
+				<div class="flex flex-col items-center gap-0.5">
 					<img
 						src={img(tackle.hook)}
 						alt={tackle.hook.name}
-						class="h-8 w-8 rounded object-contain"
+						class="h-6 w-6 rounded object-contain"
 					/>
-					<span class="text-xs text-muted">Hook</span>
-					<span class="text-xs font-semibold text-dark-teal">{tackle.hook.name}</span>
+					<span class="text-xs text-muted">Size {tackle.hook.name}</span>
 				</div>
-				<div class="flex flex-col items-center gap-1">
+				<div class="flex flex-col items-center gap-0.5">
 					<img
 						src={baitImg(tackle.bait)}
 						alt={tackle.bait.name}
-						class="h-8 w-8 rounded object-contain"
+						class="h-6 w-6 rounded object-contain"
 					/>
-					<span class="text-xs text-muted">Bait</span>
-					<span class="text-xs font-semibold text-dark-teal">{tackle.bait.name}</span>
+					<span class="text-xs text-muted">{tackle.bait.name}</span>
 				</div>
 			</div>
 		</button>
 	{/if}
 
-	<div class="mt-auto flex justify-center">
+	<!-- Catch list -->
+	{#if catchList.length > 0}
+		<div class="w-full max-w-sm">
+			<h3 class="mb-1 text-sm font-semibold text-dark-teal">Catch</h3>
+			<div class="space-y-1">
+			{#each catchList as fish (fish.species + fish.weightOz)}
+				<div class="flex justify-between rounded bg-surface/20 px-3 py-1.5 text-sm text-dark-teal">
+					<span>{fish.classificationLabel || ''} {fish.species}</span>
+					<span class="text-muted">{formatWeight(fish.weightOz)}</span>
+				</div>
+			{/each}
+			</div>
+		</div>
+	{/if}
+
+	<!-- Finish button -->
+	<div class="mt-auto flex justify-center pb-2">
 		<a
 			href="/results"
 			onclick={() => gameState.finishGame()}

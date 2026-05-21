@@ -116,13 +116,14 @@ Fish are **pre-spawned** when a session starts — a population of Fish instance
 
 **FishPopulation module** (`src/lib/game/population.ts`):
 A pure function module responsible for generating per-peg fish arrays. Takes a lake, peg, species lookup, and count; returns `FishData[]` weighted by:
+
 - LakeSpecies.frequency (relative abundance per species)
 - Species.preferences matched against Peg.features (which species settle at which peg)
 - Size tier distribution (weighted toward smaller classifications)
 - Seam: injectable RNG for deterministic testing.
 
 **FishingLoop module** (`src/lib/game/loop.ts`):
-A single-angler state machine (`cast → wait → bite → strike → reel → net → catch`) driving the core fishing mechanic. On cast, selects a candidate fish from the peg population by matching bait compatibility, strata preference, and tackle deterrence. Accepts player actions (strike, reel, recast, net) and time ticks. Emits events (bite, fish caught, fish lost). Bot AI drives the same seam with automatic decisions.
+A single-angler state machine (`cast → wait → bite → strike → reel → net → catch`) driving the core fishing mechanic. On cast, selects a candidate fish from the peg population by matching bait compatibility, strata preference, and tackle deterrence. Accepts player actions (strike, reel, recast, net) and time ticks. Emits events (bite, fish caught, fish lost). Bot AI drives the same seam with automatic decisions. Exposes `updateTackle()` so the loop's tackle can be refreshed mid-game when the player changes equipment.
 
 **Prep Navigation module** (`src/lib/game/prep-flow.ts`):
 A shallow module centralising prep step URL strings so routes don't hardcode paths. Kept minimal until multiplayer reframes the navigation model entirely.

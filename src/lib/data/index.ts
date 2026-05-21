@@ -10,7 +10,8 @@ export type {
 	Rod,
 	Reel,
 	Line,
-	Hook
+	Hook,
+	TackleSelection
 } from './types';
 export type { BotAngler } from './bots';
 export { venues } from './venues';

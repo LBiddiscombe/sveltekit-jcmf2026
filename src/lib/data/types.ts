@@ -120,3 +120,11 @@ export interface Hook {
 	maxOz: number;
 	deter: number;
 }
+
+export interface TackleSelection {
+	rod: Rod;
+	reel: Reel;
+	line: Line;
+	hook: Hook;
+	bait: Bait;
+}

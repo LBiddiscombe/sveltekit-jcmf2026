@@ -1,4 +1,4 @@
-import type { Lake, Peg, Species } from '$lib/data';
+import type { EnvironmentalFeatures, Lake, Peg, Species } from '$lib/data';
 
 export interface FishData {
 	id: string;
@@ -19,9 +19,9 @@ export function resetIds() {
 	nextId = 0;
 }
 
-export function fishMatchScore(species: Species, peg: Peg): number {
+export function fishMatchScore(species: Species, features: EnvironmentalFeatures): number {
 	const p = species.preferences;
-	const f = peg.features;
+	const f = features;
 	const diffs =
 		(Math.abs(p.flow - f.flow) +
 			Math.abs(p.clarity - f.clarity) +
@@ -72,7 +72,7 @@ export function populatePeg(
 	const adjustedWeights = lake.species.map((ls) => {
 		const species = speciesMap.get(ls.name);
 		if (!species) return 0;
-		return ls.frequency * fishMatchScore(species, peg);
+		return ls.frequency * fishMatchScore(species, peg.features);
 	});
 
 	for (let i = 0; i < count; i++) {

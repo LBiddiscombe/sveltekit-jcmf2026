@@ -1,11 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import {
-	populatePeg,
-	fishMatchScore,
-	weightedSelectIndex,
-	resetIds
-} from './population';
-import type { Lake, Peg, Species } from '$lib/data';
+import { populatePeg, fishMatchScore, weightedSelectIndex, resetIds } from './population';
+import type { EnvironmentalFeatures, Lake, Peg, Species } from '$lib/data';
 
 const mockSpecies: Species[] = [
 	{
@@ -69,26 +64,29 @@ const mockLake: Lake = {
 describe('fishMatchScore', () => {
 	it('returns 1 for an identical match', () => {
 		const species = mockSpecies[0];
-		const score = fishMatchScore(species, mockPeg);
+		const score = fishMatchScore(species, mockPeg.features);
 		expect(score).toBe(1);
 	});
 
 	it('returns < 1 for a mismatch', () => {
 		const species = mockSpecies[2];
-		const score = fishMatchScore(species, mockPeg);
+		const score = fishMatchScore(species, mockPeg.features);
 		expect(score).toBeLessThan(1);
 	});
 
-	it('returns 0 for an inverse match', () => {
+	it('returns a non-zero score for a partial match', () => {
 		const species: Species = {
 			...mockSpecies[0],
 			preferences: { flow: 0.7, clarity: 0.5, substrate: 0.3, vegetation: 0.4, shelter: 0.5 }
 		};
-		const peg: Peg = {
-			...mockPeg,
-			features: { flow: 0.3, clarity: 0.5, substrate: 0.7, vegetation: 0.6, shelter: 0.5 }
+		const features: EnvironmentalFeatures = {
+			flow: 0.3,
+			clarity: 0.5,
+			substrate: 0.7,
+			vegetation: 0.6,
+			shelter: 0.5
 		};
-		const score = fishMatchScore(species, peg);
+		const score = fishMatchScore(species, features);
 		expect(score).toBeGreaterThan(0);
 		expect(score).toBeLessThan(1);
 	});
@@ -153,10 +151,7 @@ describe('populatePeg', () => {
 	it('skips species not found in the species list', () => {
 		const lake: Lake = {
 			...mockLake,
-			species: [
-				{ name: 'UnknownSpecies', frequency: 100 },
-				...mockLake.species
-			]
+			species: [{ name: 'UnknownSpecies', frequency: 100 }, ...mockLake.species]
 		};
 		const fish = populatePeg(lake, mockPeg, mockSpecies, 50, () => 0.5);
 		expect(fish.every((f) => f.species !== 'UnknownSpecies')).toBe(true);
@@ -170,7 +165,9 @@ describe('populatePeg', () => {
 		}
 		const rng = cycleRng(targets);
 		const fish = populatePeg(mockLake, mockPeg, mockSpecies, 100, rng);
-		const roachFish = fish.filter((f) => f.species === 'Roach' && f.classificationLabel === 'Monster');
+		const roachFish = fish.filter(
+			(f) => f.species === 'Roach' && f.classificationLabel === 'Monster'
+		);
 		expect(roachFish.length).toBeGreaterThan(0);
 		for (const f of roachFish) {
 			expect(f.weightOz).toBeLessThanOrEqual(68);

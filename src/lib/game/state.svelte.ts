@@ -1,8 +1,11 @@
+import { SvelteMap } from 'svelte/reactivity';
 import { baits, bots, venues, species } from '$lib/data';
-import type { Rod, Reel, Line, Hook, Bait, Venue, Lake } from '$lib/data';
+import type { Venue, Lake, TackleSelection } from '$lib/data';
 import type { GameMode } from './prep-flow';
 import { populatePeg, resetIds } from './population';
 import type { FishData } from './population';
+import { FishingLoop } from './loop';
+import type { FishingEvent, FishingPhase } from './loop';
 
 export type GamePhase = 'prep' | 'draw' | 'fishing' | 'results';
 
@@ -18,15 +21,8 @@ export type AnglerPhase =
 
 export interface CaughtFish {
 	species: string;
+	classificationLabel: string;
 	weightOz: number;
-}
-
-export interface TackleSelection {
-	rod: Rod;
-	reel: Reel;
-	line: Line;
-	hook: Hook;
-	bait: Bait;
 }
 
 export interface AnglerState {
@@ -59,7 +55,12 @@ export class GameState {
 	timeLimitMinutes = $state<number | undefined>();
 	timeRemainingSeconds = $state(0);
 	anglers = $state<AnglerState[]>([]);
-	pegPopulations = new Map<string, FishData[]>();
+	pegPopulations = new SvelteMap<string, FishData[]>();
+	playerLoop: FishingLoop | null = null;
+	playerPhase = $state<FishingPhase | null>(null);
+	playerRemainingMs = $state(0);
+	playerCaughtCount = $state(0);
+	lastEvent = $state<FishingEvent | null>(null);
 
 	get venue(): Venue | undefined {
 		return this.venueName ? venues.find((v) => v.name === this.venueName) : undefined;
@@ -87,6 +88,11 @@ export class GameState {
 		this.timeRemainingSeconds = 0;
 		this.anglers = [];
 		this.pegPopulations.clear();
+		this.playerLoop = null;
+		this.playerPhase = null;
+		this.playerRemainingMs = 0;
+		this.playerCaughtCount = 0;
+		this.lastEvent = null;
 		resetIds();
 	}
 
@@ -244,6 +250,32 @@ export class GameState {
 
 		this.phase = 'fishing';
 		this.generateFish();
+		this.initPlayerLoop();
+	}
+
+	private initPlayerLoop() {
+		const player = this.playerAngler;
+		const peg = player ? this.lake?.pegs.find((p) => p.name === player.pegName) : undefined;
+		if (!player || !peg) {
+			this.playerLoop = null;
+			return;
+		}
+
+		this.playerLoop = new FishingLoop(player.tackle, player.skill, peg.features, species, 'Bottom');
+		this.syncPlayerState();
+	}
+
+	private syncPlayerState() {
+		this.playerPhase = this.playerLoop?.phase ?? null;
+		this.playerRemainingMs = this.playerLoop?.remainingMs ?? 0;
+		this.playerCaughtCount = this.playerLoop?.caughtFish.length ?? 0;
+	}
+
+	private syncLoopTackle() {
+		const player = this.playerAngler;
+		if (this.playerLoop && player) {
+			this.playerLoop.updateTackle(player.tackle);
+		}
 	}
 
 	finishGame() {
@@ -271,6 +303,73 @@ export class GameState {
 			pegName,
 			pop.filter((f) => f.id !== fishId)
 		);
+	}
+
+	cast(): FishingEvent | null {
+		this.syncLoopTackle();
+		const pop = this.getPegPopulation(this.playerPeg ?? '');
+		const event =
+			this.playerLoop?.cast(pop, (id) => this.removeFishFromPeg(this.playerPeg ?? '', id)) ?? null;
+		this.syncPlayerState();
+		this.lastEvent = event;
+		return event;
+	}
+
+	tick(elapsedMs: number): FishingEvent | null {
+		const event = this.playerLoop?.tick(elapsedMs) ?? null;
+		if (event) this.lastEvent = event;
+		this.syncPlayerState();
+		return event;
+	}
+
+	recast(): void {
+		this.playerLoop?.recast();
+		this.syncPlayerState();
+	}
+
+	strike(): FishingEvent | null {
+		const event = this.playerLoop?.strike() ?? null;
+		this.lastEvent = event;
+		this.syncPlayerState();
+		return event;
+	}
+
+	reel(): FishingEvent | null {
+		this.syncLoopTackle();
+		const event = this.playerLoop?.reel() ?? null;
+		this.lastEvent = event;
+		this.syncPlayerState();
+		return event;
+	}
+
+	net(): FishingEvent | null {
+		const event = this.playerLoop?.net() ?? null;
+		if (event?.type === 'fishCaught') {
+			const player = this.playerAngler;
+			if (player) {
+				player.catch.push({
+					species: event.species,
+					classificationLabel: event.classificationLabel,
+					weightOz: event.weightOz
+				});
+				player.totalWeightOz += event.weightOz;
+				if (!player.biggestFish || event.weightOz > player.biggestFish.weightOz) {
+					player.biggestFish = {
+						species: event.species,
+						classificationLabel: event.classificationLabel,
+						weightOz: event.weightOz
+					};
+				}
+			}
+		}
+		this.lastEvent = event;
+		this.syncPlayerState();
+		return event;
+	}
+
+	returnToCast(): void {
+		this.playerLoop?.returnToCast();
+		this.syncPlayerState();
 	}
 
 	init(mode: GameMode) {
