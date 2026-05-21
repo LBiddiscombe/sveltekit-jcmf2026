@@ -1,51 +1,109 @@
 <script lang="ts">
+	import { SvelteMap } from 'svelte/reactivity';
 	import { gameState } from '$lib/game/state.svelte';
 
 	let mode = $derived(gameState.mode);
+	let playerAngler = $derived(gameState.playerAngler);
+	let anglers = $derived(gameState.anglers);
+
+	let speciesGroups = $derived.by(() => {
+		const map = new SvelteMap<
+			string,
+			{ count: number; totalWeight: number; biggestWeight: number; biggestLabel: string }
+		>();
+		for (const fish of playerAngler?.catch ?? []) {
+			const g = map.get(fish.species) ?? {
+				count: 0,
+				totalWeight: 0,
+				biggestWeight: 0,
+				biggestLabel: ''
+			};
+			g.count += 1;
+			g.totalWeight += fish.weightOz;
+			if (fish.weightOz > g.biggestWeight) {
+				g.biggestWeight = fish.weightOz;
+				g.biggestLabel = fish.classificationLabel;
+			}
+			map.set(fish.species, g);
+		}
+		return map;
+	});
+
+	let totalFish = $derived(playerAngler?.catch.length ?? 0);
+	let totalWeightOz = $derived(playerAngler?.totalWeightOz ?? 0);
+
+	let leaderboard = $derived([...anglers].sort((a, b) => b.totalWeightOz - a.totalWeightOz));
+
+	let totalCaught = $derived(leaderboard.reduce((sum, a) => sum + a.catch.length, 0));
+
+	function formatWeight(oz: number): string {
+		const lb = Math.floor(oz / 16);
+		const r = oz % 16;
+		if (lb === 0) return `${oz} oz`;
+		if (r === 0) return `${lb} lb`;
+		return `${lb} lb ${r} oz`;
+	}
 </script>
 
-<div class="flex min-h-dvh flex-col items-center justify-center gap-6">
+<div class="flex min-h-dvh flex-col items-center justify-center gap-6 p-4">
 	<h1 class="text-2xl font-bold text-dark-teal sm:text-3xl md:text-4xl">
 		{mode === 'match' ? 'Match Results' : 'Session Results'}
 	</h1>
+
 	{#if mode === 'match'}
 		<p class="text-lg text-muted">Leaderboard ranked by total catch weight</p>
-		<div class="w-full max-w-xs space-y-2">
-			<div
-				class="flex justify-between rounded border border-olive bg-surface/30 p-2 text-dark-teal"
-			>
-				<span>1. You</span><span>12 lb 8 oz</span>
+		{#if totalCaught === 0}
+			<p class="text-muted">No fish were caught</p>
+		{:else}
+			<div class="w-full max-w-xs space-y-2">
+				{#each leaderboard as angler, i (angler.id)}
+					<div
+						class="rounded border border-olive bg-surface/30 p-2 text-dark-teal"
+						class:font-bold={angler.isPlayer}
+					>
+						<div class="flex items-baseline justify-between gap-2">
+							<span>{i + 1}. {angler.isPlayer ? 'You' : angler.name}</span>
+							<span class="text-nowrap">{formatWeight(angler.totalWeightOz)}</span>
+						</div>
+						<div class="mt-0.5 flex gap-3 text-xs text-muted">
+							<span>{angler.catch.length} fish</span>
+							{#if angler.biggestFish}
+								<span>
+									Best: {formatWeight(angler.biggestFish.weightOz)}
+									{angler.biggestFish.species}
+								</span>
+							{/if}
+						</div>
+					</div>
+				{/each}
 			</div>
-			<div
-				class="flex justify-between rounded border border-olive bg-surface/30 p-2 text-dark-teal"
-			>
-				<span>2. Jack</span><span>9 lb 2 oz</span>
-			</div>
-			<div
-				class="flex justify-between rounded border border-olive bg-surface/30 p-2 text-dark-teal"
-			>
-				<span>3. John</span><span>6 lb 14 oz</span>
-			</div>
-		</div>
+		{/if}
 	{:else}
 		<p class="text-lg text-muted">Your catch — species, weight, count</p>
-		<div class="w-full max-w-xs space-y-2">
-			<div
-				class="flex justify-between rounded border border-olive bg-surface/30 p-2 text-dark-teal"
-			>
-				<span>Roach</span><span>3 @ 1 lb 8 oz</span>
+		{#if totalFish === 0}
+			<p class="text-muted">No fish were caught</p>
+		{:else}
+			<div class="w-full max-w-xs space-y-2">
+				{#each [...speciesGroups] as [species, group] (species)}
+					<div class="rounded border border-olive bg-surface/30 p-2 text-dark-teal">
+						<div class="flex items-baseline justify-between gap-2">
+							<span>{species}</span>
+							<span class="text-nowrap">{group.count} @ {formatWeight(group.totalWeight)}</span>
+						</div>
+						<div class="mt-0.5 text-xs text-muted">
+							Best: {formatWeight(group.biggestWeight)}
+							{group.biggestLabel}
+						</div>
+					</div>
+				{/each}
+				<div
+					class="flex justify-between rounded border border-olive bg-surface/30 p-2 font-bold text-dark-teal"
+				>
+					<span>Total</span>
+					<span>{totalFish} fish, {formatWeight(totalWeightOz)}</span>
+				</div>
 			</div>
-			<div
-				class="flex justify-between rounded border border-olive bg-surface/30 p-2 text-dark-teal"
-			>
-				<span>Perch</span><span>1 @ 2 lb 4 oz</span>
-			</div>
-			<div
-				class="flex justify-between rounded border border-olive bg-surface/30 p-2 text-dark-teal"
-			>
-				<span>Bream</span><span>1 @ 4 lb 12 oz</span>
-			</div>
-		</div>
+		{/if}
 	{/if}
 	<a
 		href="/menu"
