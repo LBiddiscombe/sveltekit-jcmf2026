@@ -61,6 +61,8 @@ export class GameState {
 	playerLoop: FishingLoop | null = null;
 	playerPhase = $state<FishingPhase | null>(null);
 	playerRemainingMs = $state(0);
+	playerBiteWindowRemaining = $state(0);
+	playerBiteWindowTotal = $state(0);
 	playerCaughtCount = $state(0);
 	lastEvent = $state<FishingEvent | null>(null);
 
@@ -93,6 +95,8 @@ export class GameState {
 		this.playerLoop = null;
 		this.playerPhase = null;
 		this.playerRemainingMs = 0;
+		this.playerBiteWindowRemaining = 0;
+		this.playerBiteWindowTotal = 0;
 		this.playerCaughtCount = 0;
 		this.lastEvent = null;
 		resetIds();
@@ -263,13 +267,15 @@ export class GameState {
 			return;
 		}
 
-		this.playerLoop = new FishingLoop(player.tackle, player.skill, species);
+		this.playerLoop = new FishingLoop(player.tackle, player.skill, species, false);
 		this.syncPlayerState();
 	}
 
 	private syncPlayerState() {
 		this.playerPhase = this.playerLoop?.phase ?? null;
 		this.playerRemainingMs = this.playerLoop?.remainingMs ?? 0;
+		this.playerBiteWindowRemaining = this.playerLoop?.biteWindowRemaining ?? 0;
+		this.playerBiteWindowTotal = this.playerLoop?.biteWindowTotal ?? 0;
 		this.playerCaughtCount = this.playerLoop?.caughtFish.length ?? 0;
 	}
 
@@ -321,6 +327,22 @@ export class GameState {
 		const event = this.playerLoop?.tick(elapsedMs) ?? null;
 		if (event) this.lastEvent = event;
 		this.syncPlayerState();
+
+		// Clear stale catch/loss message after silent auto-recast
+		if (!event && this.playerPhase === 'waiting' && this.playerLoop?.currentFish) {
+			this.lastEvent = null;
+		}
+
+		if (this.playerPhase === 'idle') {
+			const pop = this.getPegPopulation(this.playerPeg ?? '');
+			const castEvent =
+				this.playerLoop?.cast(pop, (id) => this.removeFishFromPeg(this.playerPeg ?? '', id)) ??
+				null;
+			this.lastEvent = castEvent;
+			this.syncPlayerState();
+			return castEvent;
+		}
+
 		return event;
 	}
 

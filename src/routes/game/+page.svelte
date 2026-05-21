@@ -29,12 +29,40 @@
 	let playerPhase = $derived(gameState.playerPhase);
 	let caughtCount = $derived(gameState.playerCaughtCount);
 	let catchList = $derived(gameState.playerAngler?.catch ?? []);
-
-	let lastEventText = $state('');
+	let lastEvent = $derived(gameState.lastEvent);
 	let debugMode = $state(false);
 	let intervalId: ReturnType<typeof setInterval> | null = null;
 
 	let pegFish = $derived(gameState.getPegPopulation(gameState.playerPeg ?? ''));
+
+	let biteWindowRatio = $derived(
+		playerPhase === 'bite' && gameState.playerBiteWindowTotal > 0
+			? gameState.playerBiteWindowRemaining / gameState.playerBiteWindowTotal
+			: 1
+	);
+
+	let pulseDuration = $derived(`${biteWindowRatio * 2 + 0.5}s`);
+
+	let statusMessage = $derived.by(() => {
+		const e = lastEvent;
+		if (e?.type === 'fishCaught') {
+			const text = `Caught a ${formatWeight(e.weightOz)} ${e.classificationLabel || ''} ${e.species}!`;
+			return text.replace(/\s+/g, ' ').trim();
+		}
+		if (e?.type === 'hookBroken') return 'Hook smashed by big fish!';
+		if (e?.type === 'biteExpired') return 'Fish lost interest!';
+		if (e?.type === 'fishLost') return 'Missed it!';
+		if (e?.type === 'blankCast') return 'Nothing biting yet...';
+
+		if (playerPhase === 'waiting') return 'Line in the water...';
+		if (playerPhase === 'bite') return 'Fish biting!';
+		if (playerPhase === 'reeling') return 'Reeling in...';
+		if (playerPhase === 'netting') return 'Netting...';
+		if (playerPhase === 'striking') return 'Striking...';
+		if (playerPhase === 'idle') return 'Ready';
+
+		return '';
+	});
 
 	function img(item: { image: string }): string {
 		return tackleImages[`/src/lib/assets/images/tackle/${item.image}`] ?? '';
@@ -58,57 +86,37 @@
 		return `${lb} lb ${remainder} oz`;
 	}
 
-	function handleCast() {
-		const result = gameState.cast();
-		if (result?.type === 'blankCast') {
-			lastEventText = 'Nothing biting yet...';
-		} else {
-			lastEventText = 'Line in the water...';
-		}
+	function handleStrike() {
+		gameState.strike();
+	}
+
+	function handleReel() {
+		gameState.reel();
+	}
+
+	function handleNet() {
+		gameState.net();
 	}
 
 	function handleRecast() {
 		gameState.recast();
-		lastEventText = '';
+		gameState.cast();
 	}
 
-	function handleStrike() {
-		const result = gameState.strike();
-		if (result?.type === 'fishLost') {
-			lastEventText = 'Missed it!';
-		} else {
-			lastEventText = 'Got one!';
-		}
-	}
-
-	function handleReel() {
-		const result = gameState.reel();
-		if (result?.type === 'fishLost') {
-			lastEventText = 'Fish got away!';
-		} else {
-			lastEventText = 'Reeling in...';
-		}
-	}
-
-	function handleNet() {
-		const result = gameState.net();
-		if (result?.type === 'fishCaught') {
-			lastEventText =
-				`Caught a ${formatWeight(result.weightOz)} ${result.classificationLabel || ''} ${result.species}!`
-					.replace(/\s+/g, ' ')
-					.trim();
-		}
-	}
-
-	function handleCastAgain() {
-		gameState.returnToCast();
-		lastEventText = '';
+	function handleChangeTackle() {
+		gameState.recast();
+		goto(tackleUrl);
 	}
 
 	function toggleDebug() {
 		if (debugMode) {
 			intervalId = setInterval(() => {
-				if (gameState.playerPhase === 'waiting') {
+				if (
+					gameState.playerPhase === 'waiting' ||
+					gameState.playerPhase === 'bite' ||
+					gameState.playerPhase === 'caught' ||
+					gameState.playerPhase === 'lost'
+				) {
 					gameState.tick(100);
 				}
 			}, 100);
@@ -128,7 +136,12 @@
 		}
 
 		intervalId = setInterval(() => {
-			if (gameState.playerPhase === 'waiting') {
+			if (
+				gameState.playerPhase === 'waiting' ||
+				gameState.playerPhase === 'bite' ||
+				gameState.playerPhase === 'caught' ||
+				gameState.playerPhase === 'lost'
+			) {
 				gameState.tick(100);
 			}
 		}, 100);
@@ -174,27 +187,7 @@
 								? 'bg-blue-500'
 								: 'bg-muted'}"
 			></span>
-			<span class="text-sm font-medium text-dark-teal">
-				{#if playerPhase === 'idle'}
-					Ready
-				{:else if playerPhase === 'waiting' && lastEventText}
-					{lastEventText}
-				{:else if playerPhase === 'waiting'}
-					Waiting...
-				{:else if playerPhase === 'bite'}
-					Fish biting!
-				{:else if playerPhase === 'striking'}
-					Striking...
-				{:else if playerPhase === 'reeling'}
-					Reeling in...
-				{:else if playerPhase === 'netting'}
-					Netting...
-				{:else if playerPhase === 'caught' || lastEventText}
-					{lastEventText}
-				{:else}
-					{playerPhase ?? ''}
-				{/if}
-			</span>
+			<span class="text-sm font-medium text-dark-teal">{statusMessage}</span>
 		</div>
 		<div class="flex items-center gap-2">
 			<span class="text-xs text-muted">{caughtCount} caught</span>
@@ -213,26 +206,18 @@
 			<div class="w-full rounded-xl border border-yellow-400/40 bg-yellow-50/50 p-3 text-center">
 				<p class="text-xs font-medium text-yellow-700">Game paused — debug mode</p>
 			</div>
-		{:else if playerPhase === 'idle'}
-			<button
-				onclick={handleCast}
-				class="inline-flex min-h-[48px] w-full cursor-pointer items-center justify-center rounded bg-primary px-8 py-3 text-lg font-bold text-white hover:bg-primary/80"
-			>
-				Cast Line
-			</button>
 		{:else if playerPhase === 'waiting'}
-			<div class="flex w-full gap-3">
-				<button
-					onclick={handleRecast}
-					class="inline-flex min-h-[48px] flex-1 cursor-pointer items-center justify-center rounded bg-muted px-4 py-3 text-white hover:bg-muted/80"
-				>
-					Recast
-				</button>
-			</div>
+			<button
+				onclick={handleRecast}
+				class="inline-flex min-h-[48px] w-full cursor-pointer items-center justify-center rounded bg-muted px-8 py-3 text-white hover:bg-muted/80"
+			>
+				Recast
+			</button>
 		{:else if playerPhase === 'bite'}
 			<button
 				onclick={handleStrike}
-				class="inline-flex min-h-[52px] w-full animate-pulse cursor-pointer items-center justify-center rounded bg-red-600 px-8 py-3 text-lg font-bold text-white hover:bg-red-700"
+				style="--pulse-duration: {pulseDuration}; opacity: {Math.max(biteWindowRatio, 0.15)}"
+				class="bite-pulse inline-flex min-h-[52px] w-full cursor-pointer items-center justify-center rounded bg-red-600 px-8 py-3 text-lg font-bold text-white hover:bg-red-700"
 			>
 				STRIKE!
 			</button>
@@ -257,15 +242,9 @@
 					: 'border-red-300 bg-red-50'}"
 			>
 				<p class="text-lg font-bold {playerPhase === 'caught' ? 'text-blue-700' : 'text-red-700'}">
-					{lastEventText || (playerPhase === 'caught' ? 'Fish caught!' : 'Fish lost!')}
+					{statusMessage}
 				</p>
 			</div>
-			<button
-				onclick={handleCastAgain}
-				class="inline-flex min-h-[48px] w-full cursor-pointer items-center justify-center rounded bg-primary px-8 py-3 text-lg font-bold text-white hover:bg-primary/80"
-			>
-				Cast Again
-			</button>
 		{/if}
 	</div>
 
@@ -310,7 +289,7 @@
 	<!-- Tackle display (clickable) -->
 	{#if tackle}
 		<button
-			onclick={() => goto(tackleUrl)}
+			onclick={handleChangeTackle}
 			class="w-full cursor-pointer rounded-xl border border-olive bg-surface/30 p-3 text-left sm:max-w-sm"
 		>
 			<div class="flex items-center justify-center gap-3">
@@ -417,3 +396,19 @@
 		</a>
 	</div>
 </div>
+
+<style>
+	.bite-pulse {
+		animation: bite-pulse var(--pulse-duration, 2s) ease-in-out infinite;
+	}
+
+	@keyframes bite-pulse {
+		0%,
+		100% {
+			opacity: var(--pulse-opacity, 1);
+		}
+		50% {
+			opacity: calc(var(--pulse-opacity, 1) * 0.5);
+		}
+	}
+</style>
