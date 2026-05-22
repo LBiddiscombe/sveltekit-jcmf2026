@@ -71,12 +71,14 @@ export const venues: Venue[] = [
 						name: '7',
 						description:
 							'You are located between two large trees, and consequently there are a lot of leaves and twigs in the water, and on the lake. The maximum depth is 7ft; 20 ft out.',
+						image: 'jcs-match-7.jpeg',
 						features: { flow: 0.1, clarity: 0.3, substrate: 0.2, vegetation: 0.7, shelter: 0.7 }
 					},
 					{
 						name: '8',
 						description:
 							'The water is deep at the edge and remains constant in your swim, there are weeds and reeds to you left, and a cove to your right. Straight ahead is a small piece of land jutting out into the lake.',
+						image: 'jcs-match-8.jpeg',
 						features: { flow: 0.1, clarity: 0.8, substrate: 0.2, vegetation: 0.7, shelter: 0.8 }
 					}
 				]

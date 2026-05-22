@@ -30,17 +30,18 @@
 	}
 </script>
 
-<div
-	class="relative flex min-h-dvh flex-col bg-cover bg-center"
-	style="background-image: url({bgImage})"
->
-	<div class="absolute inset-0 bg-black/40"></div>
-	<div class="relative z-10 flex flex-1 flex-col items-center justify-center gap-4 p-6">
-		<p class="text-lg text-white/80">Welcome to</p>
-		<h1 class="text-3xl font-bold text-white sm:text-4xl md:text-5xl">{venue.name}</h1>
-		<p class="text-xl font-semibold text-white/90 sm:text-2xl">{lake.name}</p>
-	</div>
-	<div class="relative z-10 flex justify-center pb-12">
+<div class="flex min-h-dvh flex-col items-center justify-center p-6">
+	<div class="flex w-full max-w-sm flex-col items-center gap-6">
+		<div class="flex flex-col items-center gap-2">
+			<p class="text-lg text-dark-teal/70">Welcome to</p>
+			<h1 class="text-3xl font-bold text-dark-teal sm:text-4xl md:text-5xl">{venue.name}</h1>
+			<p class="text-xl font-semibold text-dark-teal/90 sm:text-2xl">{lake.name}</p>
+		</div>
+
+		<div class="w-full overflow-hidden rounded-2xl shadow-lg">
+			<img src={bgImage} alt="{lake.name} at {venue.name}" class="h-auto w-full" />
+		</div>
+
 		<button
 			onclick={goToRules}
 			class="inline-flex min-h-[44px] items-center justify-center rounded bg-primary px-8 py-3 text-center text-white no-underline hover:bg-primary/80"

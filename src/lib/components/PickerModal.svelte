@@ -6,7 +6,9 @@
 		imageBasePath,
 		selectedName,
 		onselect,
-		onclose
+		onclose,
+		itemIcons,
+		itemScales
 	}: {
 		title: string;
 		items: { name: string; image: string }[];
@@ -15,6 +17,8 @@
 		selectedName: string;
 		onselect: (item: { name: string; image: string }) => void;
 		onclose: () => void;
+		itemIcons?: Record<string, string>;
+		itemScales?: Record<string, number>;
 	} = $props();
 
 	function handleBackdrop(e: MouseEvent) {
@@ -64,11 +68,27 @@
 						: 'border-olive bg-surface/30 hover:bg-surface/60'}"
 				>
 					{#if item.image}
-						<img
-							src={images[`${imageBasePath}/${item.image}`] ?? ''}
-							alt={item.name}
-							class="h-16 w-16 rounded object-contain"
-						/>
+						{#if itemScales?.[item.name]}
+							{@const scale = itemScales[item.name]}
+							<div class="flex h-16 w-16 items-center justify-center">
+								<img
+									src={images[`${imageBasePath}/${item.image}`] ?? ''}
+									alt={item.name}
+									style="width: calc(4rem * {scale}); height: calc(4rem * {scale})"
+									class="rounded object-contain"
+								/>
+							</div>
+						{:else}
+							<img
+								src={images[`${imageBasePath}/${item.image}`] ?? ''}
+								alt={item.name}
+								class="h-16 w-16 rounded object-contain"
+							/>
+						{/if}
+					{:else if itemIcons?.[item.name]}
+						<div class="flex h-16 w-16 items-center justify-center text-muted">
+							{@html itemIcons[item.name]}
+						</div>
 					{/if}
 					<span class="text-sm font-medium text-dark-teal">{item.name}</span>
 				</button>

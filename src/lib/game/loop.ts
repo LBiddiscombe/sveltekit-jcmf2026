@@ -28,7 +28,6 @@ export type FishingEvent =
 
 const PLAYER_RECAST_DELAY_CAUGHT = 2500;
 const PLAYER_RECAST_DELAY_LOST = 2500;
-const BLANK_CAST_RECAST_DELAY = 2000;
 
 export class FishingLoop {
 	phase: FishingPhase = 'idle';
@@ -43,6 +42,12 @@ export class FishingLoop {
 	private removeFn: (id: string) => void = () => {};
 	private recastCountdown = 0;
 	private lastComputedBiteTime = 0;
+	private blankPatienceMs = 0;
+	private blankMessageTimer = 0;
+	private blankCastEmitted = false;
+
+	private static readonly BLANK_PATIENCE_DELAY = 30000;
+	private static readonly BLANK_MESSAGE_DURATION = 3000;
 
 	constructor(
 		private tackle: TackleSelection,
@@ -52,6 +57,14 @@ export class FishingLoop {
 		private rng: () => number = Math.random
 	) {
 		this.speciesMap = new Map(speciesList.map((s) => [s.name, s]));
+	}
+
+	get isBlankCasting(): boolean {
+		return this.phase === 'waiting' && this.currentFish === null;
+	}
+
+	get isBlankCastMessageActive(): boolean {
+		return this.blankMessageTimer > 0;
 	}
 
 	updateTackle(tackle: TackleSelection): void {
@@ -70,6 +83,7 @@ export class FishingLoop {
 			if (fish.weightOz < this.tackle.bait.minOz || fish.weightOz > this.tackle.bait.maxOz)
 				return false;
 			if (fish.weightOz < this.tackle.line.minOz) return false;
+			if (fish.weightOz < this.tackle.hook.minOz) return false;
 			return true;
 		});
 
@@ -123,8 +137,10 @@ export class FishingLoop {
 		this.lastComputedBiteTime = 0;
 
 		if (!fish) {
-			this.recastCountdown = BLANK_CAST_RECAST_DELAY;
-			return { type: 'blankCast' };
+			this.blankPatienceMs = 0;
+			this.blankMessageTimer = 0;
+			this.blankCastEmitted = false;
+			return null;
 		}
 
 		this.remainingMs = this.calcBiteTime(fish);
@@ -141,6 +157,33 @@ export class FishingLoop {
 		if (!this.currentFish && this.phase !== 'waiting') return null;
 
 		if (this.phase === 'waiting') {
+			if (!this.currentFish) {
+				this.blankPatienceMs += elapsedMs;
+
+				if (this.blankPatienceMs >= FishingLoop.BLANK_PATIENCE_DELAY && !this.blankCastEmitted) {
+					this.blankCastEmitted = true;
+					this.blankMessageTimer = FishingLoop.BLANK_MESSAGE_DURATION;
+					return { type: 'blankCast' };
+				}
+
+				if (this.blankMessageTimer > 0) {
+					this.blankMessageTimer -= elapsedMs;
+				}
+
+				if (this.blankCastEmitted && this.blankMessageTimer <= 0) {
+					this.blankPatienceMs = 0;
+					this.blankCastEmitted = false;
+					const fish = this.selectFish(this.population);
+					if (fish) {
+						this.currentFish = fish;
+						this.remainingMs = this.calcBiteTime(fish);
+						this.lastComputedBiteTime = this.remainingMs;
+					}
+				}
+
+				return null;
+			}
+
 			if (this.recastCountdown > 0) {
 				this.recastCountdown -= elapsedMs;
 				if (this.recastCountdown <= 0) {
@@ -186,13 +229,16 @@ export class FishingLoop {
 		return null;
 	}
 
-	recast(): void {
+	resetCast(): void {
 		this.phase = 'idle';
 		this.currentFish = null;
 		this.remainingMs = 0;
 		this.biteWindowRemaining = 0;
 		this.biteWindowTotal = 0;
 		this.recastCountdown = 0;
+		this.blankPatienceMs = 0;
+		this.blankMessageTimer = 0;
+		this.blankCastEmitted = false;
 	}
 
 	strike(): FishingEvent | null {
@@ -254,6 +300,8 @@ export class FishingLoop {
 		if (this.phase !== 'netting' || !this.currentFish) return null;
 
 		const fish = this.currentFish;
+		this.removeFn(fish.id);
+		this.population = this.population.filter((f) => f.id !== fish.id);
 		this.caughtFish.push({
 			species: fish.species,
 			classificationLabel: fish.classificationLabel,
@@ -275,5 +323,8 @@ export class FishingLoop {
 		this.remainingMs = 0;
 		this.biteWindowRemaining = 0;
 		this.biteWindowTotal = 0;
+		this.blankPatienceMs = 0;
+		this.blankMessageTimer = 0;
+		this.blankCastEmitted = false;
 	}
 }

@@ -32,6 +32,20 @@
 	let lastEvent = $derived(gameState.lastEvent);
 	let debugMode = $state(false);
 	let intervalId: ReturnType<typeof setInterval> | null = null;
+	let waitSeconds = $state(0);
+
+	$effect(() => {
+		if (playerPhase !== 'waiting') {
+			waitSeconds = 0;
+			return;
+		}
+
+		const id = setInterval(() => {
+			waitSeconds += 0.1;
+		}, 100);
+
+		return () => clearInterval(id);
+	});
 
 	let pegFish = $derived(gameState.getPegPopulation(gameState.playerPeg ?? ''));
 
@@ -54,7 +68,7 @@
 		if (e?.type === 'fishLost') return 'Missed it!';
 		if (e?.type === 'blankCast') return 'Nothing biting yet...';
 
-		if (playerPhase === 'waiting') return 'Line in the water...';
+		if (playerPhase === 'waiting') return `Line in the water (${waitSeconds.toFixed(0)}s)...`;
 		if (playerPhase === 'bite') return 'Fish biting!';
 		if (playerPhase === 'reeling') return 'Reeling in...';
 		if (playerPhase === 'netting') return 'Netting...';
@@ -99,12 +113,13 @@
 	}
 
 	function handleRecast() {
-		gameState.recast();
+		waitSeconds = 0;
+		gameState.resetCast();
 		gameState.cast();
 	}
 
 	function handleChangeTackle() {
-		gameState.recast();
+		gameState.resetCast();
 		goto(tackleUrl);
 	}
 
@@ -373,7 +388,7 @@
 		<div class="w-full max-w-sm">
 			<h3 class="mb-1 text-sm font-semibold text-dark-teal">Catch</h3>
 			<div class="space-y-1">
-				{#each catchList as fish (fish.species + fish.weightOz)}
+				{#each catchList as fish, i (i)}
 					<div
 						class="flex justify-between rounded bg-surface/20 px-3 py-1.5 text-sm text-dark-teal"
 					>

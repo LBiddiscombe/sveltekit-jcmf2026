@@ -29,7 +29,7 @@ export interface FishData {
 	preferredBait: string;
 }
 
-const TIER_WEIGHTS = [0.5, 0.3, 0.15, 0.05];
+const TIER_WEIGHTS = [0.6, 0.28, 0.1, 0.02];
 const CAST_STRENGTHS = ['Short', 'Medium', 'Long'];
 
 let nextId = 0;
@@ -111,7 +111,7 @@ export function populatePeg(
 		const classification = species.classifications[tierIdx];
 		if (!classification) continue;
 
-		const { min, max } = tierWeightBounds(tierIdx, species.classifications, species.record);
+		const { min, max } = tierWeightBounds(tierIdx, species.classifications, species.record * 1.05);
 		const weightOz = Math.round(randomInRange(min, max, rng));
 
 		fish.push({

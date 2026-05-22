@@ -100,6 +100,14 @@ function noopRemove(_id: string) {
 	/* no-op */
 }
 
+function collectRemoveCalls(): { fn: (id: string) => void; ids: string[] } {
+	const ids: string[] = [];
+	return {
+		fn: (id: string) => ids.push(id),
+		ids
+	};
+}
+
 describe('FishingLoop', () => {
 	describe('cast — fish selection', () => {
 		it('selects a fish matching bait, strata, and weight gates', () => {
@@ -111,15 +119,15 @@ describe('FishingLoop', () => {
 			expect(loop.currentFish!.species).toBe('Roach');
 		});
 
-		it('returns blankCast when no fish matches bait', () => {
+		it('returns null when no fish matches bait (blank cast)', () => {
 			const loop = new FishingLoop(baitMismatchTackle, 5, speciesList, false, () => 0.1);
 			const event = loop.cast(population, noopRemove);
-			expect(event).toEqual({ type: 'blankCast' });
+			expect(event).toBeNull();
 			expect(loop.phase).toBe('waiting');
 			expect(loop.currentFish).toBeNull();
 		});
 
-		it('returns blankCast when no fish matches strata', () => {
+		it('returns null when no fish matches strata (blank cast)', () => {
 			const loop = new FishingLoop(
 				{ ...tackle, strata: 'Surface' },
 				5,
@@ -128,27 +136,27 @@ describe('FishingLoop', () => {
 				() => 0.1
 			);
 			const event = loop.cast(population, noopRemove);
-			expect(event).toEqual({ type: 'blankCast' });
+			expect(event).toBeNull();
 		});
 
-		it('returns blankCast when fish is outside bait minOz/maxOz (BaitRangeGate)', () => {
+		it('returns null when fish is outside bait minOz/maxOz (BaitRangeGate)', () => {
 			const smallBaitTackle: TackleSelection = {
 				...tackle,
 				bait: { name: 'maggot', image: 'maggot.png', minOz: 100, maxOz: 200 }
 			};
 			const loop = new FishingLoop(smallBaitTackle, 5, speciesList, false, () => 0.1);
 			const event = loop.cast(population, noopRemove);
-			expect(event).toEqual({ type: 'blankCast' });
+			expect(event).toBeNull();
 		});
 
-		it('returns blankCast when fish is below line minOz (LineShyGate)', () => {
+		it('returns null when fish is below line minOz (LineShyGate)', () => {
 			const heavyLineTackle: TackleSelection = {
 				...tackle,
 				line: { name: '15 lb', image: 'line.png', size: 240, minOz: 100, maxOz: 1100, deter: 0.5 }
 			};
 			const loop = new FishingLoop(heavyLineTackle, 5, speciesList, false, () => 0.1);
 			const event = loop.cast(population, noopRemove);
-			expect(event).toEqual({ type: 'blankCast' });
+			expect(event).toBeNull();
 		});
 
 		it('uses RNG to pick among candidates', () => {
@@ -191,18 +199,33 @@ describe('FishingLoop', () => {
 			expect(loop.phase).toBe('lost');
 		});
 
-		it('auto-recasts after blankCast delay', () => {
+		it('emits blankCast after patience delay', () => {
 			const loop = new FishingLoop(baitMismatchTackle, 5, speciesList, false, () => 0);
 			loop.cast(population, noopRemove);
 			expect(loop.phase).toBe('waiting');
+			expect(loop.currentFish).toBeNull();
 
-			const event = loop.tick(1999);
+			const event = loop.tick(29999);
 			expect(event).toBeNull();
-			expect(loop.phase).toBe('waiting');
 
 			const nextEvent = loop.tick(1);
 			expect(nextEvent).toEqual({ type: 'blankCast' });
-			expect(loop.phase).toBe('waiting');
+			expect(loop.currentFish).toBeNull();
+		});
+
+		it('retries selectFish after message duration and can find fish with updated tackle', () => {
+			const loop = new FishingLoop(baitMismatchTackle, 5, speciesList, false, () => 0.1);
+			loop.cast(population, noopRemove);
+			expect(loop.currentFish).toBeNull();
+
+			loop.tick(30000); // patience reached → blankCast emitted
+			expect(loop.currentFish).toBeNull();
+
+			loop.updateTackle(tackle); // now tackle matches
+
+			const retryEvent = loop.tick(3000); // message duration expires → retry
+			expect(retryEvent).toBeNull();
+			expect(loop.currentFish).not.toBeNull();
 		});
 	});
 
@@ -210,7 +233,7 @@ describe('FishingLoop', () => {
 		it('resets to idle', () => {
 			const loop = new FishingLoop(tackle, 5, speciesList, false, () => 0);
 			loop.cast(population, noopRemove);
-			loop.recast();
+			loop.resetCast();
 			expect(loop.phase).toBe('idle');
 			expect(loop.currentFish).toBeNull();
 			expect(loop.remainingMs).toBe(0);
@@ -246,19 +269,16 @@ describe('FishingLoop', () => {
 			expect(loop.phase).toBe('lost');
 		});
 
-		it('returns fishLost when fish is below hook minOz', () => {
+		it('returns null when all fish are below hook minOz (blank cast)', () => {
 			const bigHookTackle: TackleSelection = {
 				...tackle,
 				hook: { name: '2', image: 'hook.png', size: 2, minOz: 100, maxOz: 1100, deter: 0.5 }
 			};
 			const loop = new FishingLoop(bigHookTackle, 5, speciesList, false, () => 0.1);
-			loop.cast(population, noopRemove);
-			loop.tick(loop.remainingMs);
-			expect(loop.phase).toBe('bite');
-
-			const event = loop.strike();
-			expect(event).toEqual({ type: 'fishLost' });
-			expect(loop.phase).toBe('lost');
+			const event = loop.cast(population, noopRemove);
+			expect(event).toBeNull();
+			expect(loop.phase).toBe('waiting');
+			expect(loop.currentFish).toBeNull();
 		});
 
 		it('bot strike fails on unfavourable RNG (skill roll)', () => {
@@ -394,6 +414,32 @@ describe('FishingLoop', () => {
 		it('returns null if not in netting phase', () => {
 			const loop = new FishingLoop(tackle, 5, speciesList, false, () => 0);
 			expect(loop.net()).toBeNull();
+		});
+
+		it('calls removeFn with the caught fish id', () => {
+			const { fn, ids } = collectRemoveCalls();
+			const loop = new FishingLoop(tackle, 5, speciesList, false, () => 0.1);
+			loop.cast(population, fn);
+			loop.tick(loop.remainingMs);
+			loop.strike();
+			loop.reel();
+			loop.net();
+			expect(ids).toContain('fish-1');
+		});
+
+		it('removes caught fish from subsequent selectFish candidates', () => {
+			const { fn, ids } = collectRemoveCalls();
+			const loop = new FishingLoop(tackle, 5, speciesList, false, () => 0.1);
+			loop.cast(population, fn);
+			loop.tick(loop.remainingMs);
+			loop.strike();
+			loop.reel();
+			loop.net();
+			expect(ids).toContain('fish-1');
+
+			// After removal, fish-1 should be gone from the population used by cast()
+			const filtered = population.filter((f) => !ids.includes(f.id));
+			expect(filtered.length).toBe(population.length - 1);
 		});
 	});
 

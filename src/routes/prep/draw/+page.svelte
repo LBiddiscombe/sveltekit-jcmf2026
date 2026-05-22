@@ -89,7 +89,7 @@
 
 		{#if playerPeg && playerRevealed}
 			<div
-				class="animate-fade-in-up flex w-full max-w-sm items-start gap-3 rounded-xl border-2 border-primary bg-surface/30 p-3"
+				class="animate-fade-in-up flex w-full max-w-sm items-start gap-3 rounded-xl border-2 border-primary bg-white p-3"
 			>
 				<div class="h-20 w-20 shrink-0 overflow-hidden rounded-lg bg-surface/40 sm:h-24 sm:w-24">
 					{#if pegImg(playerPeg.image)}

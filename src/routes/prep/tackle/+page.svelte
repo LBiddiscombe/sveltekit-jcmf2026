@@ -29,17 +29,41 @@
 	let isPole = $derived(tackle.rod.name === 'Pole');
 	let isLeger = $derived(tackle.rod.name === 'Leger');
 
-	const strataOptions = [
-		{ name: 'Top', image: '' },
-		{ name: 'Middle', image: '' },
-		{ name: 'Bottom', image: '' }
-	];
+	const layers = ['Top', 'Middle', 'Bottom'];
+
+	const strataOptions = layers.map((name) => ({ name, image: '' }));
+
+	function strataIcon(name: string): string {
+		return `<svg viewBox="0 0 48 48" class="h-16 w-16">${layers
+			.map(
+				(layer, i) =>
+					`<rect x="14" y="${8 + i * 12}" width="20" height="8" rx="2" fill="currentColor" opacity="${layer === name ? 1 : 0.25}" />`
+			)
+			.join('')}</svg>`;
+	}
 
 	const castOptions = [
 		{ name: 'Short', image: '' },
 		{ name: 'Medium', image: '' },
 		{ name: 'Long', image: '' }
 	];
+
+	const hookSizes = box.hooks.map((h) => h.size);
+	const hookMinSize = Math.min(...hookSizes);
+	const hookMaxSize = Math.max(...hookSizes);
+	const hookScales: Record<string, number> = Object.fromEntries(
+		box.hooks.map((h) => [
+			h.name,
+			0.2 + 0.8 * ((hookMaxSize - h.size) / (hookMaxSize - hookMinSize))
+		])
+	);
+
+	const castLengths: Record<string, number> = { Short: 28, Medium: 36, Long: 44 };
+
+	function castIcon(name: string): string {
+		const len = castLengths[name];
+		return `<svg viewBox="0 0 48 48" class="h-16 w-16"><circle cx="8" cy="24" r="4" fill="currentColor" /><line x1="12" y1="24" x2="${len}" y2="24" stroke="currentColor" stroke-width="4" stroke-linecap="round" /></svg>`;
+	}
 
 	function selectRod(rod: Rod) {
 		tackle.rod = rod;
@@ -319,6 +343,7 @@
 		images={tackleImages}
 		imageBasePath="/src/lib/assets/images/tackle"
 		selectedName={tackle.hook.name}
+		itemScales={hookScales}
 		onselect={(item) => selectHook(item as Hook)}
 		onclose={closeModal}
 	/>
@@ -343,6 +368,7 @@
 		images={{}}
 		imageBasePath=""
 		selectedName={tackle.strata}
+		itemIcons={Object.fromEntries(layers.map((l) => [l, strataIcon(l)]))}
 		onselect={(item) => selectStrata(item)}
 		onclose={closeModal}
 	/>
@@ -355,6 +381,7 @@
 		images={{}}
 		imageBasePath=""
 		selectedName={tackle.castStrength}
+		itemIcons={Object.fromEntries(castOptions.map((o) => [o.name, castIcon(o.name)]))}
 		onselect={(item) => selectCastStrength(item)}
 		onclose={closeModal}
 	/>
