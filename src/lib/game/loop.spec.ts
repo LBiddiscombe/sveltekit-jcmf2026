@@ -227,6 +227,52 @@ describe('FishingLoop', () => {
 			expect(retryEvent).toBeNull();
 			expect(loop.currentFish).not.toBeNull();
 		});
+
+		it('calls redistributeFn before retry after blank message expires', () => {
+			const redistributeCalls: number[] = [];
+			const loop = new FishingLoop(
+				baitMismatchTackle,
+				5,
+				speciesList,
+				false,
+				() => 0.1,
+				() => redistributeCalls.push(1)
+			);
+			loop.cast(population, noopRemove);
+			expect(loop.currentFish).toBeNull();
+
+			loop.tick(30000); // patience → blankCast emitted
+
+			loop.tick(3000); // message expires → retry
+			expect(redistributeCalls).toHaveLength(1);
+		});
+
+		it('can find a fish after redistribution without tackle change', () => {
+			const localPopulation: FishData[] = population.map((f) => ({ ...f }));
+			const forceMatchRedistribute = () => {
+				localPopulation.forEach((f) => {
+					f.strata = 'Bottom';
+					f.castStrength = 'Medium';
+					f.preferredBait = 'boilie';
+				});
+			};
+			const loop = new FishingLoop(
+				baitMismatchTackle,
+				5,
+				speciesList,
+				false,
+				() => 0.1,
+				forceMatchRedistribute
+			);
+			loop.cast(localPopulation, noopRemove);
+			expect(loop.currentFish).toBeNull();
+
+			loop.tick(30000); // patience → blankCast emitted
+
+			const retryEvent = loop.tick(3000); // message expires → redistribute → re-select
+			expect(retryEvent).toBeNull();
+			expect(loop.currentFish).not.toBeNull();
+		});
 	});
 
 	describe('recast', () => {

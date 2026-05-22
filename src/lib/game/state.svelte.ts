@@ -2,7 +2,7 @@ import { SvelteMap } from 'svelte/reactivity';
 import { baits, bots, venues, species } from '$lib/data';
 import type { Venue, Lake, TackleSelection } from '$lib/data';
 import type { GameMode } from './prep-flow';
-import { populatePeg, resetIds } from './population';
+import { populatePeg, reassignDynamicProperties, resetIds } from './population';
 import type { FishData } from './population';
 import { FishingLoop } from './loop';
 import type { FishingEvent, FishingPhase } from './loop';
@@ -269,7 +269,17 @@ export class GameState {
 			return;
 		}
 
-		this.playerLoop = new FishingLoop(player.tackle, player.skill, species, false);
+		this.playerLoop = new FishingLoop(
+			player.tackle,
+			player.skill,
+			species,
+			false,
+			undefined,
+			() => {
+				const pop = this.pegPopulations.get(this.playerPeg ?? '');
+				if (pop) reassignDynamicProperties(pop, species);
+			}
+		);
 		this.syncPlayerState();
 	}
 

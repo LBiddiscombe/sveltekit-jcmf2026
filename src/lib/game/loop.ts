@@ -45,6 +45,7 @@ export class FishingLoop {
 	private blankPatienceMs = 0;
 	private blankMessageTimer = 0;
 	private blankCastEmitted = false;
+	private redistributeFn: (() => void) | undefined;
 
 	private static readonly BLANK_PATIENCE_DELAY = 30000;
 	private static readonly BLANK_MESSAGE_DURATION = 3000;
@@ -54,8 +55,10 @@ export class FishingLoop {
 		private skill: number,
 		speciesList: Species[],
 		private isBot: boolean,
-		private rng: () => number = Math.random
+		private rng: () => number = Math.random,
+		redistributeFn?: () => void
 	) {
+		this.redistributeFn = redistributeFn;
 		this.speciesMap = new Map(speciesList.map((s) => [s.name, s]));
 	}
 
@@ -173,6 +176,7 @@ export class FishingLoop {
 				if (this.blankCastEmitted && this.blankMessageTimer <= 0) {
 					this.blankPatienceMs = 0;
 					this.blankCastEmitted = false;
+					this.redistributeFn?.();
 					const fish = this.selectFish(this.population);
 					if (fish) {
 						this.currentFish = fish;

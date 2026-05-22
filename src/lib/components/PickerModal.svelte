@@ -87,6 +87,7 @@
 						{/if}
 					{:else if itemIcons?.[item.name]}
 						<div class="flex h-16 w-16 items-center justify-center text-muted">
+							<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 							{@html itemIcons[item.name]}
 						</div>
 					{/if}

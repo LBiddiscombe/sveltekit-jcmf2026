@@ -1,5 +1,12 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { populatePeg, fishMatchScore, weightedSelectIndex, resetIds } from './population';
+import {
+	populatePeg,
+	reassignDynamicProperties,
+	fishMatchScore,
+	weightedSelectIndex,
+	resetIds
+} from './population';
+import type { FishData } from './population';
 import type { EnvironmentalFeatures, Lake, Peg, Species } from '$lib/data';
 
 const mockSpecies: Species[] = [
@@ -185,6 +192,90 @@ describe('populatePeg', () => {
 		for (const f of fish) {
 			expect(f.weightOz).toBeGreaterThanOrEqual(1);
 		}
+	});
+});
+
+describe('reassignDynamicProperties', () => {
+	it('sets strata, castStrength, and preferredBait on existing fish', () => {
+		const fish: FishData[] = [
+			{
+				id: 'fish-1',
+				species: 'Roach',
+				strata: '',
+				classificationLabel: 'Small',
+				tierIndex: 0,
+				weightOz: 4,
+				castStrength: '',
+				preferredBait: ''
+			}
+		];
+
+		reassignDynamicProperties(fish, mockSpecies, () => 0.1);
+
+		expect(fish[0].strata).toBe('Top');
+		expect(fish[0].castStrength).toBe('Short');
+		expect(fish[0].preferredBait).toBe('');
+	});
+
+	it('sets preferredBait from the fish classification when available', () => {
+		const species: Species[] = [
+			{
+				name: 'Roach',
+				record: 68,
+				strata: ['Bottom'],
+				description: '',
+				preferences: { flow: 0.5, clarity: 0.5, substrate: 0.5, vegetation: 0.5, shelter: 0.5 },
+				tolerances: {},
+				classifications: [
+					{ label: 'Small', maxOz: 8, preferredBaits: ['maggot', 'caster'] },
+					{ label: '', maxOz: 34, preferredBaits: ['maggot'] },
+					{ label: 'Specimen', maxOz: 51, preferredBaits: ['worm'] },
+					{ label: 'Monster', maxOz: Infinity, preferredBaits: ['boilie'] }
+				]
+			}
+		];
+
+		const fish: FishData[] = [
+			{
+				id: 'fish-1',
+				species: 'Roach',
+				strata: '',
+				classificationLabel: 'Small',
+				tierIndex: 0,
+				weightOz: 4,
+				castStrength: '',
+				preferredBait: ''
+			},
+			{
+				id: 'fish-2',
+				species: 'Roach',
+				strata: '',
+				classificationLabel: '',
+				tierIndex: 1,
+				weightOz: 20,
+				castStrength: '',
+				preferredBait: ''
+			},
+			{
+				id: 'fish-3',
+				species: 'Roach',
+				strata: '',
+				classificationLabel: 'Specimen',
+				tierIndex: 2,
+				weightOz: 40,
+				castStrength: '',
+				preferredBait: ''
+			}
+		];
+
+		reassignDynamicProperties(fish, species, () => 0.1);
+
+		// tierIndex 0 → preferredBaits: ['maggot', 'caster'] → rng=0.1, floor(0.1*2)=0 → 'maggot'
+		expect(fish[0].preferredBait).toBe('maggot');
+		// tierIndex 1 → preferredBaits: ['maggot'] → floor(0.1*1)=0 → 'maggot'
+		expect(fish[1].preferredBait).toBe('maggot');
+		// tierIndex 2 → preferredBaits: ['worm'] → floor(0.1*1)=0 → 'worm'
+		expect(fish[2].preferredBait).toBe('worm');
 	});
 });
 

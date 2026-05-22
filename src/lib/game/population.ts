@@ -82,6 +82,27 @@ function tierWeightBounds(
 	return { min: Math.min(min, max), max };
 }
 
+export function reassignDynamicProperties(
+	population: FishData[],
+	speciesList: Species[],
+	rng: () => number = Math.random
+): void {
+	const speciesMap = new Map(speciesList.map((s) => [s.name, s]));
+	for (const fish of population) {
+		const species = speciesMap.get(fish.species);
+		if (!species) continue;
+		const classification = species.classifications[fish.tierIndex];
+		if (!classification) continue;
+
+		fish.strata = species.strata[Math.floor(rng() * species.strata.length)];
+		fish.castStrength = CAST_STRENGTHS[Math.floor(rng() * CAST_STRENGTHS.length)];
+		fish.preferredBait =
+			classification.preferredBaits.length > 0
+				? classification.preferredBaits[Math.floor(rng() * classification.preferredBaits.length)]
+				: '';
+	}
+}
+
 export function populatePeg(
 	lake: Lake,
 	peg: Peg,
@@ -117,17 +138,15 @@ export function populatePeg(
 		fish.push({
 			id: generateId(),
 			species: species.name,
-			strata: species.strata[Math.floor(rng() * species.strata.length)],
+			strata: '',
 			classificationLabel: classification.label,
 			tierIndex: tierIdx,
 			weightOz,
-			castStrength: CAST_STRENGTHS[Math.floor(rng() * CAST_STRENGTHS.length)],
-			preferredBait:
-				classification.preferredBaits.length > 0
-					? classification.preferredBaits[Math.floor(rng() * classification.preferredBaits.length)]
-					: ''
+			castStrength: '',
+			preferredBait: ''
 		});
 	}
 
+	reassignDynamicProperties(fish, speciesList, rng);
 	return fish;
 }
