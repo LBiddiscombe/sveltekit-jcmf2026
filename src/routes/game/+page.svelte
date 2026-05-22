@@ -41,6 +41,7 @@
 		}
 
 		const id = setInterval(() => {
+			if (debugMode) return;
 			waitSeconds += 0.1;
 		}, 100);
 
@@ -56,6 +57,14 @@
 	);
 
 	let pulseDuration = $derived(`${biteWindowRatio * 2 + 0.5}s`);
+
+	let matchTimeDisplay = $derived.by(() => {
+		const totalSec = Math.ceil(gameState.timeRemainingSeconds);
+		if (totalSec <= 0) return '';
+		const m = Math.floor(totalSec / 60);
+		const s = totalSec % 60;
+		return `${m}m ${s}s`;
+	});
 
 	let statusMessage = $derived.by(() => {
 		const e = lastEvent;
@@ -186,6 +195,11 @@
 			<p class="text-xs text-white/60">{lakeName}</p>
 			<p class="text-lg font-bold text-white">Peg {pegName}</p>
 		</div>
+		{#if mode === 'match' && matchTimeDisplay}
+			<div class="absolute top-3 right-3 rounded-lg bg-black/40 px-3 py-1.5">
+				<p class="text-sm font-bold text-white/90">{matchTimeDisplay}</p>
+			</div>
+		{/if}
 	</div>
 
 	<!-- Phase status -->

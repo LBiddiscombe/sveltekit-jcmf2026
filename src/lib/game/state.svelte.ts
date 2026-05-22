@@ -380,6 +380,10 @@ export class GameState {
 	}
 
 	tick(elapsedMs: number): FishingEvent | null {
+		if (this.timeRemainingSeconds > 0) {
+			this.timeRemainingSeconds = Math.max(0, this.timeRemainingSeconds - elapsedMs / 1000);
+		}
+
 		const event = this.playerLoop?.tick(elapsedMs) ?? null;
 		if (event) this.lastEvent = event;
 		this.syncPlayerState();
@@ -389,7 +393,7 @@ export class GameState {
 			if (this.playerLoop?.currentFish) {
 				this.lastEvent = null;
 			} else if (
-				this.lastEvent?.type === 'blankCast' &&
+				this.lastEvent?.type !== 'blankCast' ||
 				!this.playerLoop?.isBlankCastMessageActive
 			) {
 				this.lastEvent = null;
