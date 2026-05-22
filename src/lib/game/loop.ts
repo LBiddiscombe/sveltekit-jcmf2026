@@ -13,6 +13,7 @@ export type FishingPhase =
 	| 'bite'
 	| 'striking'
 	| 'reeling'
+	| 'landing'
 	| 'caught'
 	| 'lost'
 	| 'finished';
@@ -23,7 +24,10 @@ export type FishingEvent =
 	| { type: 'fishCaught'; species: string; classificationLabel: string; weightOz: number }
 	| { type: 'fishLost' }
 	| { type: 'hookBroken' }
-	| { type: 'blankCast' };
+	| { type: 'blankCast' }
+	| { type: 'fishGotAway' }
+	| { type: 'lineBroke' }
+	| { type: 'tooMuchSlackLine' };
 
 const PLAYER_RECAST_DELAY_CAUGHT = 2500;
 const PLAYER_RECAST_DELAY_LOST = 2500;
@@ -40,6 +44,10 @@ export class FishingLoop {
 	caughtFish: CaughtFish[] = [];
 	biteWindowRemaining = 0;
 	biteWindowTotal = 0;
+	reelTimerMs = 0;
+	reelTimerRemaining = 0;
+	landingWindowMs = 0;
+	landingWindowRemaining = 0;
 
 	private speciesMap: Map<string, Species>;
 	private population: FishData[] = [];
@@ -97,6 +105,16 @@ export class FishingLoop {
 
 	private calcBiteWindow(biteTime: number): number {
 		return Math.max(1000, Math.min(5000, Math.floor(biteTime * 0.3)));
+	}
+
+	private calcReelDuration(fish: FishData): number {
+		const ratio = Math.min(1, fish.weightOz / this.tackle.line.maxOz);
+		return Math.floor(3000 + ratio * 7000);
+	}
+
+	private calcLandingWindow(fish: FishData): number {
+		const ratio = Math.min(1, fish.weightOz / this.tackle.line.maxOz);
+		return Math.floor(2000 - ratio * 1000);
 	}
 
 	private selectFish(population: FishData[]): FishData | null {
@@ -282,6 +300,25 @@ export class FishingLoop {
 				return null;
 			}
 
+			this.reelTimerRemaining -= elapsedMs;
+			if (this.reelTimerRemaining <= 0 && this.currentFish) {
+				this.phase = 'landing';
+				this.landingWindowMs = this.calcLandingWindow(this.currentFish);
+				this.landingWindowRemaining = this.landingWindowMs;
+			}
+			return null;
+		}
+
+		if (this.phase === 'landing') {
+			if (this.isBot) return null;
+
+			this.landingWindowRemaining -= elapsedMs;
+			if (this.landingWindowRemaining <= 0) {
+				this.phase = 'lost';
+				this.blankCycleCount = 0;
+				this.recastCountdown = PLAYER_RECAST_DELAY_LOST;
+				return { type: 'tooMuchSlackLine' };
+			}
 			return null;
 		}
 
@@ -306,6 +343,10 @@ export class FishingLoop {
 		this.remainingMs = 0;
 		this.biteWindowRemaining = 0;
 		this.biteWindowTotal = 0;
+		this.reelTimerMs = 0;
+		this.reelTimerRemaining = 0;
+		this.landingWindowMs = 0;
+		this.landingWindowRemaining = 0;
 		this.recastCountdown = 0;
 		this.blankPatienceMs = 0;
 		this.blankMessageTimer = 0;
@@ -341,6 +382,10 @@ export class FishingLoop {
 		this.biteWindowRemaining = 0;
 		this.biteWindowTotal = 0;
 		this.phase = 'reeling';
+		this.reelTimerMs = this.calcReelDuration(fish);
+		this.reelTimerRemaining = this.reelTimerMs;
+		this.landingWindowMs = 0;
+		this.landingWindowRemaining = 0;
 		if (this.isBot) {
 			this.autoActionTimer = skillDelay(this.skill, this.rng);
 		}
@@ -348,7 +393,20 @@ export class FishingLoop {
 	}
 
 	reel(): FishingEvent | null {
-		if (this.phase !== 'reeling' || !this.currentFish) return null;
+		if (!this.currentFish) return null;
+
+		if (this.phase === 'reeling') {
+			if (!this.isBot) {
+				this.phase = 'lost';
+				this.blankCycleCount = 0;
+				this.biteWindowRemaining = 0;
+				this.biteWindowTotal = 0;
+				this.recastCountdown = PLAYER_RECAST_DELAY_LOST;
+				return { type: 'fishGotAway' };
+			}
+		} else if (this.phase !== 'landing') {
+			return null;
+		}
 
 		const capacity = this.tackle.line.maxOz;
 		const success = this.currentFish.weightOz <= capacity || this.rng() < 0.3;
@@ -356,7 +414,7 @@ export class FishingLoop {
 			this.phase = 'lost';
 			this.blankCycleCount = 0;
 			this.recastCountdown = this.isBot ? 0 : PLAYER_RECAST_DELAY_LOST;
-			return { type: 'fishLost' };
+			return this.isBot ? { type: 'fishLost' } : { type: 'lineBroke' };
 		}
 
 		const fish = this.currentFish;
@@ -384,6 +442,10 @@ export class FishingLoop {
 		this.remainingMs = 0;
 		this.biteWindowRemaining = 0;
 		this.biteWindowTotal = 0;
+		this.reelTimerMs = 0;
+		this.reelTimerRemaining = 0;
+		this.landingWindowMs = 0;
+		this.landingWindowRemaining = 0;
 		this.blankPatienceMs = 0;
 		this.blankMessageTimer = 0;
 		this.blankCastEmitted = false;

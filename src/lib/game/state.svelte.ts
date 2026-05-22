@@ -61,6 +61,10 @@ export class GameState {
 	playerRemainingMs = $state(0);
 	playerBiteWindowRemaining = $state(0);
 	playerBiteWindowTotal = $state(0);
+	playerReelTimerMs = $state(0);
+	playerReelTimerRemaining = $state(0);
+	playerLandingWindowMs = $state(0);
+	playerLandingWindowRemaining = $state(0);
 	playerCaughtCount = $state(0);
 	playerBlankCasting = $state(false);
 	lastEvent = $state<FishingEvent | null>(null);
@@ -97,6 +101,10 @@ export class GameState {
 		this.playerRemainingMs = 0;
 		this.playerBiteWindowRemaining = 0;
 		this.playerBiteWindowTotal = 0;
+		this.playerReelTimerMs = 0;
+		this.playerReelTimerRemaining = 0;
+		this.playerLandingWindowMs = 0;
+		this.playerLandingWindowRemaining = 0;
 		this.playerCaughtCount = 0;
 		this.playerBlankCasting = false;
 		this.lastEvent = null;
@@ -332,6 +340,10 @@ export class GameState {
 		this.playerRemainingMs = this.playerLoop?.remainingMs ?? 0;
 		this.playerBiteWindowRemaining = this.playerLoop?.biteWindowRemaining ?? 0;
 		this.playerBiteWindowTotal = this.playerLoop?.biteWindowTotal ?? 0;
+		this.playerReelTimerMs = this.playerLoop?.reelTimerMs ?? 0;
+		this.playerReelTimerRemaining = this.playerLoop?.reelTimerRemaining ?? 0;
+		this.playerLandingWindowMs = this.playerLoop?.landingWindowMs ?? 0;
+		this.playerLandingWindowRemaining = this.playerLoop?.landingWindowRemaining ?? 0;
 		this.playerCaughtCount = this.playerLoop?.caughtFish.length ?? 0;
 		this.playerBlankCasting = this.playerLoop?.isBlankCasting ?? false;
 	}

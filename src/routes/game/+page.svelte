@@ -50,13 +50,22 @@
 
 	let pegFish = $derived(gameState.getPegPopulation(gameState.playerPeg ?? ''));
 
-	let biteWindowRatio = $derived(
-		playerPhase === 'bite' && gameState.playerBiteWindowTotal > 0
-			? gameState.playerBiteWindowRemaining / gameState.playerBiteWindowTotal
-			: 1
+	let reelProgress = $derived(
+		gameState.playerReelTimerMs > 0
+			? 1 - gameState.playerReelTimerRemaining / gameState.playerReelTimerMs
+			: 0
 	);
 
-	let pulseDuration = $derived(`${biteWindowRatio * 2 + 0.5}s`);
+	let reelGradientStyle = $derived.by(() => {
+		if (playerPhase !== 'reeling' && playerPhase !== 'landing') return '';
+		const p = playerPhase === 'landing' ? 1 : reelProgress;
+		const w = 110 - p * 30;
+		const h = 90 - p * 20;
+		const clear = 92 - p * 42;
+		const dark = 0.25 + p * 0.25;
+		const edge = 97 - p * 19;
+		return `radial-gradient(ellipse ${w}% ${h}% at 50% 100%, transparent ${clear}%, rgba(0,0,0,${dark}) ${edge}%)`;
+	});
 
 	let matchTimeDisplay = $derived.by(() => {
 		const totalSec = Math.ceil(gameState.timeRemainingSeconds);
@@ -76,10 +85,14 @@
 		if (e?.type === 'biteExpired') return 'Fish lost interest!';
 		if (e?.type === 'fishLost') return 'Missed it!';
 		if (e?.type === 'blankCast') return 'Nothing biting yet...';
+		if (e?.type === 'fishGotAway') return 'Fish got away!';
+		if (e?.type === 'lineBroke') return 'Line broke!';
+		if (e?.type === 'tooMuchSlackLine') return 'Too much slack line!';
 
 		if (playerPhase === 'waiting') return `Line in the water (${waitSeconds.toFixed(0)}s)...`;
 		if (playerPhase === 'bite') return 'Fish biting!';
 		if (playerPhase === 'reeling') return 'Reeling in...';
+		if (playerPhase === 'landing') return 'Strike now!';
 		if (playerPhase === 'striking') return 'Striking...';
 		if (playerPhase === 'idle') return 'Ready';
 
@@ -127,17 +140,15 @@
 		goto(tackleUrl);
 	}
 
+	function handlePegClick() {
+		if (playerPhase === 'bite') handleStrike();
+		else if (playerPhase === 'landing') handleReel();
+	}
+
 	function toggleDebug() {
 		if (debugMode) {
 			intervalId = setInterval(() => {
-				if (
-					gameState.playerPhase === 'waiting' ||
-					gameState.playerPhase === 'bite' ||
-					gameState.playerPhase === 'caught' ||
-					gameState.playerPhase === 'lost'
-				) {
-					gameState.tick(100);
-				}
+				gameState.tick(100);
 			}, 100);
 			debugMode = false;
 		} else {
@@ -148,6 +159,12 @@
 			debugMode = true;
 		}
 	}
+
+	$effect(() => {
+		if (gameState.phase === 'results') {
+			goto('/results');
+		}
+	});
 
 	onMount(() => {
 		if (gameState.playerPhase === 'idle') {
@@ -160,20 +177,14 @@
 			const p = gameState.playerPhase;
 			if (p === 'bite') handleStrike();
 			else if (p === 'reeling') handleReel();
+			else if (p === 'landing') handleReel();
 			else if (p === 'waiting') handleRecast();
 		}
 
 		document.addEventListener('keydown', onKeydown);
 
 		intervalId = setInterval(() => {
-			if (
-				gameState.playerPhase === 'waiting' ||
-				gameState.playerPhase === 'bite' ||
-				gameState.playerPhase === 'caught' ||
-				gameState.playerPhase === 'lost'
-			) {
-				gameState.tick(100);
-			}
+			gameState.tick(100);
 		}, 100);
 
 		return () => {
@@ -184,9 +195,19 @@
 </script>
 
 <div class="flex min-h-dvh flex-col items-center gap-4 p-4">
+	<!-- svelte-ignore a11y_no_noninteractive_tabindex -->
 	<!-- Peg image header -->
-	<div class="relative w-full overflow-hidden rounded-xl bg-surface/20 sm:max-w-sm">
-		<div class="aspect-square">
+	<div
+		class="relative w-full overflow-hidden rounded-xl bg-surface/20 sm:max-w-sm
+			{playerPhase === 'bite' || playerPhase === 'landing' ? 'cursor-pointer' : ''}"
+		class:strike-glow={playerPhase === 'bite'}
+		class:land-glow={playerPhase === 'landing'}
+		onclick={handlePegClick}
+		onkeydown={(e) => e.key === 'Enter' && handlePegClick()}
+		role={playerPhase === 'bite' || playerPhase === 'landing' ? 'button' : undefined}
+		tabindex={playerPhase === 'bite' || playerPhase === 'landing' ? 0 : undefined}
+	>
+		<div class="relative aspect-square">
 			{#if selectedPegData?.image && pegImg(selectedPegData.image)}
 				<img src={pegImg(selectedPegData.image)} alt="" class="h-full w-full object-contain" />
 			{:else}
@@ -195,6 +216,12 @@
 						<span class="text-6xl font-bold text-muted">{pegName}</span>
 					{/if}
 				</div>
+			{/if}
+			{#if playerPhase === 'reeling' || playerPhase === 'landing'}
+				<div
+					class="pointer-events-none absolute inset-0"
+					style="background: {reelGradientStyle}"
+				></div>
 			{/if}
 		</div>
 		<div class="absolute top-3 left-3 rounded-lg bg-black/40 px-2 py-1">
@@ -219,9 +246,11 @@
 						? 'animate-ping bg-red-500'
 						: playerPhase === 'reeling'
 							? 'bg-green-500'
-							: playerPhase === 'caught'
-								? 'bg-blue-500'
-								: 'bg-muted'}"
+							: playerPhase === 'landing'
+								? 'animate-ping bg-yellow-400'
+								: playerPhase === 'caught'
+									? 'bg-blue-500'
+									: 'bg-muted'}"
 			></span>
 			<span class="text-sm font-medium text-dark-teal">{statusMessage}</span>
 		</div>
@@ -250,20 +279,13 @@
 				Recast
 			</button>
 		{:else if playerPhase === 'bite'}
-			<button
-				onclick={handleStrike}
-				style="--pulse-duration: {pulseDuration}; opacity: {Math.max(biteWindowRatio, 0.15)}"
-				class="bite-pulse inline-flex min-h-[52px] w-full cursor-pointer items-center justify-center rounded bg-red-600 px-8 py-3 text-lg font-bold text-white hover:bg-red-700"
-			>
-				STRIKE!
-			</button>
+			<p class="text-sm text-muted">Click the peg or press Space to strike</p>
 		{:else if playerPhase === 'reeling'}
-			<button
-				onclick={handleReel}
-				class="inline-flex min-h-[48px] w-full cursor-pointer items-center justify-center rounded bg-primary px-8 py-3 text-lg font-bold text-white hover:bg-primary/80"
-			>
-				Reel
-			</button>
+			<p class="text-sm text-muted">
+				Wait for the landing window — pressing Space early loses the fish
+			</p>
+		{:else if playerPhase === 'landing'}
+			<p class="text-sm text-muted">Click the peg or press Space to land!</p>
 		{:else if playerPhase === 'caught' || playerPhase === 'lost'}
 			<div
 				class="w-full rounded-xl border p-4 text-center {playerPhase === 'caught'
@@ -427,17 +449,31 @@
 </div>
 
 <style>
-	.bite-pulse {
-		animation: bite-pulse var(--pulse-duration, 2s) ease-in-out infinite;
+	.strike-glow {
+		animation: strike-breathe 1.5s ease-in-out infinite;
 	}
 
-	@keyframes bite-pulse {
+	@keyframes strike-breathe {
 		0%,
 		100% {
-			opacity: var(--pulse-opacity, 1);
+			box-shadow: 0 0 8px 4px rgba(220, 38, 38, 0.7);
 		}
 		50% {
-			opacity: calc(var(--pulse-opacity, 1) * 0.5);
+			box-shadow: 0 0 30px 15px rgba(220, 38, 38, 0.3);
+		}
+	}
+
+	.land-glow {
+		animation: land-breathe 0.8s ease-in-out infinite;
+	}
+
+	@keyframes land-breathe {
+		0%,
+		100% {
+			box-shadow: 0 0 8px 4px rgba(212, 175, 55, 0.8);
+		}
+		50% {
+			box-shadow: 0 0 30px 20px rgba(212, 175, 55, 0.4);
 		}
 	}
 </style>

@@ -8,7 +8,7 @@
 	let selectedPeg = $state<string | null>(gameState.playerPeg ?? null);
 	let selectedPegData = $derived(pegs.find((p) => p.name === selectedPeg) ?? null);
 
-	const timePresets = [5, 10, 20, 60];
+	const timePresets = [1, 5, 10, 20, 30, 60];
 	let selectedMinutes = $state<number | null>(null);
 
 	const pegImages = import.meta.glob<string>('$lib/assets/images/pegs/*.jpeg', {
