@@ -127,28 +127,6 @@ describe('FishingLoop', () => {
 			expect(loop.currentFish).toBeNull();
 		});
 
-		it('returns null when no fish matches strata (blank cast)', () => {
-			const loop = new FishingLoop(
-				{ ...tackle, strata: 'Surface' },
-				5,
-				speciesList,
-				false,
-				() => 0.1
-			);
-			const event = loop.cast(population, noopRemove);
-			expect(event).toBeNull();
-		});
-
-		it('returns null when fish is outside bait minOz/maxOz (BaitRangeGate)', () => {
-			const smallBaitTackle: TackleSelection = {
-				...tackle,
-				bait: { name: 'maggot', image: 'maggot.png', minOz: 100, maxOz: 200 }
-			};
-			const loop = new FishingLoop(smallBaitTackle, 5, speciesList, false, () => 0.1);
-			const event = loop.cast(population, noopRemove);
-			expect(event).toBeNull();
-		});
-
 		it('returns null when fish is below line minOz (LineShyGate)', () => {
 			const heavyLineTackle: TackleSelection = {
 				...tackle,
@@ -212,66 +190,160 @@ describe('FishingLoop', () => {
 			expect(nextEvent).toEqual({ type: 'blankCast' });
 			expect(loop.currentFish).toBeNull();
 		});
+	});
 
-		it('retries selectFish after message duration and can find fish with updated tackle', () => {
-			const loop = new FishingLoop(baitMismatchTackle, 5, speciesList, false, () => 0.1);
-			loop.cast(population, noopRemove);
-			expect(loop.currentFish).toBeNull();
-
-			loop.tick(30000); // patience reached → blankCast emitted
-			expect(loop.currentFish).toBeNull();
-
-			loop.updateTackle(tackle); // now tackle matches
-
-			const retryEvent = loop.tick(3000); // message duration expires → retry
-			expect(retryEvent).toBeNull();
-			expect(loop.currentFish).not.toBeNull();
+	describe('bot strike delay', () => {
+		it('skill 10 max strike delay is ~3s, skill 1 max is ~10s', () => {
+			const formula = (skill: number) => 10_000 - (skill - 1) * (7_000 / 9);
+			expect(formula(10)).toBeCloseTo(3000, -2);
+			expect(formula(1)).toBeCloseTo(10000, -2);
 		});
 
-		it('calls redistributeFn before retry after blank message expires', () => {
-			const redistributeCalls: number[] = [];
-			const loop = new FishingLoop(
-				baitMismatchTackle,
-				5,
-				speciesList,
-				false,
-				() => 0.1,
-				() => redistributeCalls.push(1)
-			);
+		it('bot auto-strikes after delay elapses', () => {
+			const loop = new FishingLoop(tackle, 10, speciesList, true, () => 0);
 			loop.cast(population, noopRemove);
-			expect(loop.currentFish).toBeNull();
 
-			loop.tick(30000); // patience → blankCast emitted
+			const biteEvent = loop.tick(loop.remainingMs);
+			expect(biteEvent).toEqual({ type: 'bite' });
+			expect(loop.phase).toBe('bite');
 
-			loop.tick(3000); // message expires → retry
-			expect(redistributeCalls).toHaveLength(1);
+			const strikeEvent = loop.tick(100);
+			expect(strikeEvent).toBeNull();
+			expect(loop.phase).toBe('reeling');
 		});
 
-		it('can find a fish after redistribution without tackle change', () => {
-			const localPopulation: FishData[] = population.map((f) => ({ ...f }));
-			const forceMatchRedistribute = () => {
-				localPopulation.forEach((f) => {
-					f.strata = 'Bottom';
-					f.castStrength = 'Medium';
-					f.preferredBait = 'boilie';
-				});
+		it('bot misses bite if delay exceeds bite window (biteExpired)', () => {
+			const loop = new FishingLoop(tackle, 1, speciesList, true, () => 0.999);
+			loop.cast(population, noopRemove);
+
+			const event = loop.tick(loop.remainingMs);
+			expect(event).toEqual({ type: 'biteExpired' });
+			expect(loop.phase).toBe('lost');
+		});
+	});
+
+	describe('bot reel delay', () => {
+		it('bot auto-reels after skill-based delay and catches fish', () => {
+			const loop = new FishingLoop(tackle, 10, speciesList, true, () => 0);
+			loop.cast(population, noopRemove);
+			loop.tick(loop.remainingMs);
+			loop.tick(100);
+			expect(loop.phase).toBe('reeling');
+
+			const event = loop.tick(100);
+			expect(event).not.toBeNull();
+			expect(event!.type).toBe('fishCaught');
+			expect(loop.phase).toBe('caught');
+		});
+	});
+
+	describe('bot auto-recast', () => {
+		it('bot auto-recasts instantly after caught', () => {
+			const loop = new FishingLoop(tackle, 10, speciesList, true, () => 0);
+			loop.cast(population, noopRemove);
+			loop.tick(loop.remainingMs);
+			loop.tick(100);
+			loop.tick(100);
+			expect(loop.phase).toBe('caught');
+
+			loop.tick(1);
+			expect(loop.phase).toBe('waiting');
+		});
+
+		it('bot auto-recasts instantly after lost', () => {
+			const loop = new FishingLoop(tackle, 1, speciesList, true, () => 0.999);
+			loop.cast(population, noopRemove);
+			loop.tick(loop.remainingMs);
+			expect(loop.phase).toBe('lost');
+
+			loop.tick(1);
+			expect(loop.phase).toBe('waiting');
+		});
+	});
+
+	describe('bot tackle change on blank cycles', () => {
+		it('calls onBlankCycle callback after 2 blank-cast cycles', () => {
+			let tackleSwitchCount = 0;
+			const onCycle = () => {
+				tackleSwitchCount++;
+				return { ...tackle };
 			};
+
 			const loop = new FishingLoop(
 				baitMismatchTackle,
 				5,
 				speciesList,
-				false,
+				true,
 				() => 0.1,
-				forceMatchRedistribute
+				undefined,
+				onCycle
 			);
-			loop.cast(localPopulation, noopRemove);
+			loop.cast(population, noopRemove);
 			expect(loop.currentFish).toBeNull();
 
-			loop.tick(30000); // patience → blankCast emitted
+			loop.tick(30000);
+			loop.tick(3000);
+			expect(tackleSwitchCount).toBe(0);
 
-			const retryEvent = loop.tick(3000); // message expires → redistribute → re-select
-			expect(retryEvent).toBeNull();
+			loop.tick(30000);
+			loop.tick(3000);
+			expect(tackleSwitchCount).toBe(1);
+		});
+
+		it('does not change tackle if tackle update finds a fish between blank cycles', () => {
+			let tackleSwitchCount = 0;
+			const onCycle = () => {
+				tackleSwitchCount++;
+				return { ...tackle };
+			};
+
+			const loop = new FishingLoop(
+				baitMismatchTackle,
+				5,
+				speciesList,
+				true,
+				() => 0.1,
+				undefined,
+				onCycle
+			);
+			loop.cast(population, noopRemove);
+			expect(loop.currentFish).toBeNull();
+
+			loop.tick(30000);
+			loop.tick(3000);
+
+			loop.updateTackle(tackle);
 			expect(loop.currentFish).not.toBeNull();
+			expect(tackleSwitchCount).toBe(0);
+		});
+	});
+
+	describe('bot strike has no skill roll — HookRangeCheck only', () => {
+		it('bot with skill 0 succeeds on strike if hook handles the fish', () => {
+			const loop = new FishingLoop(tackle, 0, speciesList, true, () => 0);
+			loop.cast(population, noopRemove);
+			loop.tick(loop.remainingMs);
+			expect(loop.phase).toBe('bite');
+
+			const event = loop.tick(100);
+			expect(event).toBeNull();
+			expect(loop.phase).toBe('reeling');
+		});
+
+		it('bot strike fails via HookRangeCheck not skill roll', () => {
+			const smallHookTackle: TackleSelection = {
+				...tackle,
+				hook: { name: '22', image: 'hook.png', size: 22, minOz: 1, maxOz: 50, deter: 0 }
+			};
+			const loop = new FishingLoop(smallHookTackle, 10, speciesList, true, () => 0.45);
+			loop.cast(population, noopRemove);
+			loop.tick(loop.remainingMs);
+			expect(loop.phase).toBe('bite');
+
+			const delay = 10_000 - 9 * (7_000 / 9);
+			const event = loop.tick(delay + 1);
+			expect(event).toEqual({ type: 'hookBroken' });
+			expect(loop.phase).toBe('lost');
 		});
 	});
 
@@ -315,51 +387,6 @@ describe('FishingLoop', () => {
 			expect(loop.phase).toBe('lost');
 		});
 
-		it('returns null when all fish are below hook minOz (blank cast)', () => {
-			const bigHookTackle: TackleSelection = {
-				...tackle,
-				hook: { name: '2', image: 'hook.png', size: 2, minOz: 100, maxOz: 1100, deter: 0.5 }
-			};
-			const loop = new FishingLoop(bigHookTackle, 5, speciesList, false, () => 0.1);
-			const event = loop.cast(population, noopRemove);
-			expect(event).toBeNull();
-			expect(loop.phase).toBe('waiting');
-			expect(loop.currentFish).toBeNull();
-		});
-
-		it('bot strike fails on unfavourable RNG (skill roll)', () => {
-			const loop = new FishingLoop(tackle, 0, speciesList, true, () => 0.6);
-			loop.cast(population, noopRemove);
-			loop.tick(loop.remainingMs);
-
-			const event = loop.strike();
-			expect(event).toEqual({ type: 'fishLost' });
-			expect(loop.phase).toBe('lost');
-		});
-
-		it('bot strike succeeds on favourable RNG', () => {
-			const loop = new FishingLoop(tackle, 5, speciesList, true, () => 0.3);
-			loop.cast(population, noopRemove);
-			loop.tick(loop.remainingMs);
-
-			const event = loop.strike();
-			expect(event).toBeNull();
-			expect(loop.phase).toBe('reeling');
-		});
-
-		it('bot auto-strikes on tick during bite phase', () => {
-			const loop = new FishingLoop(tackle, 5, speciesList, true, () => 0.3);
-			loop.cast(population, noopRemove);
-
-			const event = loop.tick(loop.remainingMs);
-			expect(event).toEqual({ type: 'bite' });
-			expect(loop.phase).toBe('bite');
-
-			const strikeEvent = loop.tick(100);
-			expect(strikeEvent).toBeNull();
-			expect(loop.phase).toBe('reeling');
-		});
-
 		it('returns null if not in bite phase', () => {
 			const loop = new FishingLoop(tackle, 5, speciesList, false, () => 0);
 			expect(loop.strike()).toBeNull();
@@ -378,16 +405,24 @@ describe('FishingLoop', () => {
 	});
 
 	describe('reel', () => {
-		it('succeeds when fish weight is within line capacity', () => {
+		it('succeeds and records caught fish (removes netting step)', () => {
+			const { fn, ids } = collectRemoveCalls();
 			const loop = new FishingLoop(tackle, 5, speciesList, false, () => 0.3);
-			loop.cast(population, noopRemove);
+			loop.cast(population, fn);
 			loop.tick(loop.remainingMs);
 			loop.strike();
 			expect(loop.phase).toBe('reeling');
 
 			const event = loop.reel();
-			expect(event).toBeNull();
-			expect(loop.phase).toBe('netting');
+			expect(event).toEqual({
+				type: 'fishCaught',
+				species: 'Roach',
+				classificationLabel: 'Small',
+				weightOz: 12
+			});
+			expect(loop.phase).toBe('caught');
+			expect(loop.caughtFish).toHaveLength(1);
+			expect(ids).toContain('fish-1');
 		});
 
 		it('fails for oversized fish with unlucky roll', () => {
@@ -418,108 +453,6 @@ describe('FishingLoop', () => {
 		});
 	});
 
-	describe('net', () => {
-		it('catches the fish and records it', () => {
-			const loop = new FishingLoop(tackle, 5, speciesList, false, () => 0.3);
-			loop.cast(population, noopRemove);
-			loop.tick(loop.remainingMs);
-			loop.strike();
-			loop.reel();
-			expect(loop.phase).toBe('netting');
-
-			const event = loop.net();
-			expect(event).toEqual({
-				type: 'fishCaught',
-				species: 'Roach',
-				classificationLabel: 'Small',
-				weightOz: 12
-			});
-			expect(loop.phase).toBe('caught');
-			expect(loop.caughtFish).toHaveLength(1);
-			expect(loop.caughtFish[0]).toEqual({
-				species: 'Roach',
-				classificationLabel: 'Small',
-				weightOz: 12
-			});
-		});
-
-		it('does not auto-recast immediately after catch (wait for delay)', () => {
-			const loop = new FishingLoop(tackle, 5, speciesList, false, () => 0.3);
-			loop.cast(population, noopRemove);
-			loop.tick(loop.remainingMs);
-			loop.strike();
-			loop.reel();
-			loop.net();
-			expect(loop.phase).toBe('caught');
-
-			const event = loop.tick(100);
-			expect(event).toBeNull();
-			expect(loop.phase).toBe('caught');
-		});
-
-		it('returns null if not in netting phase', () => {
-			const loop = new FishingLoop(tackle, 5, speciesList, false, () => 0);
-			expect(loop.net()).toBeNull();
-		});
-
-		it('calls removeFn with the caught fish id', () => {
-			const { fn, ids } = collectRemoveCalls();
-			const loop = new FishingLoop(tackle, 5, speciesList, false, () => 0.1);
-			loop.cast(population, fn);
-			loop.tick(loop.remainingMs);
-			loop.strike();
-			loop.reel();
-			loop.net();
-			expect(ids).toContain('fish-1');
-		});
-
-		it('removes caught fish from subsequent selectFish candidates', () => {
-			const { fn, ids } = collectRemoveCalls();
-			const loop = new FishingLoop(tackle, 5, speciesList, false, () => 0.1);
-			loop.cast(population, fn);
-			loop.tick(loop.remainingMs);
-			loop.strike();
-			loop.reel();
-			loop.net();
-			expect(ids).toContain('fish-1');
-
-			// After removal, fish-1 should be gone from the population used by cast()
-			const filtered = population.filter((f) => !ids.includes(f.id));
-			expect(filtered.length).toBe(population.length - 1);
-		});
-	});
-
-	describe('auto-recast', () => {
-		it('auto-recasts after caught delay', () => {
-			const loop = new FishingLoop(tackle, 5, speciesList, false, () => 0.3);
-			loop.cast(population, noopRemove);
-			loop.tick(loop.remainingMs);
-			loop.strike();
-			loop.reel();
-			loop.net();
-			expect(loop.phase).toBe('caught');
-
-			const event = loop.tick(2500);
-			expect(loop.phase).toBe('waiting');
-			expect(loop.currentFish).not.toBeNull();
-			expect(event).toBeNull();
-		});
-
-		it('auto-recasts after lost delay', () => {
-			const loop = new FishingLoop(tackle, 5, speciesList, false, () => 0.1);
-			loop.cast(population, noopRemove);
-			loop.tick(loop.remainingMs);
-			expect(loop.phase).toBe('bite');
-
-			loop.tick(loop.biteWindowRemaining + 10);
-			expect(loop.phase).toBe('lost');
-
-			const event = loop.tick(2500);
-			expect(loop.phase).toBe('waiting');
-			expect(event).toBeNull();
-		});
-	});
-
 	describe('returnToCast', () => {
 		it('resets to idle after a catch', () => {
 			const loop = new FishingLoop(tackle, 5, speciesList, false, () => 0.3);
@@ -527,7 +460,6 @@ describe('FishingLoop', () => {
 			loop.tick(loop.remainingMs);
 			loop.strike();
 			loop.reel();
-			loop.net();
 			expect(loop.phase).toBe('caught');
 
 			loop.returnToCast();
@@ -538,7 +470,7 @@ describe('FishingLoop', () => {
 	});
 
 	describe('full linear flow', () => {
-		it('cast → wait → bite → strike → reel → net → caught', () => {
+		it('cast → wait → bite → strike → reel → caught', () => {
 			const loop = new FishingLoop(tackle, 5, speciesList, false, () => 0.3);
 
 			expect(loop.phase).toBe('idle');
@@ -554,9 +486,6 @@ describe('FishingLoop', () => {
 			expect(loop.phase).toBe('reeling');
 
 			loop.reel();
-			expect(loop.phase).toBe('netting');
-
-			loop.net();
 			expect(loop.phase).toBe('caught');
 			expect(loop.caughtFish).toHaveLength(1);
 

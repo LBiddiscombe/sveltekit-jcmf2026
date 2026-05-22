@@ -13,7 +13,6 @@ export type FishingPhase =
 	| 'bite'
 	| 'striking'
 	| 'reeling'
-	| 'netting'
 	| 'caught'
 	| 'lost'
 	| 'finished';
@@ -28,6 +27,11 @@ export type FishingEvent =
 
 const PLAYER_RECAST_DELAY_CAUGHT = 2500;
 const PLAYER_RECAST_DELAY_LOST = 2500;
+
+function skillDelay(skill: number, rng: () => number): number {
+	const maxDelay = 10_000 - (skill - 1) * (7_000 / 9);
+	return Math.floor(rng() * maxDelay);
+}
 
 export class FishingLoop {
 	phase: FishingPhase = 'idle';
@@ -46,6 +50,9 @@ export class FishingLoop {
 	private blankMessageTimer = 0;
 	private blankCastEmitted = false;
 	private redistributeFn: (() => void) | undefined;
+	private autoActionTimer = 0;
+	private blankCycleCount = 0;
+	private onBlankCycle: (() => TackleSelection | null) | undefined;
 
 	private static readonly BLANK_PATIENCE_DELAY = 30000;
 	private static readonly BLANK_MESSAGE_DURATION = 3000;
@@ -56,9 +63,11 @@ export class FishingLoop {
 		speciesList: Species[],
 		private isBot: boolean,
 		private rng: () => number = Math.random,
-		redistributeFn?: () => void
+		redistributeFn?: () => void,
+		onBlankCycle?: () => TackleSelection | null
 	) {
 		this.redistributeFn = redistributeFn;
+		this.onBlankCycle = onBlankCycle;
 		this.speciesMap = new Map(speciesList.map((s) => [s.name, s]));
 	}
 
@@ -72,6 +81,18 @@ export class FishingLoop {
 
 	updateTackle(tackle: TackleSelection): void {
 		this.tackle = tackle;
+		if (this.phase === 'waiting' && !this.currentFish) {
+			const fish = this.selectFish(this.population);
+			if (fish) {
+				this.blankCycleCount = 0;
+				this.currentFish = fish;
+				this.remainingMs = this.calcBiteTime(fish);
+				this.lastComputedBiteTime = this.remainingMs;
+				this.blankPatienceMs = 0;
+				this.blankMessageTimer = 0;
+				this.blankCastEmitted = false;
+			}
+		}
 	}
 
 	private calcBiteWindow(biteTime: number): number {
@@ -174,11 +195,22 @@ export class FishingLoop {
 				}
 
 				if (this.blankCastEmitted && this.blankMessageTimer <= 0) {
+					this.blankCycleCount++;
 					this.blankPatienceMs = 0;
 					this.blankCastEmitted = false;
+
+					if (this.blankCycleCount >= 2 && this.isBot && this.onBlankCycle) {
+						const newTackle = this.onBlankCycle();
+						if (newTackle) {
+							this.tackle = newTackle;
+							this.blankCycleCount = 0;
+						}
+					}
+
 					this.redistributeFn?.();
 					const fish = this.selectFish(this.population);
 					if (fish) {
+						this.blankCycleCount = 0;
 						this.currentFish = fish;
 						this.remainingMs = this.calcBiteTime(fish);
 						this.lastComputedBiteTime = this.remainingMs;
@@ -201,6 +233,15 @@ export class FishingLoop {
 				this.phase = 'bite';
 				this.biteWindowTotal = this.calcBiteWindow(this.lastComputedBiteTime);
 				this.biteWindowRemaining = this.biteWindowTotal;
+				if (this.isBot) {
+					this.autoActionTimer = skillDelay(this.skill, this.rng);
+					if (this.autoActionTimer >= this.biteWindowTotal) {
+						this.phase = 'lost';
+						this.biteWindowRemaining = 0;
+						this.recastCountdown = 0;
+						return { type: 'biteExpired' };
+					}
+				}
 				return { type: 'bite' };
 			}
 			return null;
@@ -208,8 +249,20 @@ export class FishingLoop {
 
 		if (this.phase === 'bite') {
 			if (this.isBot) {
-				return this.strike();
+				this.autoActionTimer -= elapsedMs;
+				if (this.autoActionTimer <= 0) {
+					return this.strike();
+				}
+				this.biteWindowRemaining -= elapsedMs;
+				if (this.biteWindowRemaining <= 0) {
+					this.phase = 'lost';
+					this.biteWindowRemaining = 0;
+					this.recastCountdown = 0;
+					return { type: 'biteExpired' };
+				}
+				return null;
 			}
+
 			this.biteWindowRemaining -= elapsedMs;
 			if (this.biteWindowRemaining <= 0) {
 				this.phase = 'lost';
@@ -220,12 +273,26 @@ export class FishingLoop {
 			return null;
 		}
 
+		if (this.phase === 'reeling') {
+			if (this.isBot) {
+				this.autoActionTimer -= elapsedMs;
+				if (this.autoActionTimer <= 0) {
+					return this.reel();
+				}
+				return null;
+			}
+
+			return null;
+		}
+
 		if (this.phase === 'caught' || this.phase === 'lost') {
 			if (this.recastCountdown > 0) {
 				this.recastCountdown -= elapsedMs;
 				if (this.recastCountdown <= 0) {
 					return this.autocast();
 				}
+			} else if (this.isBot) {
+				return this.autocast();
 			}
 			return null;
 		}
@@ -243,6 +310,7 @@ export class FishingLoop {
 		this.blankPatienceMs = 0;
 		this.blankMessageTimer = 0;
 		this.blankCastEmitted = false;
+		this.autoActionTimer = 0;
 	}
 
 	strike(): FishingEvent | null {
@@ -254,6 +322,7 @@ export class FishingLoop {
 
 		if (fish.weightOz > this.tackle.hook.maxOz) {
 			this.phase = 'lost';
+			this.blankCycleCount = 0;
 			this.biteWindowRemaining = 0;
 			this.biteWindowTotal = 0;
 			this.recastCountdown = this.isBot ? 0 : PLAYER_RECAST_DELAY_LOST;
@@ -262,26 +331,19 @@ export class FishingLoop {
 
 		if (fish.weightOz < this.tackle.hook.minOz) {
 			this.phase = 'lost';
+			this.blankCycleCount = 0;
 			this.biteWindowRemaining = 0;
 			this.biteWindowTotal = 0;
 			this.recastCountdown = this.isBot ? 0 : PLAYER_RECAST_DELAY_LOST;
 			return { type: 'fishLost' };
 		}
 
-		if (this.isBot) {
-			const success = this.rng() < 0.5 + this.skill * 0.05;
-			if (!success) {
-				this.phase = 'lost';
-				this.biteWindowRemaining = 0;
-				this.biteWindowTotal = 0;
-				this.recastCountdown = 0;
-				return { type: 'fishLost' };
-			}
-		}
-
 		this.biteWindowRemaining = 0;
 		this.biteWindowTotal = 0;
 		this.phase = 'reeling';
+		if (this.isBot) {
+			this.autoActionTimer = skillDelay(this.skill, this.rng);
+		}
 		return null;
 	}
 
@@ -292,16 +354,10 @@ export class FishingLoop {
 		const success = this.currentFish.weightOz <= capacity || this.rng() < 0.3;
 		if (!success) {
 			this.phase = 'lost';
+			this.blankCycleCount = 0;
 			this.recastCountdown = this.isBot ? 0 : PLAYER_RECAST_DELAY_LOST;
 			return { type: 'fishLost' };
 		}
-
-		this.phase = 'netting';
-		return null;
-	}
-
-	net(): FishingEvent | null {
-		if (this.phase !== 'netting' || !this.currentFish) return null;
 
 		const fish = this.currentFish;
 		this.removeFn(fish.id);
@@ -312,6 +368,7 @@ export class FishingLoop {
 			weightOz: fish.weightOz
 		});
 		this.phase = 'caught';
+		this.blankCycleCount = 0;
 		this.recastCountdown = this.isBot ? 0 : PLAYER_RECAST_DELAY_CAUGHT;
 		return {
 			type: 'fishCaught',
@@ -330,5 +387,6 @@ export class FishingLoop {
 		this.blankPatienceMs = 0;
 		this.blankMessageTimer = 0;
 		this.blankCastEmitted = false;
+		this.autoActionTimer = 0;
 	}
 }

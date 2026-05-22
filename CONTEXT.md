@@ -58,10 +58,19 @@ A competitive fishing session with a time limit and bots filling every other peg
 A person playing the game (human player or bot).
 
 **AnglerBot**:
-An NPC angler controlled by the game, with a skill level (1–10) that influences tackle choices, strike timing, and landing success. Bots are defined in reference data (`src/lib/data/bots.ts`) with a name and fixed skill. Bots are available in Match mode only.
+An NPC angler controlled by the game, with a skill level (1–10) that influences tackle choices (via skill-weighted species roll at draw and mid-match tackle changes) and strike/reel timing. Bots are defined in reference data (`src/lib/data/bots.ts`) with a name and fixed skill. Bots are available in Match mode only. Bot skill does NOT affect a separate strike accuracy roll — the HookRangeCheck alone determines strike outcome; skill only affects how quickly the bot reacts.
 
 **Angler State / AnglerPhase**:
-A phase in the fishing loop: cast, wait, bite, strike, reel, net, catch, finished. Changes to tackle/bait are done out-of-band (angler drops out of the loop and returns to cast when done), not as a distinct phase.
+A phase in the fishing loop: cast, wait, bite, strike, reel, catch, finished. `netting` was removed from the original spec — after reeling, the loop transitions directly to `caught`. Changes to tackle/bait are done out-of-band (angler drops out of the loop and returns to cast when done), not as a distinct phase.
+
+**BotStrikeDelay**:
+The delay before a bot auto-strikes after a bite triggers. Computed as `rng × maxDelayMs` where `maxDelayMs = 10_000 - (skill - 1) × 7_000 / 9`. Skill 10 → ~3s max, skill 1 → ~10s max. If the natural BiteWindow expires before the delay, the bot misses the bite.
+
+**BotReelDelay**:
+The delay before a bot auto-reels after a strike succeeds. Same formula as BotStrikeDelay, but applied during the `reeling` phase instead of `bite`. Skill 10 → ~3s max, skill 1 → ~10s max.
+
+**BotTackleChange**:
+If a bot experiences two consecutive blank-cast cycles (30s patience + redistribution + still no fish), it calls `pickBotTackle()` again for its peg and updates its tackle mid-match. The counter resets whenever the bot lands or loses a non-blank interaction.
 
 **Draw**:
 The match-only phase where anglers are randomly assigned to pegs. The player's peg is revealed first (with a brief delay), then bot pegs appear. All anglers (player + bots) are fully populated in `gameState.anglers` before the Tackle page.
@@ -174,7 +183,7 @@ A pure function module responsible for generating per-peg fish arrays. Takes a l
 - Seam: injectable RNG for deterministic testing.
 
 **FishingLoop module** (`src/lib/game/loop.ts`):
-A single-angler state machine (`cast → wait → bite → strike → reel → net → catch`) driving the core fishing mechanic. On cast, selects a candidate fish from the peg population by matching bait compatibility, strata, cast strength, and bait weight range (**BaitRangeGate**). Bite timing is governed by the **BiteTime** formula (species caution + size tier + tackle deterrence). After the bite triggers, a **BiteWindow** countdown runs; if it expires, the loop emits `biteExpired` and transitions to `lost`. The `strike()` action applies the **HookRangeCheck** (hard gate, applies to all anglers), then either the player clicks directly (no skill roll) or the bot's skill roll determines success. Accepts player actions (strike, reel, recast, net) and time ticks. Emits events (bite, biteExpired, hookBroken, fishCaught, fishLost). Bot AI drives the same seam with automatic decisions. Exposes `updateTackle()` so the loop's tackle can be refreshed mid-game when the player changes equipment.
+A single-angler state machine (`cast → wait → bite → strike → reel → catch`) driving the core fishing mechanic. The `netting` phase was removed as a simplification — `reel()` transitions directly to `caught`. On cast, selects a candidate fish from the peg population by matching bait compatibility, strata, cast strength, and bait weight range (**BaitRangeGate**). Bite timing is governed by the **BiteTime** formula (species caution + size tier + tackle deterrence). After the bite triggers, a **BiteWindow** countdown runs; if it expires, the loop emits `biteExpired` and transitions to `lost`. The `strike()` action applies the **HookRangeCheck** (hard gate, applies to all anglers); players click directly (no skill roll), bots use `strike()` immediately after their **BotStrikeDelay** elapses. Bot strike has no separate accuracy roll — skill only affects the timing. Accepts player actions (strike, reel, recast) and time ticks. Emits events (bite, biteExpired, hookBroken, fishCaught, fishLost). Bot AI drives the same seam with automatic decisions (BotStrikeDelay, BotReelDelay, BotTackleChange). Exposes `updateTackle()` so the loop's tackle can be refreshed mid-game when the player or bot changes equipment.
 
 **Prep Navigation module** (`src/lib/game/prep-flow.ts`):
 A shallow module centralising prep step URL strings so routes don't hardcode paths. Kept minimal until multiplayer reframes the navigation model entirely.

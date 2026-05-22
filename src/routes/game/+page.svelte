@@ -80,7 +80,6 @@
 		if (playerPhase === 'waiting') return `Line in the water (${waitSeconds.toFixed(0)}s)...`;
 		if (playerPhase === 'bite') return 'Fish biting!';
 		if (playerPhase === 'reeling') return 'Reeling in...';
-		if (playerPhase === 'netting') return 'Netting...';
 		if (playerPhase === 'striking') return 'Striking...';
 		if (playerPhase === 'idle') return 'Ready';
 
@@ -115,10 +114,6 @@
 
 	function handleReel() {
 		gameState.reel();
-	}
-
-	function handleNet() {
-		gameState.net();
 	}
 
 	function handleRecast() {
@@ -159,6 +154,17 @@
 			gameState.cast();
 		}
 
+		function onKeydown(e: KeyboardEvent) {
+			if (e.code !== 'Space' || e.repeat || debugMode) return;
+			e.preventDefault();
+			const p = gameState.playerPhase;
+			if (p === 'bite') handleStrike();
+			else if (p === 'reeling') handleReel();
+			else if (p === 'waiting') handleRecast();
+		}
+
+		document.addEventListener('keydown', onKeydown);
+
 		intervalId = setInterval(() => {
 			if (
 				gameState.playerPhase === 'waiting' ||
@@ -172,6 +178,7 @@
 
 		return () => {
 			if (intervalId) clearInterval(intervalId);
+			document.removeEventListener('keydown', onKeydown);
 		};
 	});
 </script>
@@ -210,7 +217,7 @@
 					? 'animate-pulse bg-yellow-400'
 					: playerPhase === 'bite'
 						? 'animate-ping bg-red-500'
-						: playerPhase === 'reeling' || playerPhase === 'netting'
+						: playerPhase === 'reeling'
 							? 'bg-green-500'
 							: playerPhase === 'caught'
 								? 'bg-blue-500'
@@ -256,13 +263,6 @@
 				class="inline-flex min-h-[48px] w-full cursor-pointer items-center justify-center rounded bg-primary px-8 py-3 text-lg font-bold text-white hover:bg-primary/80"
 			>
 				Reel
-			</button>
-		{:else if playerPhase === 'netting'}
-			<button
-				onclick={handleNet}
-				class="inline-flex min-h-[48px] w-full cursor-pointer items-center justify-center rounded bg-green-600 px-8 py-3 text-lg font-bold text-white hover:bg-green-700"
-			>
-				Net Fish
 			</button>
 		{:else if playerPhase === 'caught' || playerPhase === 'lost'}
 			<div

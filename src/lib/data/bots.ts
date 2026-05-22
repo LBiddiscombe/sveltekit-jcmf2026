@@ -4,14 +4,14 @@ export interface BotAngler {
 }
 
 export const bots: BotAngler[] = [
-	{ name: 'Jack', skill: 7 },
+	{ name: 'Ashley', skill: 10 },
+	{ name: 'Becky', skill: 9 },
+	{ name: 'Bob', skill: 8 },
+	{ name: 'Emma', skill: 7 },
+	{ name: 'Jack', skill: 6 },
 	{ name: 'John', skill: 5 },
-	{ name: 'Matt', skill: 8 },
-	{ name: 'Mick', skill: 4 },
-	{ name: 'Paul', skill: 6 },
-	{ name: 'Bob', skill: 3 },
-	{ name: 'Ashley', skill: 9 },
-	{ name: 'Emma', skill: 6 },
-	{ name: 'Becky', skill: 5 },
-	{ name: 'Sarah', skill: 4 }
+	{ name: 'Matt', skill: 4 },
+	{ name: 'Mick', skill: 3 },
+	{ name: 'Paul', skill: 2 },
+	{ name: 'Sarah', skill: 1 }
 ];

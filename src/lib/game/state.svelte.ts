@@ -16,16 +16,6 @@ import type { FishingEvent, FishingPhase } from './loop';
 
 export type GamePhase = 'prep' | 'draw' | 'fishing' | 'results';
 
-export type AnglerPhase =
-	| 'cast'
-	| 'wait'
-	| 'bite'
-	| 'strike'
-	| 'reel'
-	| 'net'
-	| 'catch'
-	| 'finished';
-
 export interface CaughtFish {
 	species: string;
 	classificationLabel: string;
@@ -38,7 +28,7 @@ export interface AnglerState {
 	isPlayer: boolean;
 	skill: number;
 	pegName: string;
-	phase: AnglerPhase;
+	phase: FishingPhase;
 	tackle: TackleSelection;
 	totalWeightOz: number;
 	biggestFish: CaughtFish | null;
@@ -66,6 +56,7 @@ export class GameState {
 	anglers = $state<AnglerState[]>([]);
 	pegPopulations = new SvelteMap<string, FishData[]>();
 	playerLoop: FishingLoop | null = null;
+	botLoops = new SvelteMap<string, FishingLoop>();
 	playerPhase = $state<FishingPhase | null>(null);
 	playerRemainingMs = $state(0);
 	playerBiteWindowRemaining = $state(0);
@@ -101,6 +92,7 @@ export class GameState {
 		this.anglers = [];
 		this.pegPopulations.clear();
 		this.playerLoop = null;
+		this.botLoops.clear();
 		this.playerPhase = null;
 		this.playerRemainingMs = 0;
 		this.playerBiteWindowRemaining = 0;
@@ -121,7 +113,7 @@ export class GameState {
 			isPlayer: true,
 			skill: 0,
 			pegName: '',
-			phase: 'cast',
+			phase: 'idle',
 			tackle: { ...defaultTackle },
 			totalWeightOz: 0,
 			biggestFish: null,
@@ -207,25 +199,21 @@ export class GameState {
 			throw new Error('Draw can only happen in match mode');
 		}
 
-		// Clear bots from any previous draw so re-draws stay clean
 		this.anglers = this.anglers.filter((a) => a.isPlayer);
 
 		const lake = this.requireLake();
 		const pegs = [...lake.pegs];
 
-		// Shuffle pegs using Fisher-Yates
 		for (let i = pegs.length - 1; i > 0; i--) {
 			const j = Math.floor(Math.random() * (i + 1));
 			[pegs[i], pegs[j]] = [pegs[j], pegs[i]];
 		}
 
-		// Assign first peg to player
 		const playerPeg = pegs[0];
 		this.playerPeg = playerPeg.name;
 		const player = this.ensurePlayerAngler();
 		player.pegName = playerPeg.name;
 
-		// Assign remaining pegs to bots
 		const botPool = [...bots];
 		const botCount = pegs.length - 1;
 
@@ -242,7 +230,7 @@ export class GameState {
 				isPlayer: false,
 				skill: botDef.skill,
 				pegName: peg.name,
-				phase: 'cast',
+				phase: 'idle',
 				tackle: botTackle,
 				totalWeightOz: 0,
 				biggestFish: null,
@@ -268,6 +256,27 @@ export class GameState {
 		this.phase = 'fishing';
 		this.generateFish();
 		this.initPlayerLoop();
+		this.initBotLoops();
+
+		this.cast();
+		for (const [, loop] of this.botLoops) {
+			const botAngler = [...this.anglers].find(
+				(a) => !a.isPlayer && a.pegName === this.anglerPegForLoop(loop)
+			);
+			if (botAngler) {
+				const pop = this.getPegPopulation(botAngler.pegName);
+				loop.cast(pop, (id) => this.removeFishFromPeg(botAngler.pegName, id));
+			}
+		}
+	}
+
+	private anglerPegForLoop(loop: FishingLoop): string | undefined {
+		for (const [id] of this.botLoops) {
+			if (this.botLoops.get(id) === loop) {
+				return this.anglers.find((a) => a.id === id)?.pegName;
+			}
+		}
+		return undefined;
 	}
 
 	private initPlayerLoop() {
@@ -292,6 +301,32 @@ export class GameState {
 		this.syncPlayerState();
 	}
 
+	private initBotLoops() {
+		this.botLoops.clear();
+
+		for (const bot of this.anglers) {
+			if (bot.isPlayer) continue;
+
+			const peg = this.lake?.pegs.find((p) => p.name === bot.pegName);
+			if (!peg) continue;
+
+			const loop = new FishingLoop(
+				bot.tackle,
+				bot.skill,
+				species,
+				true,
+				undefined,
+				() => {
+					const pop = this.pegPopulations.get(bot.pegName);
+					if (pop) reassignDynamicProperties(pop, species);
+				},
+				() => this.pickBotTackle(bot.skill, peg)
+			);
+
+			this.botLoops.set(bot.id, loop);
+		}
+	}
+
 	private syncPlayerState() {
 		this.playerPhase = this.playerLoop?.phase ?? null;
 		this.playerRemainingMs = this.playerLoop?.remainingMs ?? 0;
@@ -305,6 +340,19 @@ export class GameState {
 		const player = this.playerAngler;
 		if (this.playerLoop && player) {
 			this.playerLoop.updateTackle(player.tackle);
+		}
+	}
+
+	private syncBotAngler(angler: AnglerState, loop: FishingLoop) {
+		angler.phase = loop.phase;
+		angler.tackle = loop['tackle' as keyof FishingLoop] as unknown as TackleSelection;
+		if (loop.caughtFish.length > angler.catch.length) {
+			const newFish = loop.caughtFish[loop.caughtFish.length - 1];
+			angler.catch.push(newFish);
+			angler.totalWeightOz += newFish.weightOz;
+			if (!angler.biggestFish || newFish.weightOz > angler.biggestFish.weightOz) {
+				angler.biggestFish = { ...newFish };
+			}
 		}
 	}
 
@@ -380,15 +428,30 @@ export class GameState {
 	}
 
 	tick(elapsedMs: number): FishingEvent | null {
-		if (this.timeRemainingSeconds > 0) {
+		if (this.phase === 'fishing' && this.timeRemainingSeconds > 0) {
 			this.timeRemainingSeconds = Math.max(0, this.timeRemainingSeconds - elapsedMs / 1000);
+
+			if (this.timeRemainingSeconds <= 0) {
+				this.cutOffBots();
+				this.finishGame();
+				return null;
+			}
+		}
+
+		for (const [id, loop] of this.botLoops) {
+			const angler = this.anglers.find((a) => a.id === id);
+			if (!angler || angler.phase === 'finished') continue;
+
+			const event = loop.tick(elapsedMs);
+			if (event && event.type === 'fishCaught') {
+				this.syncBotAngler(angler, loop);
+			}
 		}
 
 		const event = this.playerLoop?.tick(elapsedMs) ?? null;
 		if (event) this.lastEvent = event;
 		this.syncPlayerState();
 
-		// Clear stale catch/loss or blank-cast messages after they expire
 		if (!event && this.playerPhase === 'waiting') {
 			if (this.playerLoop?.currentFish) {
 				this.lastEvent = null;
@@ -413,6 +476,20 @@ export class GameState {
 		return event;
 	}
 
+	private cutOffBots() {
+		for (const [id, loop] of this.botLoops) {
+			const angler = this.anglers.find((a) => a.id === id);
+			if (!angler) continue;
+
+			if (loop.phase === 'reeling' || loop.phase === 'caught') {
+				continue;
+			}
+
+			loop.phase = 'finished';
+			angler.phase = 'finished';
+		}
+	}
+
 	resetCast(): void {
 		this.playerLoop?.resetCast();
 		this.syncPlayerState();
@@ -428,13 +505,6 @@ export class GameState {
 	reel(): FishingEvent | null {
 		this.syncLoopTackle();
 		const event = this.playerLoop?.reel() ?? null;
-		this.lastEvent = event;
-		this.syncPlayerState();
-		return event;
-	}
-
-	net(): FishingEvent | null {
-		const event = this.playerLoop?.net() ?? null;
 		if (event?.type === 'fishCaught') {
 			const player = this.playerAngler;
 			if (player) {
@@ -490,6 +560,9 @@ export class GameState {
 
 	updateTackle(tackle: TackleSelection) {
 		this.chooseTackle(tackle);
+		if (this.playerLoop && this.playerPhase !== null) {
+			this.playerLoop.updateTackle(tackle);
+		}
 	}
 
 	startFishing() {
