@@ -27,7 +27,7 @@
 	let pegName = $derived(prepState.playerPeg);
 	let tackle = $derived(gameState.playerAngler?.tackle);
 	let selectedPegData = $derived(prepState.lake?.pegs.find((p) => p.name === pegName) ?? null);
-	let playerPhase = $derived(gameState.playerPhase);
+	let playerPhase = $derived(gameState.playerSnapshot?.phase ?? null);
 	let catchList = $derived(gameState.playerAngler?.catch ?? []);
 	let recentCatch = $derived([...catchList].reverse().slice(0, 3));
 	let totalWeight = $derived(catchList.reduce((sum: number, f) => sum + f.weightOz, 0));
@@ -53,8 +53,8 @@
 	let pegFish = $derived(gameState.getPegPopulation(prepState.playerPeg ?? ''));
 
 	let reelProgress = $derived(
-		gameState.playerReelTimerMs > 0
-			? 1 - gameState.playerReelTimerRemaining / gameState.playerReelTimerMs
+		gameState.playerSnapshot && gameState.playerSnapshot.reelTimerMs > 0
+			? 1 - gameState.playerSnapshot.reelTimerRemaining / gameState.playerSnapshot.reelTimerMs
 			: 0
 	);
 
@@ -169,14 +169,14 @@
 	});
 
 	onMount(() => {
-		if (gameState.playerPhase === 'idle') {
+		if (gameState.playerSnapshot?.phase === 'idle') {
 			gameState.cast();
 		}
 
 		function onKeydown(e: KeyboardEvent) {
 			if (e.code !== 'Space' || e.repeat || debugMode) return;
 			e.preventDefault();
-			const p = gameState.playerPhase;
+			const p = gameState.playerSnapshot?.phase;
 			if (p === 'bite') handleStrike();
 			else if (p === 'reeling') handleReel();
 			else if (p === 'landing') handleReel();

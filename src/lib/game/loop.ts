@@ -29,6 +29,19 @@ export type FishingEvent =
 	| { type: 'lineBroke' }
 	| { type: 'tooMuchSlackLine' };
 
+export interface PlayerLoopSnapshot {
+	phase: FishingPhase;
+	remainingMs: number;
+	biteWindowRemaining: number;
+	biteWindowTotal: number;
+	reelTimerMs: number;
+	reelTimerRemaining: number;
+	landingWindowMs: number;
+	landingWindowRemaining: number;
+	caughtFishCount: number;
+	isBlankCasting: boolean;
+}
+
 const PLAYER_RECAST_DELAY_CAUGHT = 2500;
 const PLAYER_RECAST_DELAY_LOST = 2500;
 
@@ -85,6 +98,21 @@ export class FishingLoop {
 
 	get isBlankCastMessageActive(): boolean {
 		return this.blankMessageTimer > 0;
+	}
+
+	getSnapshot(): PlayerLoopSnapshot {
+		return {
+			phase: this.phase,
+			remainingMs: this.remainingMs,
+			biteWindowRemaining: this.biteWindowRemaining,
+			biteWindowTotal: this.biteWindowTotal,
+			reelTimerMs: this.reelTimerMs,
+			reelTimerRemaining: this.reelTimerRemaining,
+			landingWindowMs: this.landingWindowMs,
+			landingWindowRemaining: this.landingWindowRemaining,
+			caughtFishCount: this.caughtFish.length,
+			isBlankCasting: this.isBlankCasting
+		};
 	}
 
 	updateTackle(tackle: TackleSelection): void {

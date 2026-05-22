@@ -4,7 +4,7 @@ import type { Venue, Lake, TackleSelection } from '$lib/data';
 import { populatePeg, reassignDynamicProperties, resetIds } from './population';
 import type { FishData } from './population';
 import { FishingLoop } from './loop';
-import type { FishingEvent, FishingPhase } from './loop';
+import type { FishingEvent, PlayerLoopSnapshot } from './loop';
 import { pickBotTackle } from './tackle-utils';
 import type { AnglerState, GamePhase } from './prep-state.svelte';
 
@@ -17,16 +17,7 @@ export class GameState {
 	pegPopulations = new SvelteMap<string, FishData[]>();
 	playerLoop: FishingLoop | null = null;
 	botLoops = new SvelteMap<string, FishingLoop>();
-	playerPhase = $state<FishingPhase | null>(null);
-	playerRemainingMs = $state(0);
-	playerBiteWindowRemaining = $state(0);
-	playerBiteWindowTotal = $state(0);
-	playerReelTimerMs = $state(0);
-	playerReelTimerRemaining = $state(0);
-	playerLandingWindowMs = $state(0);
-	playerLandingWindowRemaining = $state(0);
-	playerCaughtCount = $state(0);
-	playerBlankCasting = $state(false);
+	playerSnapshot = $state<PlayerLoopSnapshot | null>(null);
 	lastEvent = $state<FishingEvent | null>(null);
 
 	private playerPeg = '';
@@ -107,16 +98,7 @@ export class GameState {
 	}
 
 	private syncPlayerState() {
-		this.playerPhase = this.playerLoop?.phase ?? null;
-		this.playerRemainingMs = this.playerLoop?.remainingMs ?? 0;
-		this.playerBiteWindowRemaining = this.playerLoop?.biteWindowRemaining ?? 0;
-		this.playerBiteWindowTotal = this.playerLoop?.biteWindowTotal ?? 0;
-		this.playerReelTimerMs = this.playerLoop?.reelTimerMs ?? 0;
-		this.playerReelTimerRemaining = this.playerLoop?.reelTimerRemaining ?? 0;
-		this.playerLandingWindowMs = this.playerLoop?.landingWindowMs ?? 0;
-		this.playerLandingWindowRemaining = this.playerLoop?.landingWindowRemaining ?? 0;
-		this.playerCaughtCount = this.playerLoop?.caughtFish.length ?? 0;
-		this.playerBlankCasting = this.playerLoop?.isBlankCasting ?? false;
+		this.playerSnapshot = this.playerLoop?.getSnapshot() ?? null;
 	}
 
 	private syncLoopTackle() {
@@ -142,7 +124,7 @@ export class GameState {
 	updateTackle(tackle: TackleSelection) {
 		const player = this.playerAngler;
 		if (player) player.tackle = tackle;
-		if (this.playerLoop && this.playerPhase !== null) {
+		if (this.playerLoop && this.playerSnapshot?.phase) {
 			this.playerLoop.updateTackle(tackle);
 		}
 	}
@@ -182,7 +164,7 @@ export class GameState {
 		if (event) this.lastEvent = event;
 		this.syncPlayerState();
 
-		if (!event && this.playerPhase === 'waiting') {
+		if (!event && this.playerSnapshot?.phase === 'waiting') {
 			if (this.playerLoop?.currentFish) {
 				this.lastEvent = null;
 			} else if (
@@ -193,7 +175,7 @@ export class GameState {
 			}
 		}
 
-		if (this.playerPhase === 'idle') {
+		if (this.playerSnapshot?.phase === 'idle') {
 			const pop = this.getPegPopulation(this.playerPeg);
 			const castEvent =
 				this.playerLoop?.cast(pop, (id) => this.removeFishFromPeg(this.playerPeg, id)) ?? null;
