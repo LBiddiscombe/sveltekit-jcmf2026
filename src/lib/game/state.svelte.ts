@@ -1,8 +1,15 @@
 import { SvelteMap } from 'svelte/reactivity';
-import { baits, bots, venues, species } from '$lib/data';
-import type { Venue, Lake, TackleSelection } from '$lib/data';
+import { baits, bots, venues, species, presets, resolvePreset, tacticalOverride } from '$lib/data';
+import type { Venue, Lake, TackleSelection, Peg } from '$lib/data';
 import type { GameMode } from './prep-flow';
-import { populatePeg, reassignDynamicProperties, resetIds } from './population';
+import {
+	populatePeg,
+	reassignDynamicProperties,
+	resetIds,
+	passesTolerances,
+	fishMatchScore,
+	weightedSelectIndex
+} from './population';
 import type { FishData } from './population';
 import { FishingLoop } from './loop';
 import type { FishingEvent, FishingPhase } from './loop';
@@ -227,6 +234,8 @@ export class GameState {
 			const botDef = botPool.splice(botIndex, 1)[0];
 			const peg = pegs[i + 1];
 
+			const botTackle = this.pickBotTackle(botDef.skill, peg);
+
 			const botAngler: AnglerState = {
 				id: `bot-${botDef.name.toLowerCase()}`,
 				name: botDef.name,
@@ -234,7 +243,7 @@ export class GameState {
 				skill: botDef.skill,
 				pegName: peg.name,
 				phase: 'cast',
-				tackle: { ...defaultTackle },
+				tackle: botTackle,
 				totalWeightOz: 0,
 				biggestFish: null,
 				catch: []
@@ -324,6 +333,40 @@ export class GameState {
 			pegName,
 			pop.filter((f) => f.id !== fishId)
 		);
+	}
+
+	private pickBotTackle(skill: number, peg: Peg): TackleSelection {
+		const lake = this.lake;
+		if (!lake) return { ...defaultTackle };
+
+		const speciesChance = Math.min(1, skill * 0.1);
+
+		if (Math.random() < speciesChance) {
+			const weights = lake.species.map((ls) => {
+				const sp = species.find((s) => s.name === ls.name);
+				if (!sp) return 0;
+				if (!passesTolerances(sp, peg.features)) return 0;
+				return ls.frequency * fishMatchScore(sp, peg.features);
+			});
+
+			const idx = weightedSelectIndex(weights, Math.random);
+			if (idx !== -1) {
+				const targetName = lake.species[idx].name;
+				const preset = presets.find((p) => p.targetSpecies === targetName);
+				if (preset) {
+					const tackle = resolvePreset(preset);
+					const sp = species.find((s) => s.name === targetName) ?? null;
+					const { strata, castStrength } = tacticalOverride(sp, tackle.rod.name);
+					return { ...tackle, strata, castStrength };
+				}
+			}
+		}
+
+		const generalPresets = presets.filter((p) => !p.targetSpecies);
+		const preset = generalPresets[Math.floor(Math.random() * generalPresets.length)];
+		const tackle = resolvePreset(preset);
+		const { strata, castStrength } = tacticalOverride(null, tackle.rod.name);
+		return { ...tackle, strata, castStrength };
 	}
 
 	cast(): FishingEvent | null {

@@ -11,7 +11,8 @@ export type {
 	Reel,
 	Line,
 	Hook,
-	TackleSelection
+	TackleSelection,
+	TacklePreset
 } from './types';
 export type { BotAngler } from './bots';
 export { venues } from './venues';
@@ -19,3 +20,4 @@ export { species } from './species';
 export { baits } from './baits';
 export { TackleBox } from './tackle';
 export { bots } from './bots';
+export { presets, resolvePreset, tacticalOverride } from './presets';

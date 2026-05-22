@@ -67,7 +67,10 @@ A phase in the fishing loop: cast, wait, bite, strike, reel, net, catch, finishe
 The match-only phase where anglers are randomly assigned to pegs. The player's peg is revealed first (with a brief delay), then bot pegs appear. All anglers (player + bots) are fully populated in `gameState.anglers` before the Tackle page.
 
 **TackleSelection**:
-The current rod, reel, line, hook, and bait chosen by an angler. Each component has an independent deterrence value affecting fish behaviour.
+The current rod, reel, line, hook, bait, strata, and cast strength chosen by an angler. Each component has an independent deterrence value affecting fish behaviour.
+
+**TacklePreset**:
+A predefined tackle configuration (rod, reel, line, hook, bait, strata, cast strength), optionally targeting a specific species (via `targetSpecies`). Used at draw time to assign bots their starting tackle. Species-specific presets are selected via a skill-weighted random roll against the peg's likely species composition. General-purpose presets (Tiddler Basher, Light, Medium, Heavy, Predator) serve as fallback. The preset's strata and cast strength are overridden at runtime by **tactical override** logic (Leger → Bottom, Pole → Short, otherwise random valid options) to add variety between bots using the same preset.
 
 **CaughtFish**:
 A fish that has been landed by an angler, recording its species and weight in ounces.

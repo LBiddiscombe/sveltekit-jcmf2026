@@ -149,3 +149,15 @@ export interface TackleSelection {
 	strata: string;
 	castStrength: string;
 }
+
+export interface TacklePreset {
+	name: string;
+	targetSpecies?: string;
+	rod: string;
+	reel: string;
+	line: string;
+	hook: string;
+	bait: string;
+	strata: string;
+	castStrength: string;
+}
