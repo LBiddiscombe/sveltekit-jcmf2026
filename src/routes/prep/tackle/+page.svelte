@@ -143,7 +143,6 @@
 	<h1 class="text-2xl font-bold text-dark-teal sm:text-3xl md:text-4xl">
 		{isMidGame ? 'Change Tackle' : 'Choose Tackle & Bait'}
 	</h1>
-	<p class="text-lg text-muted">Select your rod, reel, line, hook, and bait</p>
 
 	<div class="grid w-full max-w-sm grid-cols-2 gap-3">
 		<!-- Rod -->
@@ -156,7 +155,6 @@
 				alt={tackle.rod.name}
 				class="h-16 w-16 rounded object-contain"
 			/>
-			<p class="text-xs text-muted">Rod</p>
 			<p class="font-semibold text-dark-teal">{tackle.rod.name}</p>
 		</button>
 
@@ -168,7 +166,6 @@
 				<div class="flex h-16 w-16 items-center justify-center rounded text-3xl text-muted">
 					&#x1F512;
 				</div>
-				<p class="text-xs text-muted">Reel</p>
 				<p class="font-semibold text-dark-teal">No Reel</p>
 			</div>
 		{:else}
@@ -181,7 +178,6 @@
 					alt={tackle.reel.name}
 					class="h-16 w-16 rounded object-contain"
 				/>
-				<p class="text-xs text-muted">Reel</p>
 				<p class="font-semibold text-dark-teal">{tackle.reel.name}</p>
 			</button>
 		{/if}
@@ -196,7 +192,6 @@
 				alt={tackle.line.name}
 				class="h-16 w-16 rounded object-contain"
 			/>
-			<p class="text-xs text-muted">Line</p>
 			<p class="font-semibold text-dark-teal">{tackle.line.name}</p>
 		</button>
 
@@ -210,7 +205,6 @@
 				alt={tackle.hook.name}
 				class="h-16 w-16 rounded object-contain"
 			/>
-			<p class="text-xs text-muted">Hook</p>
 			<p class="font-semibold text-dark-teal">Size {tackle.hook.name}</p>
 		</button>
 
@@ -235,7 +229,6 @@
 					stroke-linecap="round"
 				/>
 			</svg>
-			<p class="text-xs text-muted">Cast</p>
 			<p class="font-semibold text-dark-teal">{tackle.castStrength}</p>
 		</button>
 
@@ -260,7 +253,6 @@
 					/>
 				{/each}
 			</svg>
-			<p class="text-xs text-muted">Strata</p>
 			<p class="font-semibold text-dark-teal">{tackle.strata}</p>
 		</button>
 	</div>
@@ -276,7 +268,6 @@
 			class="h-16 w-16 rounded object-contain"
 		/>
 		<div>
-			<p class="text-xs text-muted">Bait</p>
 			<p class="font-semibold text-dark-teal">{tackle.bait.name}</p>
 		</div>
 	</button>
