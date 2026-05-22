@@ -27,8 +27,9 @@
 	let tackle = $derived(gameState.playerAngler?.tackle);
 	let selectedPegData = $derived(gameState.lake?.pegs.find((p) => p.name === pegName) ?? null);
 	let playerPhase = $derived(gameState.playerPhase);
-	let caughtCount = $derived(gameState.playerCaughtCount);
 	let catchList = $derived(gameState.playerAngler?.catch ?? []);
+	let recentCatch = $derived([...catchList].reverse().slice(0, 3));
+	let totalWeight = $derived(catchList.reduce((sum, f) => sum + f.weightOz, 0));
 	let lastEvent = $derived(gameState.lastEvent);
 	let debugMode = $state(false);
 	let intervalId: ReturnType<typeof setInterval> | null = null;
@@ -255,7 +256,6 @@
 			<span class="text-sm font-medium text-dark-teal">{statusMessage}</span>
 		</div>
 		<div class="flex items-center gap-2">
-			<span class="text-xs text-muted">{caughtCount} caught</span>
 			<button
 				onclick={toggleDebug}
 				class="cursor-pointer text-xs text-muted/40 hover:text-muted/80"
@@ -422,9 +422,11 @@
 	<!-- Catch list -->
 	{#if catchList.length > 0}
 		<div class="w-full max-w-sm">
-			<h3 class="mb-1 text-sm font-semibold text-dark-teal">Catch</h3>
+			<h3 class="mb-1 text-sm font-semibold text-dark-teal">
+				Catch ({catchList.length}) — {formatWeight(totalWeight)}
+			</h3>
 			<div class="space-y-1">
-				{#each catchList as fish, i (i)}
+				{#each recentCatch as fish (fish.weightOz + fish.species)}
 					<div
 						class="flex justify-between rounded bg-surface/20 px-3 py-1.5 text-sm text-dark-teal"
 					>
