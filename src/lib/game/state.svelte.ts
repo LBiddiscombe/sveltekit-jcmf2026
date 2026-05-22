@@ -10,6 +10,13 @@ import type { AnglerState, GamePhase } from './prep-state.svelte';
 
 export { type GamePhase, type AnglerState } from './prep-state.svelte';
 
+export interface BotCatchEvent {
+	name: string;
+	pegName: string;
+	classificationLabel: string;
+	species: string;
+}
+
 export class GameState {
 	phase = $state<GamePhase>('idle');
 	timeRemainingSeconds = $state(0);
@@ -19,6 +26,7 @@ export class GameState {
 	botLoops = new SvelteMap<string, FishingLoop>();
 	playerSnapshot = $state<PlayerLoopSnapshot | null>(null);
 	lastEvent = $state<FishingEvent | null>(null);
+	botCatchFeed = $state<BotCatchEvent[]>([]);
 
 	private playerPeg = '';
 
@@ -157,6 +165,15 @@ export class GameState {
 			const event = loop.tick(elapsedMs);
 			if (event && event.type === 'fishCaught') {
 				this.syncBotAngler(angler, loop);
+				this.botCatchFeed = [
+					...this.botCatchFeed,
+					{
+						name: angler.name,
+						pegName: angler.pegName,
+						classificationLabel: event.classificationLabel,
+						species: event.species
+					}
+				];
 			}
 		}
 
@@ -189,6 +206,7 @@ export class GameState {
 
 	finishGame() {
 		this.phase = 'results';
+		this.botCatchFeed = [];
 	}
 
 	private cutOffBots() {

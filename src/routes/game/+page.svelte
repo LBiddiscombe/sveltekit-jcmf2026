@@ -4,6 +4,7 @@
 	import { tackleFromGameUrl } from '$lib/game/prep-flow';
 	import { prepState } from '$lib/game/prep-state.svelte';
 	import { gameState } from '$lib/game/state.svelte';
+	import BotCatchToast from '$lib/components/BotCatchToast.svelte';
 
 	const tackleImages = import.meta.glob<string>('$lib/assets/images/tackle/*.png', {
 		eager: true,
@@ -234,6 +235,11 @@
 		{#if mode === 'match' && matchTimeDisplay}
 			<div class="absolute top-3 right-3 rounded-lg bg-black/40 px-3 py-1.5">
 				<p class="text-sm font-bold text-white/90">{matchTimeDisplay}</p>
+			</div>
+		{/if}
+		{#if mode === 'match'}
+			<div class="absolute inset-x-3 bottom-3">
+				<BotCatchToast />
 			</div>
 		{/if}
 	</div>
@@ -473,10 +479,10 @@
 	@keyframes land-breathe {
 		0%,
 		100% {
-			box-shadow: 0 0 8px 4px rgba(212, 175, 55, 0.8);
+			box-shadow: 0 0 8px 4px rgba(180, 130, 30, 0.9);
 		}
 		50% {
-			box-shadow: 0 0 30px 20px rgba(212, 175, 55, 0.4);
+			box-shadow: 0 0 30px 20px rgba(180, 130, 30, 0.6);
 		}
 	}
 </style>
