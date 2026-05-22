@@ -1,12 +1,12 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import type { Peg } from '$lib/data';
-	import { gameState } from '$lib/game/state.svelte';
+	import { prepState } from '$lib/game/prep-state.svelte';
 	import { prepTackleUrl } from '$lib/game/prep-flow';
 	import { onMount } from 'svelte';
 
-	let mode = $derived(gameState.mode);
-	let minutes = $derived(gameState.timeLimitMinutes);
+	let mode = $derived(prepState.mode);
+	let minutes = $derived(prepState.timeLimitMinutes);
 
 	let playerPeg = $state<Peg | undefined>(undefined);
 	let botAnglers = $state<{ name: string; pegName: string; pegImage: string | undefined }[]>([]);
@@ -29,23 +29,23 @@
 	}
 
 	onMount(() => {
-		if (mode !== 'match' || !gameState.lake) {
+		if (mode !== 'match' || !prepState.lake) {
 			hasError = true;
 			return;
 		}
 
 		const timeout = setTimeout(() => {
-			gameState.drawMatch();
+			prepState.drawMatch();
 
-			const peg = gameState.lake?.pegs.find((p) => p.name === gameState.playerPeg);
+			const peg = prepState.lake?.pegs.find((p) => p.name === prepState.playerPeg);
 			playerPeg = peg;
 
-			botAnglers = gameState.anglers
+			botAnglers = prepState.anglers
 				.filter((a) => !a.isPlayer)
 				.map((a) => ({
 					name: a.name,
 					pegName: a.pegName,
-					pegImage: gameState.lake?.pegs.find((p) => p.name === a.pegName)?.image
+					pegImage: prepState.lake?.pegs.find((p) => p.name === a.pegName)?.image
 				}))
 				.sort((a, b) => Number(a.pegName) - Number(b.pegName));
 
@@ -85,7 +85,7 @@
 {:else}
 	<div class="flex min-h-dvh flex-col items-center gap-3 p-4">
 		<h1 class="text-xl font-bold text-dark-teal sm:text-2xl">Peg Draw</h1>
-		<p class="text-sm text-muted">{gameState.lakeName} &middot; {minutes} min</p>
+		<p class="text-sm text-muted">{prepState.lakeName} &middot; {minutes} min</p>
 
 		{#if playerPeg && playerRevealed}
 			<div

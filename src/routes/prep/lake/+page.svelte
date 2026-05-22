@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
-	import { gameState } from '$lib/game/state.svelte';
+	import { prepState } from '$lib/game/prep-state.svelte';
 	import { modeFromSearchParams, prepRulesUrl } from '$lib/game/prep-flow';
 	import { venues } from '$lib/data';
 
@@ -18,12 +18,12 @@
 
 	const mode = modeFromSearchParams(page.url.searchParams);
 	if (mode === 'match') {
-		gameState.startMatch();
+		prepState.startMatch();
 	} else {
-		gameState.startSession();
+		prepState.startSession();
 	}
-	gameState.selectVenue(venue.name);
-	gameState.selectLake(lake.name);
+	prepState.selectVenue(venue.name);
+	prepState.selectLake(lake.name);
 
 	function goToRules() {
 		goto(prepRulesUrl());

@@ -1,8 +1,9 @@
 <script lang="ts">
 	import { SvelteMap } from 'svelte/reactivity';
+	import { prepState } from '$lib/game/prep-state.svelte';
 	import { gameState } from '$lib/game/state.svelte';
 
-	let mode = $derived(gameState.mode);
+	let mode = $derived(prepState.mode);
 	let playerAngler = $derived(gameState.playerAngler);
 	let anglers = $derived(gameState.anglers);
 

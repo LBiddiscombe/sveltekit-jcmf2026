@@ -102,9 +102,12 @@ A fish that has been landed by an angler, recording its species and weight in ou
 **GamePhase**:
 The high-level stage of a game: prep (setup), draw (match-only peg assignment on the /prep/draw page), fishing (the game loop), results (post-session summary).
 
+**PrepState**:
+A reactive singleton (`src/lib/game/prep-state.svelte.ts`) holding the fishing-trip selection state: mode (session/match), venue name, lake name, chosen peg, time limit, and the initial anglers array (player + bots after draw). Responsible for the draw logic. Populated through the prep routes (lake → rules → draw → tackle). Exported as `prepState` and imported by all prep routes and the game/results pages for display (venue name, lake name, mode). The `anglers` array is handed off to **GameState** at `beginFishing()` — after that point, GameState owns and mutates anglers.
+
 **GameState**:
-A reactive singleton (`src/lib/game/state.svelte.ts`) holding the current game's full state — mode, venue, lake, player peg, time, anglers (player + bots), and tackle selections. Created on the lake welcome page, progressively populated through prep, and active through game → results. Exported as `gameState` and imported by any route that needs it. Designed to be replaced by a synchronised state object when multiplayer is added.
-Prep selection state is sourced from `gameState` (mode, venue, lake, peg, match time) rather than being transported in URL query params between prep routes; URLs are used for navigation only, except `returnTo` when changing tackle mid-game.
+A reactive singleton (`src/lib/game/state.svelte.ts`) managing the fishing session runtime: phase (`idle` → `fishing` → `results`), peg fish populations, player and bot `FishingLoop` instances, reactive sync fields for the player's phase/timers/events, match countdown, and the `anglers` array (received from PrepState at `beginFishing()`). Exported as `gameState` and imported by the game page (phases, events, loops) and results page (catch/leaderboard data). Designed to be replaced by a synchronised state object when multiplayer is added.
+Prep selection state is sourced from **PrepState** (mode, venue, lake, peg, time) rather than being transported in URL query params between prep routes; URLs are used for navigation only, except `returnTo` when changing tackle mid-game.
 
 ## Relationships
 

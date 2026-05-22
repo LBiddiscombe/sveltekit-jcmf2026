@@ -2,6 +2,7 @@
 	import { goto } from '$app/navigation';
 	import { onMount } from 'svelte';
 	import { tackleFromGameUrl } from '$lib/game/prep-flow';
+	import { prepState } from '$lib/game/prep-state.svelte';
 	import { gameState } from '$lib/game/state.svelte';
 
 	const tackleImages = import.meta.glob<string>('$lib/assets/images/tackle/*.png', {
@@ -20,16 +21,16 @@
 		import: 'default'
 	});
 
-	let mode = $derived(gameState.mode);
-	let venueName = $derived(gameState.venueName);
-	let lakeName = $derived(gameState.lakeName);
-	let pegName = $derived(gameState.playerPeg);
+	let mode = $derived(prepState.mode);
+	let venueName = $derived(prepState.venueName);
+	let lakeName = $derived(prepState.lakeName);
+	let pegName = $derived(prepState.playerPeg);
 	let tackle = $derived(gameState.playerAngler?.tackle);
-	let selectedPegData = $derived(gameState.lake?.pegs.find((p) => p.name === pegName) ?? null);
+	let selectedPegData = $derived(prepState.lake?.pegs.find((p) => p.name === pegName) ?? null);
 	let playerPhase = $derived(gameState.playerPhase);
 	let catchList = $derived(gameState.playerAngler?.catch ?? []);
 	let recentCatch = $derived([...catchList].reverse().slice(0, 3));
-	let totalWeight = $derived(catchList.reduce((sum, f) => sum + f.weightOz, 0));
+	let totalWeight = $derived(catchList.reduce((sum: number, f) => sum + f.weightOz, 0));
 	let lastEvent = $derived(gameState.lastEvent);
 	let debugMode = $state(false);
 	let intervalId: ReturnType<typeof setInterval> | null = null;
@@ -49,7 +50,7 @@
 		return () => clearInterval(id);
 	});
 
-	let pegFish = $derived(gameState.getPegPopulation(gameState.playerPeg ?? ''));
+	let pegFish = $derived(gameState.getPegPopulation(prepState.playerPeg ?? ''));
 
 	let reelProgress = $derived(
 		gameState.playerReelTimerMs > 0

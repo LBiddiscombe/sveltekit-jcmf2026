@@ -1,11 +1,11 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
-	import { gameState } from '$lib/game/state.svelte';
+	import { prepState } from '$lib/game/prep-state.svelte';
 	import { prepTackleUrl, prepDrawUrl } from '$lib/game/prep-flow';
 
-	let mode = $derived(gameState.mode);
-	let pegs = $derived(gameState.lake?.pegs ?? []);
-	let selectedPeg = $state<string | null>(gameState.playerPeg ?? null);
+	let mode = $derived(prepState.mode);
+	let pegs = $derived(prepState.lake?.pegs ?? []);
+	let selectedPeg = $state<string | null>(prepState.playerPeg ?? null);
 	let selectedPegData = $derived(pegs.find((p) => p.name === selectedPeg) ?? null);
 
 	const timePresets = [1, 5, 10, 20, 30, 60];
@@ -23,7 +23,7 @@
 
 	function selectPeg(name: string) {
 		selectedPeg = name;
-		gameState.assignPeg(name);
+		prepState.assignPeg(name);
 	}
 
 	function goToTackle() {
@@ -32,7 +32,7 @@
 
 	function selectTime(minutes: number) {
 		selectedMinutes = minutes;
-		gameState.setMatchTimeLimit(minutes);
+		prepState.setMatchTimeLimit(minutes);
 		goto(prepDrawUrl());
 	}
 
@@ -46,7 +46,7 @@
 {#if mode === 'session'}
 	<div class="flex min-h-dvh flex-col items-center gap-3 p-4">
 		<h1 class="text-xl font-bold text-dark-teal sm:text-2xl">Pick Your Peg</h1>
-		<p class="text-sm text-muted">{gameState.lakeName}</p>
+		<p class="text-sm text-muted">{prepState.lakeName}</p>
 
 		{#if selectedPegData}
 			<div

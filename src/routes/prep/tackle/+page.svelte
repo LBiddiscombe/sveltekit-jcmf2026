@@ -5,7 +5,9 @@
 	import { TackleBox } from '$lib/data/tackle';
 	import type { Rod, Reel, Line, Hook, Bait } from '$lib/data';
 	import { gameReturnToPath } from '$lib/game/prep-flow';
+	import { prepState } from '$lib/game/prep-state.svelte';
 	import { gameState } from '$lib/game/state.svelte';
+	import { defaultTackle } from '$lib/game/tackle-utils';
 	import PickerModal from '$lib/components/PickerModal.svelte';
 
 	const tackleImages = import.meta.glob<string>('$lib/assets/images/tackle/*.png', {
@@ -24,7 +26,15 @@
 	const reelOptions = box.reels.filter((r) => r.name !== 'n/a');
 	const noReel = box.reels.find((r) => r.name === 'n/a')!;
 
-	let tackle = $state({ ...gameState.currentTackle });
+	let returnTo = $derived(page.url.searchParams.get('returnTo'));
+	let isMidGame = $derived(returnTo !== null);
+	let target = $derived(isMidGame ? returnTo! : gameReturnToPath());
+
+	let tackle = $state({
+		...(page.url.searchParams.get('returnTo')
+			? (gameState.playerAngler?.tackle ?? defaultTackle)
+			: prepState.currentTackle)
+	});
 
 	let isPole = $derived(tackle.rod.name === 'Pole');
 	let isLeger = $derived(tackle.rod.name === 'Leger');
@@ -101,15 +111,19 @@
 		closeModal();
 	}
 
-	let returnTo = $derived(page.url.searchParams.get('returnTo'));
-	let isMidGame = $derived(returnTo !== null);
 	let buttonLabel = $derived(isMidGame ? 'Back to Fishing' : 'Start Fishing');
-	let target = $derived(isMidGame ? returnTo! : gameReturnToPath());
 
 	function handleConfirm() {
-		gameState.chooseTackle(tackle);
-		if (!isMidGame) {
-			gameState.beginFishing();
+		if (isMidGame) {
+			gameState.updateTackle(tackle);
+		} else {
+			prepState.chooseTackle(tackle);
+			gameState.beginFishing(
+				prepState.anglers,
+				prepState.venue!,
+				prepState.lake!,
+				prepState.timeLimitMinutes
+			);
 		}
 		goto(target);
 	}
