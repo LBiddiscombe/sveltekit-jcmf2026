@@ -17,6 +17,15 @@ export interface BotCatchEvent {
 	species: string;
 }
 
+export interface CatchAuditEntry {
+	caughtAtMs: number;
+	anglerId: string;
+	anglerName: string;
+	species: string;
+	classificationLabel: string;
+	weightOz: number;
+}
+
 export class GameState {
 	phase = $state<GamePhase>('idle');
 	timeRemainingSeconds = $state(0);
@@ -27,6 +36,8 @@ export class GameState {
 	playerSnapshot = $state<PlayerLoopSnapshot | null>(null);
 	lastEvent = $state<FishingEvent | null>(null);
 	botCatchFeed = $state<BotCatchEvent[]>([]);
+	catchAudit = $state<CatchAuditEntry[]>([]);
+	sessionStartMs = 0;
 
 	private playerPeg = '';
 
@@ -48,6 +59,8 @@ export class GameState {
 		}
 
 		this.phase = 'fishing';
+		this.catchAudit = [];
+		this.sessionStartMs = Date.now();
 		resetIds();
 		this.generateFish(lake);
 
@@ -117,8 +130,6 @@ export class GameState {
 	}
 
 	private syncBotAngler(angler: AnglerState, loop: FishingLoop) {
-		angler.phase = loop.phase;
-		angler.tackle = loop['tackle' as keyof FishingLoop] as unknown as TackleSelection;
 		if (loop.caughtFish.length > angler.catch.length) {
 			const newFish = loop.caughtFish[loop.caughtFish.length - 1];
 			angler.catch.push(newFish);
@@ -126,6 +137,17 @@ export class GameState {
 			if (!angler.biggestFish || newFish.weightOz > angler.biggestFish.weightOz) {
 				angler.biggestFish = { ...newFish };
 			}
+			this.catchAudit = [
+				...this.catchAudit,
+				{
+					caughtAtMs: Date.now() - this.sessionStartMs,
+					anglerId: angler.id,
+					anglerName: angler.name,
+					species: newFish.species,
+					classificationLabel: newFish.classificationLabel,
+					weightOz: newFish.weightOz
+				}
+			];
 		}
 	}
 
@@ -161,6 +183,9 @@ export class GameState {
 		for (const [id, loop] of this.botLoops) {
 			const angler = this.anglers.find((a) => a.id === id);
 			if (!angler || angler.phase === 'finished') continue;
+
+			angler.phase = loop.phase;
+			angler.tackle = loop['tackle' as keyof FishingLoop] as unknown as TackleSelection;
 
 			const event = loop.tick(elapsedMs);
 			if (event && event.type === 'fishCaught') {
@@ -276,6 +301,17 @@ export class GameState {
 						weightOz: event.weightOz
 					};
 				}
+				this.catchAudit = [
+					...this.catchAudit,
+					{
+						caughtAtMs: Date.now() - this.sessionStartMs,
+						anglerId: player.id,
+						anglerName: player.name,
+						species: event.species,
+						classificationLabel: event.classificationLabel,
+						weightOz: event.weightOz
+					}
+				];
 			}
 		}
 		this.lastEvent = event;

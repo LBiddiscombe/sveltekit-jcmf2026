@@ -99,6 +99,9 @@ A predefined tackle configuration (rod, reel, line, hook, bait, strata, cast str
 **CaughtFish**:
 A fish that has been landed by an angler, recording its species and weight in ounces.
 
+**CatchAudit**:
+An ordered log of every fish landed during a session or match, recording the time (ms from session/match start), the angler who caught it, and the fish details (species, classification, weight). Distinct from `AnglerState.catch` (per-angler, display-oriented) — the audit is a single chronological sequence enabling timeline analysis, catch-rate charts, and post-match replay.
+
 **GamePhase**:
 The high-level stage of a game: prep (setup), draw (match-only peg assignment on the /prep/draw page), fishing (the game loop), results (post-session summary).
 
@@ -106,7 +109,7 @@ The high-level stage of a game: prep (setup), draw (match-only peg assignment on
 A reactive singleton (`src/lib/game/prep-state.svelte.ts`) holding the fishing-trip selection state: mode (session/match), venue name, lake name, chosen peg, time limit, and the initial anglers array (player + bots after draw). Responsible for the draw logic. Populated through the prep routes (lake → rules → draw → tackle). Exported as `prepState` and imported by all prep routes and the game/results pages for display (venue name, lake name, mode). The `anglers` array is handed off to **GameState** at `beginFishing()` — after that point, GameState owns and mutates anglers.
 
 **GameState**:
-A reactive singleton (`src/lib/game/state.svelte.ts`) managing the fishing session runtime: phase (`idle` → `fishing` → `results`), peg fish populations, player and bot `FishingLoop` instances, reactive sync fields for the player's phase/timers/events, match countdown, and the `anglers` array (received from PrepState at `beginFishing()`). Exported as `gameState` and imported by the game page (phases, events, loops) and results page (catch/leaderboard data). Designed to be replaced by a synchronised state object when multiplayer is added.
+A reactive singleton (`src/lib/game/state.svelte.ts`) managing the fishing session runtime: phase (`idle` → `fishing` → `results`), peg fish populations, player and bot `FishingLoop` instances, reactive sync fields for the player's phase/timers/events, match countdown, the `anglers` array (received from PrepState at `beginFishing()`), and a `catchAudit` array (chronological log of every landed fish with timing). Exported as `gameState` and imported by the game page (phases, events, loops) and results page (catch/leaderboard data). Designed to be replaced by a synchronised state object when multiplayer is added.
 Prep selection state is sourced from **PrepState** (mode, venue, lake, peg, time) rather than being transported in URL query params between prep routes; URLs are used for navigation only, except `returnTo` when changing tackle mid-game.
 
 ## Relationships

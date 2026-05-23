@@ -193,11 +193,7 @@
 			<div class="flex flex-col gap-3">
 				<div class="relative aspect-square overflow-hidden rounded-xl bg-surface/20">
 					{#if selectedPegData?.image && pegImg(selectedPegData.image)}
-						<img
-							src={pegImg(selectedPegData.image)}
-							alt=""
-							class="h-full w-full object-contain"
-						/>
+						<img src={pegImg(selectedPegData.image)} alt="" class="h-full w-full object-contain" />
 					{:else}
 						<div class="flex h-full w-full items-center justify-center">
 							{#if pegName}
@@ -215,7 +211,11 @@
 					<p class="text-sm leading-relaxed text-dark-teal">{selectedPegData.description}</p>
 				{/if}
 				<div class="flex flex-col gap-1">
-					<label for="tackle-preset" class="text-xs font-semibold text-dark-teal uppercase tracking-wide">Tackle Presets</label>
+					<label
+						for="tackle-preset"
+						class="text-xs font-semibold text-dark-teal uppercase tracking-wide"
+						>Tackle Presets</label
+					>
 					<select
 						id="tackle-preset"
 						onchange={(e) => {
@@ -255,7 +255,9 @@
 						<div
 							class="flex flex-col items-center gap-1 md:gap-2 rounded-lg border-2 border-olive bg-surface/10 p-2 md:p-4 opacity-50"
 						>
-							<div class="flex h-12 w-12 md:h-16 md:w-16 items-center justify-center rounded text-3xl text-muted">
+							<div
+								class="flex h-12 w-12 md:h-16 md:w-16 items-center justify-center rounded text-3xl text-muted"
+							>
 								&#x1F512;
 							</div>
 							<p class="text-xs md:text-sm font-semibold text-dark-teal">No Reel</p>

@@ -2,10 +2,12 @@
 	import { SvelteMap } from 'svelte/reactivity';
 	import { prepState } from '$lib/game/prep-state.svelte';
 	import { gameState } from '$lib/game/state.svelte';
+	import DebugPanel from '$lib/components/DebugPanel.svelte';
 
 	let mode = $derived(prepState.mode);
 	let playerAngler = $derived(gameState.playerAngler);
 	let anglers = $derived(gameState.anglers);
+	let debugMode = $state(false);
 
 	let speciesGroups = $derived.by(() => {
 		const map = new SvelteMap<
@@ -46,70 +48,85 @@
 	}
 </script>
 
-<div class="flex min-h-dvh flex-col items-center justify-center gap-6 p-4">
-	<h1 class="text-2xl font-bold text-dark-teal sm:text-3xl md:text-4xl">
-		{mode === 'match' ? 'Match Results' : 'Session Results'}
-	</h1>
+<div class="min-h-dvh lg:flex lg:flex-row">
+	<div class="flex min-h-dvh flex-1 flex-col items-center justify-center gap-6 p-4">
+		<h1 class="text-2xl font-bold text-dark-teal sm:text-3xl md:text-4xl">
+			{mode === 'match' ? 'Match Results' : 'Session Results'}
+		</h1>
 
-	{#if mode === 'match'}
-		<p class="text-lg text-muted">Leaderboard ranked by total catch weight</p>
-		{#if totalCaught === 0}
-			<p class="text-muted">No fish were caught</p>
-		{:else}
-			<div class="w-full max-w-xs space-y-2">
-				{#each leaderboard as angler, i (angler.id)}
-					<div
-						class="rounded border border-olive bg-surface/30 p-2 text-dark-teal"
-						class:font-bold={angler.isPlayer}
-					>
-						<div class="flex items-baseline justify-between gap-2">
-							<span>{i + 1}. {angler.isPlayer ? 'You' : angler.name}</span>
-							<span class="text-nowrap">{formatWeight(angler.totalWeightOz)}</span>
+		{#if mode === 'match'}
+			<p class="text-lg text-muted">Leaderboard ranked by total catch weight</p>
+			{#if totalCaught === 0}
+				<p class="text-muted">No fish were caught</p>
+			{:else}
+				<div class="w-full max-w-xs space-y-2">
+					{#each leaderboard as angler, i (angler.id)}
+						<div
+							class="rounded border border-olive bg-surface/30 p-2 text-dark-teal"
+							class:font-bold={angler.isPlayer}
+						>
+							<div class="flex items-baseline justify-between gap-2">
+								<span>{i + 1}. {angler.isPlayer ? 'You' : angler.name}</span>
+								<span class="text-nowrap">{formatWeight(angler.totalWeightOz)}</span>
+							</div>
+							<div class="mt-0.5 flex gap-3 text-xs text-muted">
+								<span>{angler.catch.length} fish</span>
+								{#if angler.biggestFish}
+									<span>
+										Best: {formatWeight(angler.biggestFish.weightOz)}
+										{angler.biggestFish.species}
+									</span>
+								{/if}
+							</div>
 						</div>
-						<div class="mt-0.5 flex gap-3 text-xs text-muted">
-							<span>{angler.catch.length} fish</span>
-							{#if angler.biggestFish}
-								<span>
-									Best: {formatWeight(angler.biggestFish.weightOz)}
-									{angler.biggestFish.species}
-								</span>
-							{/if}
-						</div>
-					</div>
-				{/each}
-			</div>
-		{/if}
-	{:else}
-		<p class="text-lg text-muted">Your catch — species, weight, count</p>
-		{#if totalFish === 0}
-			<p class="text-muted">No fish were caught</p>
-		{:else}
-			<div class="w-full max-w-xs space-y-2">
-				{#each [...speciesGroups] as [species, group] (species)}
-					<div class="rounded border border-olive bg-surface/30 p-2 text-dark-teal">
-						<div class="flex items-baseline justify-between gap-2">
-							<span>{species}</span>
-							<span class="text-nowrap">{group.count} @ {formatWeight(group.totalWeight)}</span>
-						</div>
-						<div class="mt-0.5 text-xs text-muted">
-							Best: {formatWeight(group.biggestWeight)}
-							{group.biggestLabel}
-						</div>
-					</div>
-				{/each}
-				<div
-					class="flex justify-between rounded border border-olive bg-surface/30 p-2 font-bold text-dark-teal"
-				>
-					<span>Total</span>
-					<span>{totalFish} fish, {formatWeight(totalWeightOz)}</span>
+					{/each}
 				</div>
-			</div>
+			{/if}
+		{:else}
+			<p class="text-lg text-muted">Your catch — species, weight, count</p>
+			{#if totalFish === 0}
+				<p class="text-muted">No fish were caught</p>
+			{:else}
+				<div class="w-full max-w-xs space-y-2">
+					{#each [...speciesGroups] as [species, group] (species)}
+						<div class="rounded border border-olive bg-surface/30 p-2 text-dark-teal">
+							<div class="flex items-baseline justify-between gap-2">
+								<span>{species}</span>
+								<span class="text-nowrap">{group.count} @ {formatWeight(group.totalWeight)}</span>
+							</div>
+							<div class="mt-0.5 text-xs text-muted">
+								Best: {formatWeight(group.biggestWeight)}
+								{group.biggestLabel}
+							</div>
+						</div>
+					{/each}
+					<div
+						class="flex justify-between rounded border border-olive bg-surface/30 p-2 font-bold text-dark-teal"
+					>
+						<span>Total</span>
+						<span>{totalFish} fish, {formatWeight(totalWeightOz)}</span>
+					</div>
+				</div>
+			{/if}
 		{/if}
+		<a
+			href="/menu"
+			class="mt-4 inline-flex min-h-[44px] items-center justify-center rounded bg-primary px-6 py-3 text-center text-white no-underline hover:bg-primary/80"
+		>
+			Main Menu
+		</a>
+	</div>
+
+	{#if debugMode}
+		<div class="hidden lg:block">
+			<DebugPanel />
+		</div>
 	{/if}
-	<a
-		href="/menu"
-		class="mt-4 inline-flex min-h-[44px] items-center justify-center rounded bg-primary px-6 py-3 text-center text-white no-underline hover:bg-primary/80"
-	>
-		Main Menu
-	</a>
 </div>
+
+<button
+	onclick={() => (debugMode = !debugMode)}
+	class="fixed top-4 right-4 z-50 hidden cursor-pointer rounded-lg bg-black/30 px-3 py-1.5 text-xs font-medium text-white/60 transition-colors hover:bg-black/50 hover:text-white/80 lg:block"
+>
+	{debugMode ? 'hide debug' : 'debug'}
+</button>

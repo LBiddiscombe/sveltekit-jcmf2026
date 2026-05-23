@@ -3,6 +3,58 @@ import { TackleBox } from './tackle';
 import { baits } from './baits';
 
 export const presets: TacklePreset[] = [
+	// ── General-purpose ──
+	{
+		name: 'Tiddler Basher',
+		rod: 'Pole',
+		reel: 'n/a',
+		line: '2 lb',
+		hook: '22',
+		bait: 'maggot',
+		strata: 'Top',
+		castStrength: 'Short'
+	},
+	{
+		name: 'Light',
+		rod: 'Float',
+		reel: 'Centre Pin',
+		line: '3 lb',
+		hook: '18',
+		bait: 'maggot',
+		strata: 'Middle',
+		castStrength: 'Short'
+	},
+	{
+		name: 'Medium',
+		rod: 'Float',
+		reel: 'Fixed Spool',
+		line: '4 lb',
+		hook: '14',
+		bait: 'sweetcorn',
+		strata: 'Bottom',
+		castStrength: 'Medium'
+	},
+	{
+		name: 'Heavy',
+		rod: 'Leger',
+		reel: 'Fixed Spool',
+		line: '8 lb',
+		hook: '10',
+		bait: 'pellet',
+		strata: 'Bottom',
+		castStrength: 'Long'
+	},
+	{
+		name: 'Predator',
+		rod: 'Leger',
+		reel: 'Fixed Spool',
+		line: '12 lb',
+		hook: '4',
+		bait: 'fish',
+		strata: 'Bottom',
+		castStrength: 'Long'
+	},
+	
 	// ── Species-specific ──
 	{
 		name: 'Barbel Rig',
@@ -146,58 +198,6 @@ export const presets: TacklePreset[] = [
 		bait: 'sweetcorn',
 		strata: 'Bottom',
 		castStrength: 'Medium'
-	},
-
-	// ── General-purpose ──
-	{
-		name: 'Tiddler Basher',
-		rod: 'Pole',
-		reel: 'n/a',
-		line: '2 lb',
-		hook: '22',
-		bait: 'maggot',
-		strata: 'Top',
-		castStrength: 'Short'
-	},
-	{
-		name: 'Light',
-		rod: 'Float',
-		reel: 'Centre Pin',
-		line: '3 lb',
-		hook: '18',
-		bait: 'maggot',
-		strata: 'Middle',
-		castStrength: 'Short'
-	},
-	{
-		name: 'Medium',
-		rod: 'Float',
-		reel: 'Fixed Spool',
-		line: '4 lb',
-		hook: '14',
-		bait: 'sweetcorn',
-		strata: 'Bottom',
-		castStrength: 'Medium'
-	},
-	{
-		name: 'Heavy',
-		rod: 'Leger',
-		reel: 'Fixed Spool',
-		line: '8 lb',
-		hook: '10',
-		bait: 'pellet',
-		strata: 'Bottom',
-		castStrength: 'Long'
-	},
-	{
-		name: 'Predator',
-		rod: 'Leger',
-		reel: 'Fixed Spool',
-		line: '12 lb',
-		hook: '4',
-		bait: 'fish',
-		strata: 'Bottom',
-		castStrength: 'Long'
 	}
 ];
 
