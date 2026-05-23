@@ -5,6 +5,8 @@ import { resetIds } from './population';
 import type { FishingPhase } from './loop';
 import { defaultTackle, pickBotTackle } from './tackle-utils';
 
+const STORAGE_KEY = 'jcmf-prep';
+
 export type GamePhase = 'idle' | 'fishing' | 'results';
 
 export interface CaughtFish {
@@ -33,6 +35,57 @@ export class PrepState {
 	playerPeg = $state<string | undefined>();
 	timeLimitMinutes = $state<number | undefined>();
 	anglers = $state<AnglerState[]>([]);
+
+	constructor() {
+		this.restore();
+	}
+
+	private restore() {
+		try {
+			const raw = sessionStorage.getItem(STORAGE_KEY);
+			if (!raw) return;
+
+			const data = JSON.parse(raw) as {
+				mode: unknown;
+				venueName: unknown;
+				lakeName: unknown;
+				playerPeg: unknown;
+				timeLimitMinutes: unknown;
+				anglers: unknown;
+			};
+
+			if (data.mode !== 'session' && data.mode !== 'match') return;
+			if (typeof data.venueName !== 'string') return;
+			if (typeof data.lakeName !== 'string') return;
+
+			const venue = venues.find((v) => v.name === data.venueName);
+			if (!venue) return;
+			if (data.lakeName && !venue.lakes.some((l) => l.name === data.lakeName)) return;
+
+			this.mode = data.mode;
+			this.venueName = data.venueName;
+			this.lakeName = data.lakeName;
+			if (typeof data.playerPeg === 'string') this.playerPeg = data.playerPeg;
+			if (typeof data.timeLimitMinutes === 'number') this.timeLimitMinutes = data.timeLimitMinutes;
+			if (Array.isArray(data.anglers)) this.anglers = data.anglers as AnglerState[];
+		} catch {
+			sessionStorage.removeItem(STORAGE_KEY);
+		}
+	}
+
+	private persist() {
+		sessionStorage.setItem(
+			STORAGE_KEY,
+			JSON.stringify({
+				mode: this.mode,
+				venueName: this.venueName,
+				lakeName: this.lakeName,
+				playerPeg: this.playerPeg,
+				timeLimitMinutes: this.timeLimitMinutes,
+				anglers: this.anglers
+			})
+		);
+	}
 
 	get venue(): Venue | undefined {
 		return this.venueName ? venues.find((v) => v.name === this.venueName) : undefined;
@@ -90,6 +143,7 @@ export class PrepState {
 		this.playerPeg = undefined;
 		this.timeLimitMinutes = undefined;
 		this.anglers = [];
+		sessionStorage.removeItem(STORAGE_KEY);
 		resetIds();
 	}
 
@@ -110,6 +164,7 @@ export class PrepState {
 		this.playerPeg = undefined;
 		const player = this.ensurePlayerAngler();
 		player.pegName = '';
+		this.persist();
 	}
 
 	selectLake(name: string) {
@@ -121,6 +176,7 @@ export class PrepState {
 		this.playerPeg = undefined;
 		const player = this.ensurePlayerAngler();
 		player.pegName = '';
+		this.persist();
 	}
 
 	assignPeg(peg: string) {
@@ -132,6 +188,7 @@ export class PrepState {
 		this.playerPeg = peg;
 		const player = this.ensurePlayerAngler();
 		player.pegName = peg;
+		this.persist();
 	}
 
 	setMatchTimeLimit(minutes: number) {
@@ -139,6 +196,7 @@ export class PrepState {
 			throw new Error('Match time limit can only be set in match mode');
 		}
 		this.timeLimitMinutes = minutes;
+		this.persist();
 	}
 
 	drawMatch() {
@@ -184,11 +242,14 @@ export class PrepState {
 
 			this.anglers.push(botAngler);
 		}
+
+		this.persist();
 	}
 
 	chooseTackle(tackle: TackleSelection) {
 		const player = this.ensurePlayerAngler();
 		player.tackle = tackle;
+		this.persist();
 	}
 }
 
