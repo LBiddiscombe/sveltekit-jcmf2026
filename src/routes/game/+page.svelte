@@ -132,12 +132,6 @@
 		gameState.reel();
 	}
 
-	function handleRecast() {
-		waitSeconds = 0;
-		gameState.resetCast();
-		gameState.cast();
-	}
-
 	function handleChangeTackle() {
 		gameState.resetCast();
 		goto(tackleUrl);
@@ -181,7 +175,6 @@
 			if (p === 'bite') handleStrike();
 			else if (p === 'reeling') handleReel();
 			else if (p === 'landing') handleReel();
-			else if (p === 'waiting') handleRecast();
 		}
 
 		document.addEventListener('keydown', onKeydown);
@@ -212,9 +205,17 @@
 	>
 		<div class="relative aspect-square">
 			{#if selectedPegData?.image && pegImg(selectedPegData.image)}
-				<img src={pegImg(selectedPegData.image)} alt="" class="h-full w-full object-contain" />
+				<img
+					src={pegImg(selectedPegData.image)}
+					alt=""
+					class="h-full w-full object-contain"
+					class:shake={playerPhase === 'bite' || playerPhase === 'landing'}
+				/>
 			{:else}
-				<div class="flex h-full w-full items-center justify-center">
+				<div
+					class="flex h-full w-full items-center justify-center"
+					class:shake={playerPhase === 'bite' || playerPhase === 'landing'}
+				>
 					{#if pegName}
 						<span class="text-6xl font-bold text-muted">{pegName}</span>
 					{/if}
@@ -271,78 +272,6 @@
 			</button>
 		</div>
 	</div>
-
-	<!-- Action buttons -->
-	<div class="flex w-full max-w-sm flex-col items-center gap-3">
-		{#if debugMode}
-			<div class="w-full rounded-xl border border-yellow-400/40 bg-yellow-50/50 p-3 text-center">
-				<p class="text-xs font-medium text-yellow-700">Game paused — debug mode</p>
-			</div>
-		{:else if playerPhase === 'waiting'}
-			<button
-				onclick={handleRecast}
-				class="inline-flex min-h-[48px] w-full cursor-pointer items-center justify-center rounded bg-muted px-8 py-3 text-white hover:bg-muted/80"
-			>
-				Recast
-			</button>
-		{:else if playerPhase === 'bite'}
-			<p class="text-sm text-muted">Click the peg or press Space to strike</p>
-		{:else if playerPhase === 'reeling'}
-			<p class="text-sm text-muted">
-				Wait for the landing window — pressing Space early loses the fish
-			</p>
-		{:else if playerPhase === 'landing'}
-			<p class="text-sm text-muted">Click the peg or press Space to land!</p>
-		{:else if playerPhase === 'caught' || playerPhase === 'lost'}
-			<div
-				class="w-full rounded-xl border p-4 text-center {playerPhase === 'caught'
-					? 'border-blue-400 bg-blue-50'
-					: 'border-red-300 bg-red-50'}"
-			>
-				<p class="text-lg font-bold {playerPhase === 'caught' ? 'text-blue-700' : 'text-red-700'}">
-					{statusMessage}
-				</p>
-			</div>
-		{/if}
-	</div>
-
-	<!-- Debug panel -->
-	{#if debugMode}
-		<div class="w-full max-w-sm">
-			<div class="mb-1 flex items-center justify-between">
-				<h3 class="text-sm font-semibold text-dark-teal">Peg {pegName} — {pegFish.length} fish</h3>
-			</div>
-			<div
-				class="max-h-60 space-y-2 overflow-y-auto rounded-xl border border-olive bg-surface/30 p-3 text-xs"
-			>
-				{#each ['Short', 'Medium', 'Long'] as dist (dist)}
-					{@const distFish = [...pegFish.filter((f) => f.castStrength === dist)].sort(
-						(a, b) => b.weightOz - a.weightOz
-					)}
-					<div>
-						<h4 class="mb-1 font-semibold text-dark-teal">{dist} ({distFish.length})</h4>
-						{#each ['Top', 'Middle', 'Bottom'] as strata (strata)}
-							{@const strataFish = distFish.filter((f) => f.strata === strata)}
-							{#if strataFish.length > 0}
-								<div class="mb-1 ml-2">
-									<h5 class="text-muted">{strata} ({strataFish.length})</h5>
-									{#each strataFish as fish (fish.id)}
-										<div class="rounded px-2 py-0.5 text-muted even:bg-surface/10">
-											{#if fish.classificationLabel}{fish.classificationLabel}
-											{/if}
-											{fish.species}
-											{formatWeight(fish.weightOz)}
-											({fish.preferredBait})
-										</div>
-									{/each}
-								</div>
-							{/if}
-						{/each}
-					</div>
-				{/each}
-			</div>
-		</div>
-	{/if}
 
 	<!-- Tackle display (clickable) -->
 	{#if tackle}
@@ -426,6 +355,69 @@
 		</button>
 	{/if}
 
+	<!-- Debug hint + Reserved catch/lost message -->
+	<div class="flex w-full max-w-sm flex-col items-center gap-3">
+		{#if debugMode}
+			<div class="w-full rounded-xl border border-yellow-400/40 bg-yellow-50/50 p-3 text-center">
+				<p class="text-xs font-medium text-yellow-700">Game paused — debug mode</p>
+			</div>
+		{/if}
+
+		<div class="min-h-20 w-full">
+			{#if playerPhase === 'caught' || playerPhase === 'lost'}
+				<div
+					class="w-full rounded-xl border p-4 text-center {playerPhase === 'caught'
+						? 'border-blue-400 bg-blue-50'
+						: 'border-red-300 bg-red-50'}"
+				>
+					<p
+						class="text-lg font-bold {playerPhase === 'caught' ? 'text-blue-700' : 'text-red-700'}"
+					>
+						{statusMessage}
+					</p>
+				</div>
+			{/if}
+		</div>
+	</div>
+
+	<!-- Debug panel -->
+	{#if debugMode}
+		<div class="w-full max-w-sm">
+			<div class="mb-1 flex items-center justify-between">
+				<h3 class="text-sm font-semibold text-dark-teal">Peg {pegName} — {pegFish.length} fish</h3>
+			</div>
+			<div
+				class="max-h-60 space-y-2 overflow-y-auto rounded-xl border border-olive bg-surface/30 p-3 text-xs"
+			>
+				{#each ['Short', 'Medium', 'Long'] as dist (dist)}
+					{@const distFish = [...pegFish.filter((f) => f.castStrength === dist)].sort(
+						(a, b) => b.weightOz - a.weightOz
+					)}
+					<div>
+						<h4 class="mb-1 font-semibold text-dark-teal">{dist} ({distFish.length})</h4>
+						{#each ['Top', 'Middle', 'Bottom'] as strata (strata)}
+							{@const strataFish = distFish.filter((f) => f.strata === strata)}
+							{#if strataFish.length > 0}
+								<div class="mb-1 ml-2">
+									<h5 class="text-muted">{strata} ({strataFish.length})</h5>
+									{#each strataFish as fish (fish.id)}
+										<div class="rounded px-2 py-0.5 text-muted even:bg-surface/10">
+											{#if fish.classificationLabel}{fish.classificationLabel}
+											{/if}
+											{fish.species}
+											{formatWeight(fish.weightOz)}
+											({fish.preferredBait})
+										</div>
+									{/each}
+								</div>
+							{/if}
+						{/each}
+					</div>
+				{/each}
+			</div>
+		</div>
+	{/if}
+
 	<!-- Catch list -->
 	{#if catchList.length > 0}
 		<div class="w-full max-w-sm">
@@ -483,6 +475,23 @@
 		}
 		50% {
 			box-shadow: 0 0 30px 20px rgba(180, 130, 30, 0.6);
+		}
+	}
+
+	.shake {
+		animation: shake 0.15s ease-in-out infinite;
+	}
+
+	@keyframes shake {
+		0%,
+		100% {
+			transform: translateX(0);
+		}
+		25% {
+			transform: translateX(-2px);
+		}
+		75% {
+			transform: translateX(2px);
 		}
 	}
 </style>
