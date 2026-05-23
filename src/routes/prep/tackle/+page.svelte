@@ -8,6 +8,8 @@
 	import { prepState } from '$lib/game/prep-state.svelte';
 	import { gameState } from '$lib/game/state.svelte';
 	import { defaultTackle } from '$lib/game/tackle-utils';
+	import { presets, resolvePreset } from '$lib/data/presets';
+	import type { TacklePreset } from '$lib/data';
 	import PickerModal from '$lib/components/PickerModal.svelte';
 
 	const tackleImages = import.meta.glob<string>('$lib/assets/images/tackle/*.png', {
@@ -17,6 +19,12 @@
 	});
 
 	const baitImages = import.meta.glob<string>('$lib/assets/images/baits/*.png', {
+		eager: true,
+		query: '?url',
+		import: 'default'
+	});
+
+	const pegImages = import.meta.glob<string>('$lib/assets/images/pegs/*.jpeg', {
 		eager: true,
 		query: '?url',
 		import: 'default'
@@ -75,6 +83,15 @@
 		return `<svg viewBox="0 0 48 48" class="h-16 w-16"><circle cx="8" cy="24" r="4" fill="currentColor" /><line x1="12" y1="24" x2="${len}" y2="24" stroke="currentColor" stroke-width="4" stroke-linecap="round" /></svg>`;
 	}
 
+	let pegName = $derived(prepState.playerPeg ?? '');
+	let selectedPegData = $derived(prepState.lake?.pegs.find((p) => p.name === pegName) ?? null);
+	let venueName = $derived(prepState.venueName);
+	let lakeName = $derived(prepState.lakeName);
+
+	function pegImg(filename: string | undefined): string {
+		return filename ? (pegImages[`/src/lib/assets/images/pegs/${filename}`] ?? '') : '';
+	}
+
 	function selectRod(rod: Rod) {
 		tackle.rod = rod;
 		tackle.reel = rod.name === 'Pole' ? noReel : reelOptions[0];
@@ -111,10 +128,11 @@
 		closeModal();
 	}
 
-	let buttonLabel = $derived(isMidGame ? 'Back to Fishing' : 'Start Fishing');
+	let buttonLabel = $derived(isMidGame ? 'Return & Recast' : 'Start Fishing');
 
 	function handleConfirm() {
 		if (isMidGame) {
+			gameState.resetCast();
 			gameState.updateTackle(tackle);
 		} else {
 			prepState.chooseTackle(tackle);
@@ -151,156 +169,218 @@
 	function baitImg(item: { image: string }): string {
 		return baitImages[`/src/lib/assets/images/baits/${item.image}`] ?? '';
 	}
+
+	function applyPreset(preset: TacklePreset) {
+		const sel = resolvePreset(preset);
+		tackle.rod = sel.rod;
+		tackle.reel = sel.reel;
+		tackle.line = sel.line;
+		tackle.hook = sel.hook;
+		tackle.bait = sel.bait;
+		tackle.strata = sel.strata;
+		tackle.castStrength = sel.castStrength;
+	}
 </script>
 
-<div class="flex min-h-dvh flex-col items-center justify-center gap-6 p-4">
-	<h1 class="text-2xl font-bold text-dark-teal sm:text-3xl md:text-4xl">
-		{isMidGame ? 'Change Tackle' : 'Choose Tackle & Bait'}
-	</h1>
+<div class="flex min-h-dvh flex-col items-center p-4">
+	<div class="flex w-full max-w-2xl flex-col gap-6">
+		<h1 class="text-center text-2xl font-bold text-dark-teal sm:text-3xl md:text-4xl">
+			{isMidGame ? 'Change Tackle' : 'Choose Tackle & Bait'}
+		</h1>
 
-	<div class="grid w-full max-w-sm grid-cols-2 gap-3">
-		<!-- Rod -->
-		<button
-			onclick={() => openModal('rod')}
-			class="flex cursor-pointer flex-col items-center gap-2 rounded-lg border-2 border-olive bg-surface/30 p-4 transition-colors hover:bg-surface/60"
-		>
-			<img
-				src={tackleImg(tackle.rod)}
-				alt={tackle.rod.name}
-				class="h-16 w-16 rounded object-contain"
-			/>
-			<p class="font-semibold text-dark-teal">{tackle.rod.name}</p>
-		</button>
-
-		<!-- Reel -->
-		{#if isPole}
-			<div
-				class="flex flex-col items-center gap-2 rounded-lg border-2 border-olive bg-surface/10 p-4 opacity-50"
-			>
-				<div class="flex h-16 w-16 items-center justify-center rounded text-3xl text-muted">
-					&#x1F512;
+		<div class="grid gap-6 md:grid-cols-2">
+			<!-- Peg panel -->
+			<div class="flex flex-col gap-3">
+				<div class="relative aspect-square overflow-hidden rounded-xl bg-surface/20">
+					{#if selectedPegData?.image && pegImg(selectedPegData.image)}
+						<img
+							src={pegImg(selectedPegData.image)}
+							alt=""
+							class="h-full w-full object-contain"
+						/>
+					{:else}
+						<div class="flex h-full w-full items-center justify-center">
+							{#if pegName}
+								<span class="text-6xl font-bold text-muted">{pegName}</span>
+							{/if}
+						</div>
+					{/if}
+					<div class="absolute top-3 left-3 rounded-lg bg-black/40 px-2 py-1">
+						<p class="text-sm font-semibold tracking-wide text-white/80 uppercase">{venueName}</p>
+						<p class="text-xs text-white/60">{lakeName}</p>
+						<p class="text-lg font-bold text-white">Peg {pegName}</p>
+					</div>
 				</div>
-				<p class="font-semibold text-dark-teal">No Reel</p>
+				{#if selectedPegData?.description}
+					<p class="text-sm leading-relaxed text-dark-teal">{selectedPegData.description}</p>
+				{/if}
+				<div class="flex flex-col gap-1">
+					<label for="tackle-preset" class="text-xs font-semibold text-dark-teal uppercase tracking-wide">Tackle Presets</label>
+					<select
+						id="tackle-preset"
+						onchange={(e) => {
+							const name = (e.target as HTMLSelectElement).value;
+							const preset = presets.find((p) => p.name === name);
+							if (preset) applyPreset(preset);
+							(e.target as HTMLSelectElement).value = '';
+						}}
+						class="w-full cursor-pointer rounded-lg border-2 border-olive bg-surface/30 px-3 py-2 text-sm text-dark-teal outline-none transition-colors focus:border-primary"
+					>
+						<option value="">Select preset...</option>
+						{#each presets as preset (preset.name)}
+							<option value={preset.name}>{preset.name}</option>
+						{/each}
+					</select>
+				</div>
 			</div>
-		{:else}
-			<button
-				onclick={() => openModal('reel')}
-				class="flex cursor-pointer flex-col items-center gap-2 rounded-lg border-2 border-olive bg-surface/30 p-4 transition-colors hover:bg-surface/60"
-			>
-				<img
-					src={tackleImg(tackle.reel)}
-					alt={tackle.reel.name}
-					class="h-16 w-16 rounded object-contain"
-				/>
-				<p class="font-semibold text-dark-teal">{tackle.reel.name}</p>
-			</button>
-		{/if}
 
-		<!-- Line -->
-		<button
-			onclick={() => openModal('line')}
-			class="flex cursor-pointer flex-col items-center gap-2 rounded-lg border-2 border-olive bg-surface/30 p-4 transition-colors hover:bg-surface/60"
-		>
-			<img
-				src={tackleImg(tackle.line)}
-				alt={tackle.line.name}
-				class="h-16 w-16 rounded object-contain"
-			/>
-			<p class="font-semibold text-dark-teal">{tackle.line.name}</p>
-		</button>
+			<!-- Tackle + buttons -->
+			<div class="flex flex-col gap-3">
+				<div class="grid grid-cols-3 gap-2 sm:gap-3">
+					<!-- Rod -->
+					<button
+						onclick={() => openModal('rod')}
+						class="flex cursor-pointer flex-col items-center gap-1 md:gap-2 rounded-lg border-2 border-olive bg-surface/30 p-2 md:p-4 transition-colors hover:bg-surface/60"
+					>
+						<img
+							src={tackleImg(tackle.rod)}
+							alt={tackle.rod.name}
+							class="h-12 w-12 md:h-16 md:w-16 rounded object-contain"
+						/>
+						<p class="text-xs md:text-sm font-semibold text-dark-teal">{tackle.rod.name}</p>
+					</button>
 
-		<!-- Hook -->
-		<button
-			onclick={() => openModal('hook')}
-			class="flex cursor-pointer flex-col items-center gap-2 rounded-lg border-2 border-olive bg-surface/30 p-4 transition-colors hover:bg-surface/60"
-		>
-			<img
-				src={tackleImg(tackle.hook)}
-				alt={tackle.hook.name}
-				class="h-16 w-16 rounded object-contain"
-			/>
-			<p class="font-semibold text-dark-teal">Size {tackle.hook.name}</p>
-		</button>
+					<!-- Reel -->
+					{#if isPole}
+						<div
+							class="flex flex-col items-center gap-1 md:gap-2 rounded-lg border-2 border-olive bg-surface/10 p-2 md:p-4 opacity-50"
+						>
+							<div class="flex h-12 w-12 md:h-16 md:w-16 items-center justify-center rounded text-3xl text-muted">
+								&#x1F512;
+							</div>
+							<p class="text-xs md:text-sm font-semibold text-dark-teal">No Reel</p>
+						</div>
+					{:else}
+						<button
+							onclick={() => openModal('reel')}
+							class="flex cursor-pointer flex-col items-center gap-1 md:gap-2 rounded-lg border-2 border-olive bg-surface/30 p-2 md:p-4 transition-colors hover:bg-surface/60"
+						>
+							<img
+								src={tackleImg(tackle.reel)}
+								alt={tackle.reel.name}
+								class="h-12 w-12 md:h-16 md:w-16 rounded object-contain"
+							/>
+							<p class="text-xs md:text-sm font-semibold text-dark-teal">{tackle.reel.name}</p>
+						</button>
+					{/if}
 
-		<!-- Cast Strength -->
-		<button
-			onclick={() => openModal('cast')}
-			class="flex cursor-pointer flex-col items-center gap-2 rounded-lg border-2 border-olive bg-surface/30 p-4 transition-colors hover:bg-surface/60"
-		>
-			<svg viewBox="0 0 48 48" class="h-16 w-16 text-muted">
-				<circle cx="8" cy="24" r="4" fill="currentColor" />
-				<line
-					x1="12"
-					y1="24"
-					x2={tackle.castStrength === 'Short'
-						? '28'
-						: tackle.castStrength === 'Medium'
-							? '36'
-							: '44'}
-					y2="24"
-					stroke="currentColor"
-					stroke-width="4"
-					stroke-linecap="round"
-				/>
-			</svg>
-			<p class="font-semibold text-dark-teal">{tackle.castStrength}</p>
-		</button>
+					<!-- Line -->
+					<button
+						onclick={() => openModal('line')}
+						class="flex cursor-pointer flex-col items-center gap-1 md:gap-2 rounded-lg border-2 border-olive bg-surface/30 p-2 md:p-4 transition-colors hover:bg-surface/60"
+					>
+						<img
+							src={tackleImg(tackle.line)}
+							alt={tackle.line.name}
+							class="h-12 w-12 md:h-16 md:w-16 rounded object-contain"
+						/>
+						<p class="text-xs md:text-sm font-semibold text-dark-teal">{tackle.line.name}</p>
+					</button>
 
-		<!-- Strata -->
-		<button
-			onclick={() => !isLeger && openModal('strata')}
-			disabled={isLeger}
-			class="flex cursor-pointer flex-col items-center gap-2 rounded-lg border-2 p-4 transition-colors {isLeger
-				? 'border-olive bg-surface/10 opacity-50'
-				: 'border-olive bg-surface/30 hover:bg-surface/60'}"
-		>
-			<svg viewBox="0 0 48 48" class="h-16 w-16 text-muted">
-				{#each ['Top', 'Middle', 'Bottom'] as layer, i (layer)}
-					<rect
-						x="14"
-						y={8 + i * 12}
-						width="20"
-						height="8"
-						rx="2"
-						fill="currentColor"
-						opacity={tackle.strata === layer ? 1 : 0.25}
-					/>
-				{/each}
-			</svg>
-			<p class="font-semibold text-dark-teal">{tackle.strata}</p>
-		</button>
-	</div>
+					<!-- Hook -->
+					<button
+						onclick={() => openModal('hook')}
+						class="flex cursor-pointer flex-col items-center gap-1 md:gap-2 rounded-lg border-2 border-olive bg-surface/30 p-2 md:p-4 transition-colors hover:bg-surface/60"
+					>
+						<img
+							src={tackleImg(tackle.hook)}
+							alt={tackle.hook.name}
+							class="h-12 w-12 md:h-16 md:w-16 rounded object-contain"
+						/>
+						<p class="text-xs md:text-sm font-semibold text-dark-teal">Size {tackle.hook.name}</p>
+					</button>
 
-	<!-- Bait (full width) -->
-	<button
-		onclick={() => openModal('bait')}
-		class="flex w-full max-w-sm cursor-pointer items-center gap-4 rounded-lg border-2 border-olive bg-surface/30 p-4 transition-colors hover:bg-surface/60"
-	>
-		<img
-			src={baitImg(tackle.bait)}
-			alt={tackle.bait.name}
-			class="h-16 w-16 rounded object-contain"
-		/>
-		<div>
-			<p class="font-semibold text-dark-teal">{tackle.bait.name}</p>
+					<!-- Cast Strength -->
+					<button
+						onclick={() => openModal('cast')}
+						class="flex cursor-pointer flex-col items-center gap-1 md:gap-2 rounded-lg border-2 border-olive bg-surface/30 p-2 md:p-4 transition-colors hover:bg-surface/60"
+					>
+						<svg viewBox="0 0 48 48" class="h-12 w-12 md:h-16 md:w-16 text-muted">
+							<circle cx="8" cy="24" r="4" fill="currentColor" />
+							<line
+								x1="12"
+								y1="24"
+								x2={tackle.castStrength === 'Short'
+									? '28'
+									: tackle.castStrength === 'Medium'
+										? '36'
+										: '44'}
+								y2="24"
+								stroke="currentColor"
+								stroke-width="4"
+								stroke-linecap="round"
+							/>
+						</svg>
+						<p class="text-xs md:text-sm font-semibold text-dark-teal">{tackle.castStrength}</p>
+					</button>
+
+					<!-- Strata -->
+					<button
+						onclick={() => !isLeger && openModal('strata')}
+						disabled={isLeger}
+						class="flex cursor-pointer flex-col items-center gap-1 md:gap-2 rounded-lg border-2 p-2 md:p-4 transition-colors {isLeger
+							? 'border-olive bg-surface/10 opacity-50'
+							: 'border-olive bg-surface/30 hover:bg-surface/60'}"
+					>
+						<svg viewBox="0 0 48 48" class="h-12 w-12 md:h-16 md:w-16 text-muted">
+							{#each ['Top', 'Middle', 'Bottom'] as layer, i (layer)}
+								<rect
+									x="14"
+									y={8 + i * 12}
+									width="20"
+									height="8"
+									rx="2"
+									fill="currentColor"
+									opacity={tackle.strata === layer ? 1 : 0.25}
+								/>
+							{/each}
+						</svg>
+						<p class="text-xs md:text-sm font-semibold text-dark-teal">{tackle.strata}</p>
+					</button>
+
+					<!-- Bait (full width) -->
+					<button
+						onclick={() => openModal('bait')}
+						class="col-span-3 flex cursor-pointer flex-col items-center gap-1 md:gap-2 rounded-lg border-2 border-olive bg-surface/30 p-2 md:p-4 transition-colors hover:bg-surface/60"
+					>
+						<img
+							src={baitImg(tackle.bait)}
+							alt={tackle.bait.name}
+							class="h-12 w-12 md:h-16 md:w-16 rounded object-contain"
+						/>
+						<p class="text-xs md:text-sm font-semibold text-dark-teal">{tackle.bait.name}</p>
+					</button>
+				</div>
+
+				<!-- Buttons -->
+				<div class="flex justify-center gap-3">
+					{#if isMidGame}
+						<button
+							onclick={handleCancel}
+							class="inline-flex min-h-[44px] cursor-pointer items-center justify-center rounded bg-muted px-6 py-3 text-center text-white no-underline hover:bg-muted/80"
+						>
+							Cancel
+						</button>
+					{/if}
+					<button
+						onclick={handleConfirm}
+						class="inline-flex min-h-[44px] cursor-pointer items-center justify-center rounded bg-primary px-6 py-3 text-center text-white no-underline hover:bg-primary/80"
+					>
+						{buttonLabel}
+					</button>
+				</div>
+			</div>
 		</div>
-	</button>
-
-	<div class="flex gap-3">
-		{#if isMidGame}
-			<button
-				onclick={handleCancel}
-				class="inline-flex min-h-[44px] cursor-pointer items-center justify-center rounded bg-muted px-6 py-3 text-center text-white no-underline hover:bg-muted/80"
-			>
-				Cancel
-			</button>
-		{/if}
-		<button
-			onclick={handleConfirm}
-			class="inline-flex min-h-[44px] cursor-pointer items-center justify-center rounded bg-primary px-6 py-3 text-center text-white no-underline hover:bg-primary/80"
-		>
-			{buttonLabel}
-		</button>
 	</div>
 </div>
 

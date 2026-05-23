@@ -35,21 +35,12 @@
 	let lastEvent = $derived(gameState.lastEvent);
 	let debugMode = $state(false);
 	let intervalId: ReturnType<typeof setInterval> | null = null;
-	let waitSeconds = $state(0);
 
-	$effect(() => {
-		if (playerPhase !== 'waiting') {
-			waitSeconds = 0;
-			return;
-		}
-
-		const id = setInterval(() => {
-			if (debugMode) return;
-			waitSeconds += 0.1;
-		}, 100);
-
-		return () => clearInterval(id);
-	});
+	let waitSeconds = $derived(
+		playerPhase === 'waiting' && gameState.playerSnapshot
+			? Math.floor(gameState.playerSnapshot.waitElapsedMs / 1000)
+			: 0
+	);
 
 	let pegFish = $derived(gameState.getPegPopulation(prepState.playerPeg ?? ''));
 
@@ -133,7 +124,6 @@
 	}
 
 	function handleChangeTackle() {
-		gameState.resetCast();
 		goto(tackleUrl);
 	}
 

@@ -32,6 +32,7 @@ export type FishingEvent =
 export interface PlayerLoopSnapshot {
 	phase: FishingPhase;
 	remainingMs: number;
+	waitElapsedMs: number;
 	biteWindowRemaining: number;
 	biteWindowTotal: number;
 	reelTimerMs: number;
@@ -54,6 +55,7 @@ export class FishingLoop {
 	phase: FishingPhase = 'idle';
 	currentFish: FishData | null = null;
 	remainingMs = 0;
+	waitElapsedMs = 0;
 	caughtFish: CaughtFish[] = [];
 	biteWindowRemaining = 0;
 	biteWindowTotal = 0;
@@ -104,6 +106,7 @@ export class FishingLoop {
 		return {
 			phase: this.phase,
 			remainingMs: this.remainingMs,
+			waitElapsedMs: this.waitElapsedMs,
 			biteWindowRemaining: this.biteWindowRemaining,
 			biteWindowTotal: this.biteWindowTotal,
 			reelTimerMs: this.reelTimerMs,
@@ -122,6 +125,7 @@ export class FishingLoop {
 			if (fish) {
 				this.blankCycleCount = 0;
 				this.currentFish = fish;
+				this.waitElapsedMs = 0;
 				this.remainingMs = this.calcBiteTime(fish);
 				this.lastComputedBiteTime = this.remainingMs;
 				this.blankPatienceMs = 0;
@@ -205,6 +209,7 @@ export class FishingLoop {
 		this.biteWindowRemaining = 0;
 		this.biteWindowTotal = 0;
 		this.lastComputedBiteTime = 0;
+		this.waitElapsedMs = 0;
 
 		if (!fish) {
 			this.blankPatienceMs = 0;
@@ -227,6 +232,7 @@ export class FishingLoop {
 		if (!this.currentFish && this.phase !== 'waiting') return null;
 
 		if (this.phase === 'waiting') {
+			this.waitElapsedMs += elapsedMs;
 			if (!this.currentFish) {
 				this.blankPatienceMs += elapsedMs;
 
@@ -258,6 +264,7 @@ export class FishingLoop {
 					if (fish) {
 						this.blankCycleCount = 0;
 						this.currentFish = fish;
+						this.waitElapsedMs = 0;
 						this.remainingMs = this.calcBiteTime(fish);
 						this.lastComputedBiteTime = this.remainingMs;
 					}
@@ -369,6 +376,7 @@ export class FishingLoop {
 		this.phase = 'idle';
 		this.currentFish = null;
 		this.remainingMs = 0;
+		this.waitElapsedMs = 0;
 		this.biteWindowRemaining = 0;
 		this.biteWindowTotal = 0;
 		this.reelTimerMs = 0;
@@ -468,6 +476,7 @@ export class FishingLoop {
 		this.phase = 'idle';
 		this.currentFish = null;
 		this.remainingMs = 0;
+		this.waitElapsedMs = 0;
 		this.biteWindowRemaining = 0;
 		this.biteWindowTotal = 0;
 		this.reelTimerMs = 0;
