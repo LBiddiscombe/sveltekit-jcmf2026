@@ -1,3 +1,4 @@
+import { browser } from '$app/environment';
 import { bots, venues } from '$lib/data';
 import type { Venue, Lake, TackleSelection } from '$lib/data';
 import type { GameMode } from './prep-flow';
@@ -41,6 +42,7 @@ export class PrepState {
 	}
 
 	private restore() {
+		if (!browser) return;
 		try {
 			const raw = sessionStorage.getItem(STORAGE_KEY);
 			if (!raw) return;
@@ -74,6 +76,7 @@ export class PrepState {
 	}
 
 	private persist() {
+		if (!browser) return;
 		sessionStorage.setItem(
 			STORAGE_KEY,
 			JSON.stringify({
@@ -143,7 +146,7 @@ export class PrepState {
 		this.playerPeg = undefined;
 		this.timeLimitMinutes = undefined;
 		this.anglers = [];
-		sessionStorage.removeItem(STORAGE_KEY);
+		if (browser) sessionStorage.removeItem(STORAGE_KEY);
 		resetIds();
 	}
 

@@ -19,4 +19,10 @@
 			Host Match
 		</a>
 	</div>
+	<a
+		href="/about"
+		class="mt-8 text-sm text-muted underline underline-offset-2 hover:text-dark-teal"
+	>
+		About
+	</a>
 </div>

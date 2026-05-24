@@ -38,6 +38,29 @@ This is an outline of the game screens
   - See results
   - Leave lake
 - Bots
-  - Have a skill level
-  - Skill determines things like tackle choice, change tackle time, strike/reel/land success
-  - First names only, male and female, based on known anglers Jack (Charlton), John (Wilson), Matt (Hayes), Mick (Brown), Paul (Whitehouse), Bob (Mortimer), Ashley (Rae), Emma (Pickering), Becky (Keogh), Sarah (Taylor)
+	- Have a skill level
+	- Skill determines things like tackle choice, change tackle time, strike/reel/land success
+	- First names only, male and female, based on known anglers Jack (Charlton), John (Wilson), Matt (Hayes), Mick (Brown), Paul (Whitehouse), Bob (Mortimer), Ashley (Rae), Emma (Pickering), Becky (Keogh), Sarah (Taylor)
+
+## Deployment
+
+This project is configured for deployment on **Vercel** via `@sveltejs/adapter-vercel`.
+
+### First deploy
+
+1. Push the repo to GitHub
+2. Run:
+   ```bash
+   npx vercel link          # link to your Vercel account
+   npx vercel --prod        # first deploy
+   ```
+   This opens a browser to authenticate and creates the project.
+3. Or go to [vercel.com/new](https://vercel.com/new), import the GitHub repo — framework auto-detects SvelteKit.
+
+### Auto-deploy on push
+
+After linking, every `git push` to `main` triggers a production deploy automatically (enabled in the Vercel project settings).
+
+### Offline / PWA
+
+The service worker is built into `src/service-worker.ts` using SvelteKit's built-in support. It precaches all app assets and provides offline navigation via cached root page. The PWA manifest is at `static/manifest.json`. Service workers require HTTPS — Vercel provides this automatically.
