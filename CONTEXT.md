@@ -125,10 +125,11 @@ Prep selection state is sourced from **PrepState** (mode, venue, lake, peg, time
 ## Routes (initial build)
 
 1. **Splash** (`/`) — branding/intro screen with full-bleed background image, Ken Burns animation, and a "Start" button
-2. **Menu** — main menu with "Go Fishing" (Session) and "Host Match" options
+2. **Menu** — welcome page showing the venue and lake name, a hero image of the lake, and two mode cards (Session / Match). Selecting a mode initialises PrepState and navigates to the rules step.
 3. **Prep** (nested):
-   - **Session**: lake (welcome) → rules (pick peg) → tackle → game
-   - **Match**: lake (welcome) → rules (pick time preset) → draw → tackle → game
+   - **Session**: rules (pick peg) → tackle → game
+   - **Match**: rules (pick time preset) → draw → tackle → game
+   - **Lake** (`/prep/lake`): standalone entry point (initialises venue/lake selection if entered directly; not reached from the menu)
 4. **Game** — the fishing loop. During a Match, the game clock runs and bot anglers fish autonomously alongside the player. "Change Tackle" navigates to `/prep/tackle` and back.
 5. **Results** — post-session/match summary. Sessions show a personal catch list (species, weight, count). Matches show a leaderboard ranked by total catch weight.
 

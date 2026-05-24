@@ -38,8 +38,10 @@
 
 <div class="h-dvh w-96 overflow-y-auto border-l border-olive bg-surface/20 p-4 text-xs">
 	<!-- Section 1: Fish distribution -->
-	<button onclick={() => toggle('fish')}
-		class="mb-2 flex w-full cursor-pointer items-center gap-1.5 text-sm font-semibold text-dark-teal">
+	<button
+		onclick={() => toggle('fish')}
+		class="mb-2 flex w-full cursor-pointer items-center gap-1.5 text-sm font-semibold text-dark-teal"
+	>
 		<span class="text-muted">{expanded['fish'] ? '▾' : '▸'}</span>
 		Peg {pegName} — {pegFish.length} fish
 	</button>
@@ -50,8 +52,10 @@
 					(a, b) => b.weightOz - a.weightOz
 				)}
 				<div>
-					<button onclick={() => toggle(`dist-${dist}`)}
-						class="mb-1 flex w-full cursor-pointer items-center gap-1.5 font-semibold text-dark-teal">
+					<button
+						onclick={() => toggle(`dist-${dist}`)}
+						class="mb-1 flex w-full cursor-pointer items-center gap-1.5 font-semibold text-dark-teal"
+					>
 						<span class="text-muted">{expanded[`dist-${dist}`] ? '▾' : '▸'}</span>
 						{dist} ({distFish.length})
 					</button>
@@ -60,8 +64,10 @@
 							{@const strataFish = distFish.filter((f) => f.strata === strata)}
 							{#if strataFish.length > 0}
 								<div class="mb-1 ml-3">
-									<button onclick={() => toggle(`strata-${dist}-${strata}`)}
-										class="flex w-full cursor-pointer items-center gap-1.5 text-muted">
+									<button
+										onclick={() => toggle(`strata-${dist}-${strata}`)}
+										class="flex w-full cursor-pointer items-center gap-1.5 text-muted"
+									>
 										<span>{expanded[`strata-${dist}-${strata}`] ? '▾' : '▸'}</span>
 										{strata} ({strataFish.length})
 									</button>
@@ -86,8 +92,10 @@
 	{/if}
 
 	<!-- Section 2: My catch log -->
-	<button onclick={() => toggle('catch')}
-		class="mb-2 mt-4 flex w-full cursor-pointer items-center gap-1.5 text-sm font-semibold text-dark-teal">
+	<button
+		onclick={() => toggle('catch')}
+		class="mb-2 mt-4 flex w-full cursor-pointer items-center gap-1.5 text-sm font-semibold text-dark-teal"
+	>
 		<span class="text-muted">{expanded['catch'] ? '▾' : '▸'}</span>
 		My Catch ({playerAngler?.catch.length ?? 0})
 	</button>
@@ -105,9 +113,12 @@
 							<span class="text-muted">{formatWeight(entry.weightOz)}</span>
 						</div>
 					{/each}
-					<div class="flex justify-between rounded bg-surface/30 px-2 py-1 font-bold text-dark-teal">
+					<div
+						class="flex justify-between rounded bg-surface/30 px-2 py-1 font-bold text-dark-teal"
+					>
 						<span>Total</span>
-						<span>{playerAngler.catch.length} fish, {formatWeight(playerAngler.totalWeightOz)}</span>
+						<span>{playerAngler.catch.length} fish, {formatWeight(playerAngler.totalWeightOz)}</span
+						>
 					</div>
 				</div>
 			{/if}
@@ -116,8 +127,10 @@
 
 	<!-- Section 3: Bot statuses (match only) -->
 	{#if mode === 'match'}
-		<button onclick={() => toggle('bots')}
-			class="mb-2 mt-4 flex w-full cursor-pointer items-center gap-1.5 text-sm font-semibold text-dark-teal">
+		<button
+			onclick={() => toggle('bots')}
+			class="mb-2 mt-4 flex w-full cursor-pointer items-center gap-1.5 text-sm font-semibold text-dark-teal"
+		>
 			<span class="text-muted">{expanded['bots'] ? '▾' : '▸'}</span>
 			Bots
 		</button>

@@ -17,8 +17,8 @@
 		<p>
 			<strong class="text-accent">Jack Charlton's Match Fishing</strong> was published by Alligata
 			Software Ltd, created by <strong class="text-accent">Elliot Gay</strong> and
-			<strong class="text-accent">F. David Thorpe</strong> (graphics). It was a game on 8-bit
-			computers back in the 1980s.
+			<strong class="text-accent">F. David Thorpe</strong> (graphics). It was a game on 8-bit computers
+			back in the 1980s.
 		</p>
 		<p>
 			I remember playing this for hours with my brother, sat hovering over the ZX Spectrum keyboard

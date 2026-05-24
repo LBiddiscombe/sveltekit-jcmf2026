@@ -54,7 +54,7 @@ export const presets: TacklePreset[] = [
 		strata: 'Bottom',
 		castStrength: 'Long'
 	},
-	
+
 	// ── Species-specific ──
 	{
 		name: 'Barbel Rig',
