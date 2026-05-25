@@ -177,7 +177,7 @@ export default class GameRoom implements Party.Server {
 			}
 
 			case 'done-fishing': {
-				if (this.state.phase !== 'grace-period') break;
+				if (this.state.phase !== 'fishing' && this.state.phase !== 'grace-period') break;
 				if (this.state.readyConnectionIds.includes(sender.id)) break;
 				this.state.readyConnectionIds.push(sender.id);
 				this.save();
@@ -224,10 +224,12 @@ export default class GameRoom implements Party.Server {
 	async onAlarm() {
 		if (this.state.phase === 'fishing') {
 			this.state.phase = 'grace-period';
-			this.state.readyConnectionIds = [];
 			this.save();
 			this.broadcast({ type: 'time-up' });
 			this.room.storage.setAlarm(Date.now() + GRACE_PERIOD_MS);
+			if (this.allPlayersReady()) {
+				this.finishGameWithResults();
+			}
 		} else if (this.state.phase === 'grace-period') {
 			this.finishGameWithResults();
 		}

@@ -57,13 +57,13 @@ export class GameState {
 
 		if (timeLimitMinutes !== undefined) {
 			this.timeRemainingSeconds = Math.max(0, timeLimitMinutes * 60);
-			if (this.timeRemainingSeconds <= 0) {
-				this.timeExpired = true;
-			}
+			this.timeExpired = this.timeRemainingSeconds <= 0;
+		} else {
+			this.timeRemainingSeconds = 0;
+			this.timeExpired = false;
 		}
 
 		this.phase = 'fishing';
-		this.timeExpired = false;
 		this.catchAudit = [];
 		this.sessionStartMs = Date.now();
 		resetIds();
@@ -267,10 +267,6 @@ export class GameState {
 		for (const [id, loop] of this.botLoops) {
 			const angler = this.anglers.find((a) => a.id === id);
 			if (!angler) continue;
-
-			if (loop.phase === 'reeling' || loop.phase === 'caught') {
-				continue;
-			}
 
 			loop.phase = 'finished';
 			angler.phase = 'finished';

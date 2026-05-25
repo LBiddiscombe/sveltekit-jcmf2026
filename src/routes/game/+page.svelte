@@ -76,8 +76,9 @@
 	});
 
 	let hintBlocking = $derived(
-		!!(playerPhase === 'bite' && !hintsConsumed.bite) ||
-			!!(playerPhase === 'landing' && !hintsConsumed.landing)
+		!tutorialCompleted &&
+			(!!(playerPhase === 'bite' && !hintsConsumed.bite) ||
+				!!(playerPhase === 'landing' && !hintsConsumed.landing))
 	);
 
 	let reelHintTimer: ReturnType<typeof setTimeout> | null = null;
@@ -220,7 +221,7 @@
 
 	function handlePegClick() {
 		if (playerPhase === 'bite') handleStrike();
-		else if (playerPhase === 'landing') handleReel();
+		else if (playerPhase === 'reeling' || playerPhase === 'landing') handleReel();
 	}
 
 	function toggleDebug() {
@@ -242,6 +243,10 @@
 	$effect(() => {
 		const gp = gameState.phase;
 		const mp = isMulti ? multiplayer.phase : null;
+
+		if (gp !== 'results') {
+			waitingForPlayers = false;
+		}
 
 		if (isMulti && mp === 'grace-period') {
 			gameState.timeExpired = true;
@@ -269,6 +274,9 @@
 		const angler = prepState.playerAngler;
 		if (!angler) return;
 		angler.pegName = multiplayer.ownPeg ?? '';
+		angler.catch = [];
+		angler.totalWeightOz = 0;
+		angler.biggestFish = null;
 		const venue = venues[0];
 		const lake = venue.lakes[0];
 		gameState.beginFishing([angler], venue, lake, multiplayer.timeLimitMinutes);
@@ -295,7 +303,7 @@
 		document.addEventListener('keydown', onKeydown);
 
 		intervalId = setInterval(() => {
-			if (hintBlocking) return;
+			if (hintBlocking || waitingForPlayers) return;
 			now = Date.now();
 			gameState.tick(100);
 		}, 100);
@@ -313,13 +321,19 @@
 		<!-- Peg image header -->
 		<div
 			class="relative w-full overflow-hidden rounded-xl bg-surface/20 sm:max-w-sm
-				{playerPhase === 'bite' || playerPhase === 'landing' ? 'cursor-pointer' : ''}"
+				{playerPhase === 'bite' || playerPhase === 'reeling' || playerPhase === 'landing'
+				? 'cursor-pointer'
+				: ''}"
 			class:strike-glow={playerPhase === 'bite'}
 			class:land-glow={playerPhase === 'landing'}
 			onclick={handlePegClick}
 			onkeydown={(e) => e.key === 'Enter' && handlePegClick()}
-			role={playerPhase === 'bite' || playerPhase === 'landing' ? 'button' : undefined}
-			tabindex={playerPhase === 'bite' || playerPhase === 'landing' ? 0 : undefined}
+			role={playerPhase === 'bite' || playerPhase === 'reeling' || playerPhase === 'landing'
+				? 'button'
+				: undefined}
+			tabindex={playerPhase === 'bite' || playerPhase === 'reeling' || playerPhase === 'landing'
+				? 0
+				: undefined}
 		>
 			<div class="relative aspect-square">
 				{#if selectedPegData?.image && pegImg(selectedPegData.image)}
