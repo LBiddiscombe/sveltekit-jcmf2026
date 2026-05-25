@@ -174,11 +174,13 @@
 		} else {
 			prepState.chooseTackle(tackle);
 			if (!isMulti) {
+				const elapsed = Date.now() - (prepState.matchStartTime ?? Date.now());
+				const remainingMinutes = Math.max(0, (prepState.timeLimitMinutes ?? 0) - elapsed / 60000);
 				gameState.beginFishing(
 					prepState.anglers,
 					prepState.venue!,
 					prepState.lake!,
-					prepState.timeLimitMinutes
+					remainingMinutes
 				);
 			}
 		}

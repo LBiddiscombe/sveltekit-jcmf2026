@@ -55,8 +55,11 @@ export class GameState {
 		this.anglers = anglers;
 		this.playerPeg = player.pegName;
 
-		if (timeLimitMinutes) {
-			this.timeRemainingSeconds = timeLimitMinutes * 60;
+		if (timeLimitMinutes !== undefined) {
+			this.timeRemainingSeconds = Math.max(0, timeLimitMinutes * 60);
+			if (this.timeRemainingSeconds <= 0) {
+				this.timeExpired = true;
+			}
 		}
 
 		this.phase = 'fishing';
@@ -208,9 +211,18 @@ export class GameState {
 			}
 		}
 
+		const prevLoopPhase = this.playerLoop?.phase;
 		const event = this.playerLoop?.tick(elapsedMs) ?? null;
 		if (event) this.lastEvent = event;
 		this.syncPlayerState();
+
+		if (this.timeExpired && this.playerLoop) {
+			const currentPhase = this.playerLoop.phase;
+			if (currentPhase === 'waiting' && prevLoopPhase && prevLoopPhase !== 'waiting') {
+				this.playerLoop.resetCast();
+				this.syncPlayerState();
+			}
+		}
 
 		if (!event && this.playerSnapshot?.phase === 'waiting') {
 			if (this.playerLoop?.currentFish) {
