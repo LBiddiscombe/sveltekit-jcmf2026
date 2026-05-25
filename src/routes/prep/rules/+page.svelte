@@ -103,7 +103,7 @@
 		<div class="mt-auto flex justify-center pb-2">
 			<button
 				onclick={goToTackle}
-				class="inline-flex min-h-[44px] items-center justify-center rounded bg-primary px-6 py-3 text-center text-white no-underline hover:bg-primary/80"
+				class="inline-flex min-h-11 items-center justify-center rounded bg-primary px-6 py-3 text-center text-white no-underline hover:bg-primary/80"
 			>
 				Next
 			</button>
@@ -123,7 +123,7 @@
 						? 'scale-105 border-primary ring-2 ring-primary ring-offset-2'
 						: ''}"
 				>
-					<p class="text-center text-lg font-semibold text-dark-teal">{minutes} minutes</p>
+					<p class="text-center text-lg font-semibold text-dark-teal">{minutes} minute{minutes === 1 ? '' : 's'}</p>
 				</button>
 			{/each}
 		</div>

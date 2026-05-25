@@ -5,7 +5,7 @@
 	import type { GameMode } from '$lib/game/prep-flow';
 	import { venues } from '$lib/data';
 	import lakeHero from '$lib/assets/images/lakes/jcs-match.jpeg';
-	import sessionThumb from '$lib/assets/images/pegs/jcs-match-1.jpeg';
+	import sessionThumb from '$lib/assets/images/pegs/jcs-match-2.jpeg';
 	import venueThumb from '$lib/assets/images/venues/jcs.jpeg';
 
 	const venue = venues[0];
