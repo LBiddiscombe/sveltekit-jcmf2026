@@ -125,7 +125,7 @@
 	let statusMessage = $derived.by(() => {
 		const e = lastEvent;
 		if (e?.type === 'fishCaught') {
-			const text = `Caught a ${formatWeight(e.weightOz)} ${e.classificationLabel || ''} ${e.species}!`;
+			const text = `You caught a ${formatWeight(e.weightOz)} ${e.classificationLabel || ''} ${e.species}!`;
 			return text.replace(/\s+/g, ' ').trim();
 		}
 		if (e?.type === 'hookBroken') return 'Hook smashed by big fish!';
@@ -281,11 +281,9 @@
 					</div>
 				{/if}
 				{#if currentHint}
-					<div
-						class="pointer-events-none absolute inset-x-0 bottom-0 flex items-center justify-center p-3"
-					>
-						<div class="animate-fadeIn rounded-lg bg-black/70 px-4 py-2 text-center">
-							<p class="text-sm font-medium text-white">{currentHint}</p>
+					<div class="pointer-events-none absolute inset-0 flex items-center justify-center p-3">
+						<div class="animate-fadeIn rounded-lg bg-black/40 px-4 py-2 text-center">
+							<p class="text-sm font-bold text-white">{currentHint}</p>
 						</div>
 					</div>
 				{/if}
