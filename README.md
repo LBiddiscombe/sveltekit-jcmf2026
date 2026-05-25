@@ -15,8 +15,8 @@ This is an outline of the game screens
 - Splash screen
 - Main menu
   - Go Fishing (single player)
-  - Host match (multiplayer, for future)
-  - Join match (multiplayer, for future)
+  - Host match (multiplayer)
+  - Join match (multiplayer)
   - Fishing Journal (sessions, matches, fish PBs)
   - Settings
 - For solo play
@@ -44,9 +44,9 @@ This is an outline of the game screens
 
 ## Deployment
 
-This project is configured for deployment on **Vercel** via `@sveltejs/adapter-vercel`.
+### Vercel (SvelteKit app)
 
-### First deploy
+Configured via `@sveltejs/adapter-vercel`.
 
 1. Push the repo to GitHub
 2. Run:
@@ -54,12 +54,31 @@ This project is configured for deployment on **Vercel** via `@sveltejs/adapter-v
    npx vercel link          # link to your Vercel account
    npx vercel --prod        # first deploy
    ```
-   This opens a browser to authenticate and creates the project.
 3. Or go to [vercel.com/new](https://vercel.com/new), import the GitHub repo — framework auto-detects SvelteKit.
 
-### Auto-deploy on push
+After linking, every `git push` to `main` triggers a production deploy automatically.
 
-After linking, every `git push` to `main` triggers a production deploy automatically (enabled in the Vercel project settings).
+### PartyKit (multiplayer server)
+
+Multiplayer requires a PartyKit Cloud server alongside the Vite app. Deploy once after first push:
+
+```bash
+npx partykit deploy
+```
+
+Then set the PartyKit host as an env var on Vercel:
+
+```
+PUBLIC_PARTYKIT_HOST=jcmf-multiplayer.<your-username>.partykit.dev
+```
+
+Set this via the Vercel dashboard (Project → Settings → Environment Variables) or the CLI:
+
+```bash
+npx vercel env add PUBLIC_PARTYKIT_HOST
+```
+
+Run `npx partykit deploy` again whenever `src/party/server.ts` changes.
 
 ### Offline / PWA
 
