@@ -211,14 +211,21 @@ export class GameState {
 			}
 		}
 
-		const prevLoopPhase = this.playerLoop?.phase;
+		if (this.timeExpired && this.playerLoop) {
+			const phase = this.playerLoop.phase;
+			if (phase !== 'reeling' && phase !== 'landing') {
+				this.playerLoop.resetCast();
+				this.syncPlayerState();
+			}
+		}
+
 		const event = this.playerLoop?.tick(elapsedMs) ?? null;
 		if (event) this.lastEvent = event;
 		this.syncPlayerState();
 
 		if (this.timeExpired && this.playerLoop) {
-			const currentPhase = this.playerLoop.phase;
-			if (currentPhase === 'waiting' && prevLoopPhase && prevLoopPhase !== 'waiting') {
+			const phase = this.playerLoop.phase;
+			if (phase !== 'reeling' && phase !== 'landing') {
 				this.playerLoop.resetCast();
 				this.syncPlayerState();
 			}

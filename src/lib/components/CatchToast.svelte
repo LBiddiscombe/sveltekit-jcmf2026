@@ -1,15 +1,20 @@
 <script lang="ts">
-	import { gameState } from '$lib/game/state.svelte';
-	import type { BotCatchEvent } from '$lib/game/state.svelte';
+	export interface CatchToastEvent {
+		name: string;
+		pegName: string;
+		classificationLabel: string;
+		species: string;
+	}
 
-	let current: BotCatchEvent | null = $state(null);
-	let queue: BotCatchEvent[] = $state([]);
+	let { events }: { events: CatchToastEvent[] } = $props();
+
+	let current: CatchToastEvent | null = $state(null);
+	let queue: CatchToastEvent[] = $state([]);
 	let processedCount = 0;
 
 	$effect(() => {
-		const feed = gameState.botCatchFeed;
-		while (processedCount < feed.length) {
-			queue = [...queue, feed[processedCount]];
+		while (processedCount < events.length) {
+			queue = [...queue, events[processedCount]];
 			processedCount++;
 		}
 	});

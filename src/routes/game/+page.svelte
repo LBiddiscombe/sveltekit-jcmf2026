@@ -7,7 +7,7 @@
 	import { gameState } from '$lib/game/state.svelte';
 	import { multiplayer } from '$lib/game/party/connection.svelte';
 	import { venues } from '$lib/data';
-	import BotCatchToast from '$lib/components/BotCatchToast.svelte';
+	import CatchToast from '$lib/components/CatchToast.svelte';
 	import DebugPanel from '$lib/components/DebugPanel.svelte';
 	import { isTutorialCompleted, completeTutorial } from '$lib/game/tutorial';
 
@@ -48,27 +48,16 @@
 	let now = $state(Date.now());
 	let waitingForPlayers = $state(false);
 
-	let multiToasts = $state<{ id: number; text: string }[]>([]);
-	let toastIdCounter = $state(0);
-	let prevCatchCount = $state(0);
-
-	$effect(() => {
-		if (!isMulti) return;
-		const events = multiplayer.catchEvents;
-		if (events.length > prevCatchCount) {
-			const newEvents = events.slice(prevCatchCount);
-			for (const event of newEvents) {
-				if (event.anglerName === multiplayer.playerName) continue;
-				const id = ++toastIdCounter;
-				const text = `${event.anglerName} caught a ${formatWeight(event.weightOz)} ${event.classificationLabel} ${event.species}!`;
-				multiToasts = [...multiToasts, { id, text }];
-				setTimeout(() => {
-					multiToasts = multiToasts.filter((t) => t.id !== id);
-				}, 3500);
-			}
-			prevCatchCount = events.length;
-		}
-	});
+	let multiplayerCatches = $derived(
+		multiplayer.catchEvents
+			.filter((e) => e.anglerName !== multiplayer.playerName)
+			.map((e) => ({
+				name: e.anglerName,
+				pegName: e.pegName,
+				classificationLabel: e.classificationLabel,
+				species: e.species
+			}))
+	);
 
 	let tutorialCompleted = $state(isTutorialCompleted());
 	let hintsConsumed = $state({ bite: false, reeling: false, landing: false });
@@ -403,18 +392,9 @@
 					<p class="text-sm font-bold text-white/90">{matchTimeDisplay}</p>
 				</div>
 			{/if}
-			{#if mode === 'match'}
+			{#if mode === 'match' || mode === 'multiplayer'}
 				<div class="absolute inset-x-3 bottom-3">
-					<BotCatchToast />
-				</div>
-			{/if}
-			{#if mode === 'multiplayer'}
-				<div class="absolute inset-x-3 bottom-3 flex flex-col gap-1">
-					{#each multiToasts as toast (toast.id)}
-						<div class="animate-fadeIn rounded-lg bg-black/40 px-3 py-1.5 text-xs text-white/90">
-							{toast.text}
-						</div>
-					{/each}
+					<CatchToast events={mode === 'match' ? gameState.botCatchFeed : multiplayerCatches} />
 				</div>
 			{/if}
 		</div>
