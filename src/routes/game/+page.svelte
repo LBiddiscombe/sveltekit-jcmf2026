@@ -6,6 +6,7 @@
 	import { gameState } from '$lib/game/state.svelte';
 	import BotCatchToast from '$lib/components/BotCatchToast.svelte';
 	import DebugPanel from '$lib/components/DebugPanel.svelte';
+	import { isTutorialCompleted, completeTutorial } from '$lib/game/tutorial';
 
 	const tackleImages = import.meta.glob<string>('$lib/assets/images/tackle/*.png', {
 		eager: true,
@@ -36,6 +37,59 @@
 	let lastEvent = $derived(gameState.lastEvent);
 	let debugMode = $state(false);
 	let intervalId: ReturnType<typeof setInterval> | null = null;
+
+	let tutorialCompleted = $state(isTutorialCompleted());
+	let hintsConsumed = $state({ bite: false, reeling: false, landing: false });
+	let lastHintPhase: string | null = null;
+
+	let currentHint = $derived.by(() => {
+		if (tutorialCompleted) return '';
+		const p = playerPhase;
+		if (p === 'bite' && !hintsConsumed.bite)
+			return 'Tap the image or press Space to hook the fish!';
+		if (p === 'reeling' && !hintsConsumed.reeling)
+			return "Your catch is being reeled in. Don't tap until it lands!";
+		if (p === 'landing' && !hintsConsumed.landing)
+			return 'Tap the image or press Space to land the fish!';
+		return '';
+	});
+
+	let hintBlocking = $derived(
+		!!(playerPhase === 'bite' && !hintsConsumed.bite) ||
+			!!(playerPhase === 'landing' && !hintsConsumed.landing)
+	);
+
+	let reelHintTimer: ReturnType<typeof setTimeout> | null = null;
+
+	$effect(() => {
+		if (tutorialCompleted) return;
+		const phase = playerPhase;
+		const prev = lastHintPhase;
+		lastHintPhase = phase;
+
+		if (prev === 'bite' && phase !== 'bite') hintsConsumed.bite = true;
+		else if (prev === 'reeling' && phase !== 'reeling') hintsConsumed.reeling = true;
+		else if (prev === 'landing' && phase !== 'landing') hintsConsumed.landing = true;
+
+		if (hintsConsumed.bite && hintsConsumed.reeling && hintsConsumed.landing) {
+			completeTutorial();
+			tutorialCompleted = true;
+		}
+	});
+
+	$effect(() => {
+		if (tutorialCompleted) return;
+		if (playerPhase === 'reeling' && !hintsConsumed.reeling) {
+			reelHintTimer = setTimeout(() => {
+				hintsConsumed.reeling = true;
+			}, 5000);
+		} else {
+			if (reelHintTimer) {
+				clearTimeout(reelHintTimer);
+				reelHintTimer = null;
+			}
+		}
+	});
 
 	let waitSeconds = $derived(
 		playerPhase === 'waiting' && gameState.playerSnapshot
@@ -134,6 +188,7 @@
 	function toggleDebug() {
 		if (debugMode) {
 			intervalId = setInterval(() => {
+				if (hintBlocking) return;
 				gameState.tick(100);
 			}, 100);
 			debugMode = false;
@@ -169,6 +224,7 @@
 		document.addEventListener('keydown', onKeydown);
 
 		intervalId = setInterval(() => {
+			if (hintBlocking) return;
 			gameState.tick(100);
 		}, 100);
 
@@ -221,6 +277,15 @@
 					<div class="pointer-events-none absolute inset-0 flex items-center justify-center">
 						<div class="rounded-lg bg-black/40 px-4 py-2 text-center">
 							<p class="text-sm font-bold text-white">{statusMessage}</p>
+						</div>
+					</div>
+				{/if}
+				{#if currentHint}
+					<div
+						class="pointer-events-none absolute inset-x-0 bottom-0 flex items-center justify-center p-3"
+					>
+						<div class="animate-fadeIn rounded-lg bg-black/70 px-4 py-2 text-center">
+							<p class="text-sm font-medium text-white">{currentHint}</p>
 						</div>
 					</div>
 				{/if}
@@ -445,6 +510,21 @@
 		}
 		75% {
 			transform: translateX(2px);
+		}
+	}
+
+	.animate-fadeIn {
+		animation: fadeIn 0.3s ease-out;
+	}
+
+	@keyframes fadeIn {
+		from {
+			opacity: 0;
+			transform: translateY(4px);
+		}
+		to {
+			opacity: 1;
+			transform: translateY(0);
 		}
 	}
 </style>

@@ -265,7 +265,6 @@ export class FishingLoop {
 					if (fish) {
 						this.blankCycleCount = 0;
 						this.currentFish = fish;
-						this.waitElapsedMs = 0;
 						this.remainingMs = this.calcBiteTime(fish);
 						this.lastComputedBiteTime = this.remainingMs;
 					}

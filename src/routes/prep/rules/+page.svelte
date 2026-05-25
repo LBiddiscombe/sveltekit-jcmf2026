@@ -2,6 +2,14 @@
 	import { goto } from '$app/navigation';
 	import { prepState } from '$lib/game/prep-state.svelte';
 	import { prepTackleUrl, prepDrawUrl } from '$lib/game/prep-flow';
+	import { isTutorialCompleted, resetTutorial } from '$lib/game/tutorial';
+
+	let tutorialCompleted = $state(isTutorialCompleted());
+
+	function handleResetHints() {
+		resetTutorial();
+		tutorialCompleted = false;
+	}
 
 	let mode = $derived(prepState.mode);
 	let pegs = $derived(prepState.lake?.pegs ?? []);
@@ -100,13 +108,21 @@
 			{/each}
 		</div>
 
-		<div class="mt-auto flex justify-center pb-2">
+		<div class="mt-auto flex flex-col items-center gap-2 pb-2">
 			<button
 				onclick={goToTackle}
 				class="inline-flex min-h-11 items-center justify-center rounded bg-primary px-6 py-3 text-center text-white no-underline hover:bg-primary/80"
 			>
 				Next
 			</button>
+			{#if tutorialCompleted}
+				<button
+					onclick={handleResetHints}
+					class="cursor-pointer text-xs text-muted underline hover:text-dark-teal"
+				>
+					Show hints again
+				</button>
+			{/if}
 		</div>
 	</div>
 {:else}
@@ -128,6 +144,14 @@
 					</p>
 				</button>
 			{/each}
+			{#if tutorialCompleted}
+				<button
+					onclick={handleResetHints}
+					class="cursor-pointer text-xs text-muted underline hover:text-dark-teal"
+				>
+					Show hints again
+				</button>
+			{/if}
 		</div>
 	</div>
 {/if}

@@ -293,12 +293,12 @@ export class GameState {
 		if (event?.type === 'fishCaught') {
 			const player = this.playerAngler;
 			if (player) {
-			player.catch.push({
-				species: event.species,
-				classificationLabel: event.classificationLabel,
-				weightOz: event.weightOz,
-				caughtAtMs: Date.now()
-			});
+				player.catch.push({
+					species: event.species,
+					classificationLabel: event.classificationLabel,
+					weightOz: event.weightOz,
+					caughtAtMs: Date.now()
+				});
 				player.totalWeightOz += event.weightOz;
 				if (!player.biggestFish || event.weightOz > player.biggestFish.weightOz) {
 					player.biggestFish = {
