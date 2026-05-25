@@ -1,9 +1,12 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { onMount } from 'svelte';
+	import { page } from '$app/state';
 	import { tackleFromGameUrl } from '$lib/game/prep-flow';
 	import { prepState } from '$lib/game/prep-state.svelte';
 	import { gameState } from '$lib/game/state.svelte';
+	import { multiplayer } from '$lib/game/party/connection.svelte';
+	import { venues } from '$lib/data';
 	import BotCatchToast from '$lib/components/BotCatchToast.svelte';
 	import DebugPanel from '$lib/components/DebugPanel.svelte';
 	import { isTutorialCompleted, completeTutorial } from '$lib/game/tutorial';
@@ -24,12 +27,17 @@
 		import: 'default'
 	});
 
-	let mode = $derived(prepState.mode);
-	let venueName = $derived(prepState.venueName);
-	let lakeName = $derived(prepState.lakeName);
-	let pegName = $derived(prepState.playerPeg);
+	let isMulti = $derived(page.url.searchParams.has('multi'));
+	let mode = $derived(isMulti ? 'multiplayer' : prepState.mode);
+	let venueName = $derived(isMulti ? venues[0].name : prepState.venueName);
+	let lakeName = $derived(isMulti ? venues[0].lakes[0].name : prepState.lakeName);
+	let pegName = $derived(isMulti ? (multiplayer.ownPeg ?? '') : prepState.playerPeg);
 	let tackle = $derived(gameState.playerAngler?.tackle);
-	let selectedPegData = $derived(prepState.lake?.pegs.find((p) => p.name === pegName) ?? null);
+	let selectedPegData = $derived(
+		isMulti
+			? (venues[0].lakes[0].pegs.find((p) => p.name === multiplayer.ownPeg) ?? null)
+			: (prepState.lake?.pegs.find((p) => p.name === pegName) ?? null)
+	);
 	let playerPhase = $derived(gameState.playerSnapshot?.phase ?? null);
 	let catchList = $derived(gameState.playerAngler?.catch ?? []);
 	let recentCatch = $derived([...catchList].reverse().slice(0, 3));
@@ -37,6 +45,30 @@
 	let lastEvent = $derived(gameState.lastEvent);
 	let debugMode = $state(false);
 	let intervalId: ReturnType<typeof setInterval> | null = null;
+	let now = $state(Date.now());
+	let waitingForPlayers = $state(false);
+
+	let multiToasts = $state<{ id: number; text: string }[]>([]);
+	let toastIdCounter = $state(0);
+	let prevCatchCount = $state(0);
+
+	$effect(() => {
+		if (!isMulti) return;
+		const events = multiplayer.catchEvents;
+		if (events.length > prevCatchCount) {
+			const newEvents = events.slice(prevCatchCount);
+			for (const event of newEvents) {
+				if (event.anglerName === multiplayer.playerName) continue;
+				const id = ++toastIdCounter;
+				const text = `${event.anglerName} caught a ${formatWeight(event.weightOz)} ${event.classificationLabel} ${event.species}!`;
+				multiToasts = [...multiToasts, { id, text }];
+				setTimeout(() => {
+					multiToasts = multiToasts.filter((t) => t.id !== id);
+				}, 3500);
+			}
+			prevCatchCount = events.length;
+		}
+	});
 
 	let tutorialCompleted = $state(isTutorialCompleted());
 	let hintsConsumed = $state({ bite: false, reeling: false, landing: false });
@@ -115,6 +147,14 @@
 	});
 
 	let matchTimeDisplay = $derived.by(() => {
+		if (isMulti && multiplayer.startTime) {
+			const elapsed = now - multiplayer.startTime;
+			const remaining = Math.max(0, multiplayer.timeLimitMinutes * 60 - elapsed / 1000);
+			if (remaining <= 0) return '';
+			const m = Math.floor(remaining / 60);
+			const s = Math.floor(remaining % 60);
+			return `${m}m ${s}s`;
+		}
 		const totalSec = Math.ceil(gameState.timeRemainingSeconds);
 		if (totalSec <= 0) return '';
 		const m = Math.floor(totalSec / 60);
@@ -173,7 +213,16 @@
 	}
 
 	function handleReel() {
-		gameState.reel();
+		const event = gameState.reel();
+		if (isMulti && event?.type === 'fishCaught' && multiplayer.ownPeg) {
+			multiplayer.sendCatch({
+				anglerName: multiplayer.playerName,
+				pegName: multiplayer.ownPeg,
+				species: event.species,
+				classificationLabel: event.classificationLabel,
+				weightOz: event.weightOz
+			});
+		}
 	}
 
 	function handleChangeTackle() {
@@ -202,12 +251,45 @@
 	}
 
 	$effect(() => {
-		if (gameState.phase === 'results') {
-			goto('/results');
+		const gp = gameState.phase;
+		const mp = isMulti ? multiplayer.phase : null;
+
+		if (isMulti && mp === 'grace-period') {
+			gameState.timeExpired = true;
+		}
+
+		if (gp === 'results') {
+			if (!isMulti) {
+				goto('/results');
+			} else {
+				multiplayer.sendDoneFishing();
+				if (mp === 'results') {
+					goto('/results?multi=1');
+				} else {
+					waitingForPlayers = true;
+				}
+			}
+		}
+
+		if (isMulti && mp === 'results' && waitingForPlayers) {
+			goto('/results?multi=1');
 		}
 	});
 
+	function setupMultiplayerGame() {
+		const angler = prepState.playerAngler;
+		if (!angler) return;
+		angler.pegName = multiplayer.ownPeg ?? '';
+		const venue = venues[0];
+		const lake = venue.lakes[0];
+		gameState.beginFishing([angler], venue, lake, multiplayer.timeLimitMinutes);
+	}
+
 	onMount(() => {
+		if (isMulti) {
+			setupMultiplayerGame();
+		}
+
 		if (gameState.playerSnapshot?.phase === 'idle') {
 			gameState.cast();
 		}
@@ -225,6 +307,7 @@
 
 		intervalId = setInterval(() => {
 			if (hintBlocking) return;
+			now = Date.now();
 			gameState.tick(100);
 		}, 100);
 
@@ -287,13 +370,35 @@
 						</div>
 					</div>
 				{/if}
+				{#if waitingForPlayers}
+					<div
+						class="absolute inset-0 z-10 flex flex-col items-center justify-center gap-3 rounded-xl bg-black/60"
+					>
+						<p class="text-xl font-bold text-white">Time's Up!</p>
+						<p class="text-sm text-white/80">Waiting for other anglers to finish...</p>
+						<div class="flex gap-1">
+							<span
+								class="h-2 w-2 animate-bounce rounded-full bg-white/60"
+								style="animation-delay: 0s"
+							></span>
+							<span
+								class="h-2 w-2 animate-bounce rounded-full bg-white/60"
+								style="animation-delay: 0.15s"
+							></span>
+							<span
+								class="h-2 w-2 animate-bounce rounded-full bg-white/60"
+								style="animation-delay: 0.3s"
+							></span>
+						</div>
+					</div>
+				{/if}
 			</div>
 			<div class="absolute top-3 left-3 rounded-lg bg-black/40 px-2 py-1">
 				<p class="text-sm font-semibold tracking-wide text-white/80 uppercase">{venueName}</p>
 				<p class="text-xs text-white/60">{lakeName}</p>
 				<p class="text-lg font-bold text-white">Peg {pegName}</p>
 			</div>
-			{#if mode === 'match' && matchTimeDisplay}
+			{#if (mode === 'match' || mode === 'multiplayer') && matchTimeDisplay}
 				<div class="absolute top-3 right-3 rounded-lg bg-black/40 px-3 py-1.5">
 					<p class="text-sm font-bold text-white/90">{matchTimeDisplay}</p>
 				</div>
@@ -301,6 +406,15 @@
 			{#if mode === 'match'}
 				<div class="absolute inset-x-3 bottom-3">
 					<BotCatchToast />
+				</div>
+			{/if}
+			{#if mode === 'multiplayer'}
+				<div class="absolute inset-x-3 bottom-3 flex flex-col gap-1">
+					{#each multiToasts as toast (toast.id)}
+						<div class="animate-fadeIn rounded-lg bg-black/40 px-3 py-1.5 text-xs text-white/90">
+							{toast.text}
+						</div>
+					{/each}
 				</div>
 			{/if}
 		</div>
@@ -441,11 +555,11 @@
 		<!-- Finish button -->
 		<div class="mt-auto flex justify-center pb-2">
 			<a
-				href="/results"
+				href={isMulti ? '/results?multi=1' : '/results'}
 				onclick={() => gameState.finishGame()}
 				class="inline-flex min-h-[44px] items-center justify-center rounded bg-secondary px-6 py-3 text-center text-white no-underline hover:bg-secondary/80"
 			>
-				{mode === 'match' ? 'End Match' : 'Finish Session'}
+				{mode === 'multiplayer' ? 'Leave Match' : mode === 'match' ? 'End Match' : 'Finish Session'}
 			</a>
 		</div>
 	</div>

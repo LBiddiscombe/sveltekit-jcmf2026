@@ -36,6 +36,7 @@ export class PrepState {
 	lakeName = $state('');
 	playerPeg = $state<string | undefined>();
 	timeLimitMinutes = $state<number | undefined>();
+	matchStartTime = $state<number | undefined>();
 	anglers = $state<AnglerState[]>([]);
 
 	constructor() {
@@ -48,14 +49,7 @@ export class PrepState {
 			const raw = sessionStorage.getItem(STORAGE_KEY);
 			if (!raw) return;
 
-			const data = JSON.parse(raw) as {
-				mode: unknown;
-				venueName: unknown;
-				lakeName: unknown;
-				playerPeg: unknown;
-				timeLimitMinutes: unknown;
-				anglers: unknown;
-			};
+			const data = JSON.parse(raw) as Record<string, unknown>;
 
 			if (data.mode !== 'session' && data.mode !== 'match') return;
 			if (typeof data.venueName !== 'string') return;
@@ -65,11 +59,12 @@ export class PrepState {
 			if (!venue) return;
 			if (data.lakeName && !venue.lakes.some((l) => l.name === data.lakeName)) return;
 
-			this.mode = data.mode;
+			this.mode = data.mode as 'session' | 'match';
 			this.venueName = data.venueName;
 			this.lakeName = data.lakeName;
 			if (typeof data.playerPeg === 'string') this.playerPeg = data.playerPeg;
 			if (typeof data.timeLimitMinutes === 'number') this.timeLimitMinutes = data.timeLimitMinutes;
+			if (typeof data.matchStartTime === 'number') this.matchStartTime = data.matchStartTime;
 			if (Array.isArray(data.anglers)) this.anglers = data.anglers as AnglerState[];
 		} catch {
 			sessionStorage.removeItem(STORAGE_KEY);
@@ -86,6 +81,7 @@ export class PrepState {
 				lakeName: this.lakeName,
 				playerPeg: this.playerPeg,
 				timeLimitMinutes: this.timeLimitMinutes,
+				matchStartTime: this.matchStartTime,
 				anglers: this.anglers
 			})
 		);
@@ -146,9 +142,15 @@ export class PrepState {
 		this.lakeName = '';
 		this.playerPeg = undefined;
 		this.timeLimitMinutes = undefined;
+		this.matchStartTime = undefined;
 		this.anglers = [];
 		if (browser) sessionStorage.removeItem(STORAGE_KEY);
 		resetIds();
+	}
+
+	startMatchTimer() {
+		this.matchStartTime = Date.now();
+		this.persist();
 	}
 
 	startSession() {

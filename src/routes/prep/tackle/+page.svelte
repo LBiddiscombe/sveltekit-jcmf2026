@@ -1,12 +1,13 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
-	import { baits } from '$lib/data';
+	import { venues, baits } from '$lib/data';
 	import { TackleBox } from '$lib/data/tackle';
 	import type { Rod, Reel, Line, Hook, Bait } from '$lib/data';
 	import { gameReturnToPath } from '$lib/game/prep-flow';
 	import { prepState } from '$lib/game/prep-state.svelte';
 	import { gameState } from '$lib/game/state.svelte';
+	import { multiplayer } from '$lib/game/party/connection.svelte';
 	import { defaultTackle } from '$lib/game/tackle-utils';
 	import { presets, resolvePreset } from '$lib/data/presets';
 	import type { TacklePreset } from '$lib/data';
@@ -36,12 +37,44 @@
 
 	let returnTo = $derived(page.url.searchParams.get('returnTo'));
 	let isMidGame = $derived(returnTo !== null);
-	let target = $derived(isMidGame ? returnTo! : gameReturnToPath());
+	let isTimed = $derived(page.url.searchParams.has('timed'));
+	let isMulti = $derived(page.url.searchParams.has('multi'));
+	let target = $derived(isMidGame ? returnTo! : isMulti ? '/game?multi=1' : '/game');
 
 	let tackle = $state({
 		...(page.url.searchParams.get('returnTo')
 			? (gameState.playerAngler?.tackle ?? defaultTackle)
 			: prepState.currentTackle)
+	});
+
+	let now = $state(Date.now());
+	$effect(() => {
+		if (!isTimed) return;
+		const interval = setInterval(() => {
+			now = Date.now();
+		}, 1000);
+		return () => clearInterval(interval);
+	});
+
+	let remainingMs = $derived.by(() => {
+		if (!isTimed) return 0;
+		if (isMulti && multiplayer.startTime) {
+			const elapsed = now - multiplayer.startTime;
+			return Math.max(0, multiplayer.timeLimitMinutes * 60 * 1000 - elapsed);
+		}
+		if (!isMulti && prepState.matchStartTime && prepState.timeLimitMinutes) {
+			const elapsed = now - prepState.matchStartTime;
+			return Math.max(0, prepState.timeLimitMinutes * 60 * 1000 - elapsed);
+		}
+		return 0;
+	});
+
+	let timerDisplay = $derived.by(() => {
+		if (!isTimed) return '';
+		const totalSec = Math.ceil(remainingMs / 1000);
+		const m = Math.floor(totalSec / 60);
+		const s = totalSec % 60;
+		return `${m}:${String(s).padStart(2, '0')}`;
 	});
 
 	let isPole = $derived(tackle.rod.name === 'Pole');
@@ -83,10 +116,14 @@
 		return `<svg viewBox="0 0 48 48" class="h-16 w-16"><circle cx="8" cy="24" r="4" fill="currentColor" /><line x1="12" y1="24" x2="${len}" y2="24" stroke="currentColor" stroke-width="4" stroke-linecap="round" /></svg>`;
 	}
 
-	let pegName = $derived(prepState.playerPeg ?? '');
-	let selectedPegData = $derived(prepState.lake?.pegs.find((p) => p.name === pegName) ?? null);
-	let venueName = $derived(prepState.venueName);
-	let lakeName = $derived(prepState.lakeName);
+	let pegName = $derived(isMulti ? (multiplayer.ownPeg ?? '') : (prepState.playerPeg ?? ''));
+	let selectedPegData = $derived(
+		isMulti
+			? (venues[0].lakes[0].pegs.find((p) => p.name === multiplayer.ownPeg) ?? null)
+			: (prepState.lake?.pegs.find((p) => p.name === pegName) ?? null)
+	);
+	let venueName = $derived(isMulti ? venues[0].name : prepState.venueName);
+	let lakeName = $derived(isMulti ? venues[0].lakes[0].name : prepState.lakeName);
 
 	function pegImg(filename: string | undefined): string {
 		return filename ? (pegImages[`/src/lib/assets/images/pegs/${filename}`] ?? '') : '';
@@ -136,12 +173,14 @@
 			gameState.updateTackle(tackle);
 		} else {
 			prepState.chooseTackle(tackle);
-			gameState.beginFishing(
-				prepState.anglers,
-				prepState.venue!,
-				prepState.lake!,
-				prepState.timeLimitMinutes
-			);
+			if (!isMulti) {
+				gameState.beginFishing(
+					prepState.anglers,
+					prepState.venue!,
+					prepState.lake!,
+					prepState.timeLimitMinutes
+				);
+			}
 		}
 		goto(target);
 	}
@@ -187,6 +226,12 @@
 		<h1 class="text-center text-2xl font-bold text-dark-teal sm:text-3xl md:text-4xl">
 			{isMidGame ? 'Change Tackle' : 'Choose Tackle & Bait'}
 		</h1>
+		{#if isTimed}
+			<div class="mx-auto flex items-center gap-2 rounded-xl bg-danger/10 px-4 py-2 text-danger">
+				<span class="text-sm font-semibold">Match time remaining:</span>
+				<span class="text-lg font-bold">{timerDisplay}</span>
+			</div>
+		{/if}
 
 		<div class="grid gap-6 md:grid-cols-2">
 			<!-- Peg panel -->

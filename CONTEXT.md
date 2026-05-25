@@ -51,8 +51,12 @@ A numeric property on each tackle component. Higher values increase the maximum 
 A solo fishing outing — unlimited time, no bots, no competition. Pure fishing. Flows through Prep (player picks a peg manually, no time/bot options) → Game → Results.
 _Avoid_: Practice, free play
 
-**Match**:
-A competitive fishing session with a time limit and bots filling every other peg. Winner is determined by total catch weight. Flows through Prep (player sets time, peg is randomly assigned alongside bots) → Game → Results.
+**Solo Match**:
+A competitive fishing session with a time limit and bots filling every other peg. Winner is determined by total catch weight. The timer starts immediately when the player clicks "Start Match" on the draw page — tackle selection counts against match time. Bots receive a skill-based tackle setup delay (3–10s range, same formula as BotStrikeDelay). Flows through Prep (player sets time, peg draw) → Start Match (timer begins) → Tackle (timed) → Game → Results.
+_Avoid_: Multiplayer, Party
+
+**Multiplayer**:
+A competitive fishing session with a time limit played by human opponents over the network, using PartyKit for realtime coordination. No bots. Up to 8 players (matching the number of pegs). A player hosts a room and shares a join code; others join by entering the code. The host picks the time limit before room creation. Players are auto-assigned to free pegs on join; each player sees their own peg in focus with full description in the lobby, while other joined players appear below. The host starts the game from the lobby (which doubles as the draw screen). Flows through Host Setup (time limit) / Join (enter code) → Lobby (code displayed, players join, assign pegs) → Game (synchronised via PartyKit) → Results (shared leaderboard).
 
 **Angler**:
 A person playing the game (human player or bot).
@@ -125,13 +129,17 @@ Prep selection state is sourced from **PrepState** (mode, venue, lake, peg, time
 ## Routes (initial build)
 
 1. **Splash** (`/`) — branding/intro screen with full-bleed background image, Ken Burns animation, and a "Start" button
-2. **Menu** — welcome page showing the venue and lake name, a hero image of the lake, and two mode cards (Session / Match). Selecting a mode initialises PrepState and navigates to the rules step.
+2. **Menu** — welcome page showing the venue and lake name, a hero image of the lake, and three mode cards (Session / Solo Match / Multiplayer). Selecting a mode initialises PrepState and navigates to the appropriate flow.
 3. **Prep** (nested):
    - **Session**: rules (pick peg) → tackle → game
-   - **Match**: rules (pick time preset) → draw → tackle → game
+   - **Solo Match**: rules (pick time preset) → draw → Start Match (timer begins) → tackle (timed) → game
    - **Lake** (`/prep/lake`): standalone entry point (initialises venue/lake selection if entered directly; not reached from the menu)
-4. **Game** — the fishing loop. During a Match, the game clock runs and bot anglers fish autonomously alongside the player. "Change Tackle" navigates to `/prep/tackle` and back.
-5. **Results** — post-session/match summary. Sessions show a personal catch list (species, weight, count). Matches show a leaderboard ranked by total catch weight.
+4. **Multiplayer** (new):
+   - **Host** (`/multiplayer/host`): player enters name, picks time limit → room created with join code
+   - **Join** (`/multiplayer/join`): player enters name + join code → connects to room
+   - **Lobby** (`/multiplayer/lobby`): shows join code (host), player list with peg assignments (own peg in focus with description, others listed below), Start button (host only). Host clicks Start → timer begins for all → all navigate to tackle page.
+5. **Game** — the fishing loop. During a Solo Match or Multiplayer game, the game clock runs and anglers fish autonomously alongside the player. "Change Tackle" navigates to `/prep/tackle` and back.
+6. **Results** — post-session/match summary. Sessions show a personal catch list (species, weight, count). Solo Matches show a leaderboard (player + bots). Multiplayer shows a leaderboard of human players sourced from server broadcasts.
 
 ## Data
 
@@ -150,7 +158,6 @@ A cast-time lower-bound filter: fish whose weight falls below the line's `minOz`
 
 ## Not in initial scope
 
-- **Multiplayer** (host/join match with human opponents)
 - **Fishing Journal** (session history, match history, fish PBs)
 - **Settings screen**
 

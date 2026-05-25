@@ -29,6 +29,7 @@ export interface CatchAuditEntry {
 export class GameState {
 	phase = $state<GamePhase>('idle');
 	timeRemainingSeconds = $state(0);
+	timeExpired = $state(false);
 	anglers = $state<AnglerState[]>([]);
 	pegPopulations = new SvelteMap<string, FishData[]>();
 	playerLoop: FishingLoop | null = null;
@@ -59,6 +60,7 @@ export class GameState {
 		}
 
 		this.phase = 'fishing';
+		this.timeExpired = false;
 		this.catchAudit = [];
 		this.sessionStartMs = Date.now();
 		resetIds();
@@ -175,9 +177,13 @@ export class GameState {
 
 			if (this.timeRemainingSeconds <= 0) {
 				this.cutOffBots();
-				this.finishGame();
-				return null;
+				this.timeExpired = true;
 			}
+		}
+
+		if (this.timeExpired && this.playerSnapshot?.phase === 'idle') {
+			this.finishGame();
+			return null;
 		}
 
 		for (const [id, loop] of this.botLoops) {
@@ -217,13 +223,17 @@ export class GameState {
 			}
 		}
 
-		if (this.playerSnapshot?.phase === 'idle') {
+		if (this.playerSnapshot?.phase === 'idle' && !this.timeExpired) {
 			const pop = this.getPegPopulation(this.playerPeg);
 			const castEvent =
 				this.playerLoop?.cast(pop, (id) => this.removeFishFromPeg(this.playerPeg, id)) ?? null;
 			this.lastEvent = castEvent;
 			this.syncPlayerState();
 			return castEvent;
+		}
+
+		if (this.timeExpired && this.playerSnapshot?.phase === 'idle') {
+			this.finishGame();
 		}
 
 		return event;

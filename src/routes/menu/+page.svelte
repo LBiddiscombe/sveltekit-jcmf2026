@@ -1,15 +1,22 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
+	import { onMount } from 'svelte';
 	import { prepState } from '$lib/game/prep-state.svelte';
 	import { prepRulesUrl } from '$lib/game/prep-flow';
 	import type { GameMode } from '$lib/game/prep-flow';
+	import { multiplayer } from '$lib/game/party/connection.svelte';
 	import { venues } from '$lib/data';
 	import lakeHero from '$lib/assets/images/lakes/jcs-match.jpeg';
 	import sessionThumb from '$lib/assets/images/pegs/jcs-match-2.jpeg';
 	import venueThumb from '$lib/assets/images/venues/jcs.jpeg';
+	import tackleThumb from '$lib/assets/images/tackle/rod-leger.png';
 
 	const venue = venues[0];
 	const lake = venue.lakes[0];
+
+	onMount(() => {
+		multiplayer.leave();
+	});
 
 	function pick(mode: GameMode) {
 		if (mode === 'match') {
@@ -50,10 +57,32 @@
 			>
 				<img src={venueThumb} alt="" class="h-14 w-14 shrink-0 rounded-xl object-cover" />
 				<div class="min-w-0">
-					<h2 class="text-lg font-bold text-dark-teal">Match</h2>
+					<h2 class="text-lg font-bold text-dark-teal">Solo Match</h2>
 					<p class="text-sm text-dark-teal/60">Timed competition against CPU anglers</p>
 				</div>
 			</button>
+			<div class="flex gap-3">
+				<a
+					href="/multiplayer/host"
+					class="flex flex-1 cursor-pointer items-center gap-3 rounded-2xl bg-white/70 px-4 py-5 text-left shadow-md transition-shadow hover:shadow-lg"
+				>
+					<img src={tackleThumb} alt="" class="h-10 w-10 shrink-0 rounded-xl object-cover" />
+					<div class="min-w-0">
+						<h2 class="text-lg font-bold text-dark-teal">Host</h2>
+						<p class="text-xs text-dark-teal/60">Create a room for others</p>
+					</div>
+				</a>
+				<a
+					href="/multiplayer/join"
+					class="flex flex-1 cursor-pointer items-center gap-3 rounded-2xl bg-white/70 px-4 py-5 text-left shadow-md transition-shadow hover:shadow-lg"
+				>
+					<img src={tackleThumb} alt="" class="h-10 w-10 shrink-0 rounded-xl object-cover" />
+					<div class="min-w-0">
+						<h2 class="text-lg font-bold text-dark-teal">Join</h2>
+						<p class="text-xs text-dark-teal/60">Enter a room code</p>
+					</div>
+				</a>
+			</div>
 		</div>
 
 		<a href="/about" class="text-sm text-muted underline underline-offset-2 hover:text-dark-teal">

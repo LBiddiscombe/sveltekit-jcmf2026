@@ -143,10 +143,13 @@
 		<div class="mt-auto flex justify-center pb-2">
 			{#if allRevealed}
 				<button
-					onclick={goToTackle}
-					class="animate-fade-in-up inline-flex min-h-[44px] cursor-pointer items-center justify-center rounded bg-primary px-6 py-3 text-center text-white no-underline hover:bg-primary/80"
+					onclick={() => {
+						prepState.startMatchTimer();
+						goto('/prep/tackle?timed=1');
+					}}
+					class="animate-fade-in-up inline-flex min-h-[44px] cursor-pointer items-center justify-center rounded bg-accent px-6 py-3 text-center font-bold text-white no-underline shadow-md hover:opacity-90"
 				>
-					Next
+					Start Match
 				</button>
 			{/if}
 		</div>

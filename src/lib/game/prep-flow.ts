@@ -1,4 +1,4 @@
-export type GameMode = 'session' | 'match';
+export type GameMode = 'session' | 'match' | 'multiplayer';
 
 export function modeFromSearchParams(searchParams: URLSearchParams): GameMode {
 	return searchParams.get('mode') === 'match' ? 'match' : 'session';

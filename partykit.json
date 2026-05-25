@@ -1,0 +1,10 @@
+{
+	"$schema": "https://raw.githubusercontent.com/partykit/partykit/main/schema.json",
+	"name": "jcmf-multiplayer",
+	"main": "src/party/server.ts",
+	"parties": {
+		"room": "src/party/server.ts"
+	},
+	"compatibilityDate": "2025-05-25",
+	"vars": {}
+}
