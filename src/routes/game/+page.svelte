@@ -48,7 +48,7 @@
 		if (p === 'bite' && !hintsConsumed.bite)
 			return 'Tap the image or press Space to hook the fish!';
 		if (p === 'reeling' && !hintsConsumed.reeling)
-			return "Your catch is being reeled in. Don't tap until it lands!";
+			return 'Your catch is being reeled in.\nDon\u2019t tap until it\u2019s ready to land!';
 		if (p === 'landing' && !hintsConsumed.landing)
 			return 'Tap the image or press Space to land the fish!';
 		return '';
@@ -283,7 +283,7 @@
 				{#if currentHint}
 					<div class="pointer-events-none absolute inset-0 flex items-center justify-center p-3">
 						<div class="animate-fadeIn rounded-lg bg-black/40 px-4 py-2 text-center">
-							<p class="text-sm font-bold text-white">{currentHint}</p>
+							<p class="whitespace-pre-line text-sm font-bold text-white">{currentHint}</p>
 						</div>
 					</div>
 				{/if}
