@@ -50,7 +50,7 @@
 
 		{#if selectedPegData}
 			<div
-				class="flex w-full max-w-sm items-start gap-3 rounded-xl border-2 border-primary bg-white p-3"
+				class="flex min-h-48 w-full max-w-sm items-start gap-3 rounded-xl border-2 border-primary bg-white p-3"
 			>
 				<div class="h-20 w-20 shrink-0 overflow-hidden rounded-lg bg-surface/40 sm:h-24 sm:w-24">
 					{#if pegImg(selectedPegData.image)}
@@ -75,11 +75,11 @@
 			</div>
 		{/if}
 
-		<div class="grid w-full max-w-sm grid-cols-2 gap-2 sm:grid-cols-3">
+		<div class="grid w-full max-w-sm grid-cols-3 gap-2 sm:grid-cols-3">
 			{#each pegs as peg (peg.name)}
 				<button
 					onclick={() => selectPeg(peg.name)}
-					class="flex cursor-pointer items-center gap-2 rounded-lg border p-2 transition-all {selectedPeg ===
+					class="flex flex-col cursor-pointer items-center gap-2 rounded-lg border p-2 transition-all {selectedPeg ===
 					peg.name
 						? 'scale-105 border-primary ring-2 ring-primary ring-offset-2'
 						: 'border-olive bg-surface/20 hover:bg-surface/40'}"
@@ -123,7 +123,9 @@
 						? 'scale-105 border-primary ring-2 ring-primary ring-offset-2'
 						: ''}"
 				>
-					<p class="text-center text-lg font-semibold text-dark-teal">{minutes} minute{minutes === 1 ? '' : 's'}</p>
+					<p class="text-center text-lg font-semibold text-dark-teal">
+						{minutes} minute{minutes === 1 ? '' : 's'}
+					</p>
 				</button>
 			{/each}
 		</div>

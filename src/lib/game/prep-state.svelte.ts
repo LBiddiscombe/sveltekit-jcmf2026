@@ -14,6 +14,7 @@ export interface CaughtFish {
 	species: string;
 	classificationLabel: string;
 	weightOz: number;
+	caughtAtMs: number;
 }
 
 export interface AnglerState {

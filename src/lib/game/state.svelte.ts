@@ -256,9 +256,7 @@ export class GameState {
 			const hasAngler = this.anglers.some((a) => a.pegName === peg.name);
 			if (!hasAngler) continue;
 
-			const count = isSession
-				? lake.fishCount
-				: Math.floor(lake.fishCount / lake.pegs.length);
+			const count = isSession ? lake.fishCount : Math.floor(lake.fishCount / lake.pegs.length);
 
 			this.pegPopulations.set(peg.name, populatePeg(lake, peg, species, count));
 		}
@@ -295,17 +293,19 @@ export class GameState {
 		if (event?.type === 'fishCaught') {
 			const player = this.playerAngler;
 			if (player) {
-				player.catch.push({
-					species: event.species,
-					classificationLabel: event.classificationLabel,
-					weightOz: event.weightOz
-				});
+			player.catch.push({
+				species: event.species,
+				classificationLabel: event.classificationLabel,
+				weightOz: event.weightOz,
+				caughtAtMs: Date.now()
+			});
 				player.totalWeightOz += event.weightOz;
 				if (!player.biggestFish || event.weightOz > player.biggestFish.weightOz) {
 					player.biggestFish = {
 						species: event.species,
 						classificationLabel: event.classificationLabel,
-						weightOz: event.weightOz
+						weightOz: event.weightOz,
+						caughtAtMs: Date.now()
 					};
 				}
 				this.catchAudit = [

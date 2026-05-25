@@ -5,6 +5,7 @@ export interface CaughtFish {
 	species: string;
 	classificationLabel: string;
 	weightOz: number;
+	caughtAtMs: number;
 }
 
 export type FishingPhase =
@@ -459,7 +460,8 @@ export class FishingLoop {
 		this.caughtFish.push({
 			species: fish.species,
 			classificationLabel: fish.classificationLabel,
-			weightOz: fish.weightOz
+			weightOz: fish.weightOz,
+			caughtAtMs: Date.now()
 		});
 		this.phase = 'caught';
 		this.blankCycleCount = 0;

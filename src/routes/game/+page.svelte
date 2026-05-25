@@ -217,6 +217,13 @@
 						style="background: {reelGradientStyle}"
 					></div>
 				{/if}
+				{#if playerPhase === 'caught' || playerPhase === 'lost'}
+					<div class="pointer-events-none absolute inset-0 flex items-center justify-center">
+						<div class="rounded-lg bg-black/40 px-4 py-2 text-center">
+							<p class="text-sm font-bold text-white">{statusMessage}</p>
+						</div>
+					</div>
+				{/if}
 			</div>
 			<div class="absolute top-3 left-3 rounded-lg bg-black/40 px-2 py-1">
 				<p class="text-sm font-semibold tracking-wide text-white/80 uppercase">{venueName}</p>
@@ -339,41 +346,24 @@
 			</button>
 		{/if}
 
-		<!-- Debug hint + Reserved catch/lost message -->
-		<div class="flex w-full max-w-sm flex-col items-center gap-3">
-			{#if debugMode}
-				<div class="w-full rounded-xl border border-yellow-400/40 bg-yellow-50/50 p-3 text-center">
-					<p class="text-xs font-medium text-yellow-700">Game paused — debug mode</p>
-				</div>
-			{/if}
-
-			<div class="min-h-20 w-full">
-				{#if playerPhase === 'caught' || playerPhase === 'lost'}
-					<div
-						class="w-full rounded-xl border p-4 text-center {playerPhase === 'caught'
-							? 'border-blue-400 bg-blue-50'
-							: 'border-red-300 bg-red-50'}"
-					>
-						<p
-							class="text-lg font-bold {playerPhase === 'caught'
-								? 'text-blue-700'
-								: 'text-red-700'}"
-						>
-							{statusMessage}
-						</p>
-					</div>
-				{/if}
+		{#if debugMode}
+			<div
+				class="w-full max-w-sm rounded-xl border border-yellow-400/40 bg-yellow-50/50 p-3 text-center"
+			>
+				<p class="text-xs font-medium text-yellow-700">Game paused — debug mode</p>
 			</div>
-		</div>
+		{/if}
 
-		<!-- Catch list -->
-		{#if catchList.length > 0}
-			<div class="w-full max-w-sm">
-				<h3 class="mb-1 text-sm font-semibold text-dark-teal">
-					Catch ({catchList.length}) — {formatWeight(totalWeight)}
-				</h3>
+		<!-- Catch panel -->
+		<div class="w-full max-w-sm rounded-xl border border-olive bg-surface/30 p-3">
+			<h3 class="mb-1 text-sm font-semibold text-dark-teal">
+				{catchList.length > 0
+					? `Catch (${catchList.length}) — ${formatWeight(totalWeight)}`
+					: 'No fish caught'}
+			</h3>
+			{#if catchList.length > 0}
 				<div class="space-y-1">
-					{#each recentCatch as fish (fish.weightOz + fish.species)}
+					{#each recentCatch as fish (fish.species + fish.weightOz + fish.caughtAtMs)}
 						<div
 							class="flex justify-between rounded bg-surface/20 px-3 py-1.5 text-sm text-dark-teal"
 						>
@@ -382,8 +372,8 @@
 						</div>
 					{/each}
 				</div>
-			</div>
-		{/if}
+			{/if}
+		</div>
 
 		<!-- Finish button -->
 		<div class="mt-auto flex justify-center pb-2">
