@@ -238,7 +238,9 @@
 		<div class="grid gap-6 md:grid-cols-2">
 			<!-- Peg panel -->
 			<div class="flex flex-col gap-3">
-				<div class="relative aspect-square overflow-hidden rounded-xl bg-surface/20 hidden md:block">
+				<div
+					class="relative aspect-square overflow-hidden rounded-xl bg-surface/20 hidden md:block"
+				>
 					{#if selectedPegData?.image && pegImg(selectedPegData.image)}
 						<img src={pegImg(selectedPegData.image)} alt="" class="h-full w-full object-contain" />
 					{:else}

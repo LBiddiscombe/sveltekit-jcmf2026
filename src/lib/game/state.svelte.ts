@@ -249,15 +249,8 @@ export class GameState {
 			}
 		}
 
-		if (!event && this.playerSnapshot?.phase === 'waiting') {
-			if (this.playerLoop?.currentFish) {
-				this.lastEvent = null;
-			} else if (
-				this.lastEvent?.type !== 'blankCast' ||
-				!this.playerLoop?.isBlankCastMessageActive
-			) {
-				this.lastEvent = null;
-			}
+		if (!event && this.playerSnapshot?.phase === 'waiting' && this.playerLoop?.currentFish) {
+			this.lastEvent = null;
 		}
 
 		if (this.playerSnapshot?.phase === 'idle' && !this.timeExpired) {

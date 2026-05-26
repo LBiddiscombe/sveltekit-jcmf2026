@@ -177,17 +177,30 @@ describe('FishingLoop', () => {
 			expect(loop.phase).toBe('lost');
 		});
 
-		it('emits blankCast after patience delay', () => {
-			const loop = new FishingLoop(baitMismatchTackle, 5, speciesList, false, () => 0);
+		it('redistributes fish and retries after blank patience delay', () => {
+			let redistributed = false;
+			const redistributeFn = () => {
+				redistributed = true;
+			};
+			const loop = new FishingLoop(
+				baitMismatchTackle,
+				5,
+				speciesList,
+				false,
+				() => 0,
+				redistributeFn
+			);
 			loop.cast(population, noopRemove);
 			expect(loop.phase).toBe('waiting');
 			expect(loop.currentFish).toBeNull();
 
 			const event = loop.tick(29999);
 			expect(event).toBeNull();
+			expect(redistributed).toBe(false);
 
 			const nextEvent = loop.tick(1);
-			expect(nextEvent).toEqual({ type: 'blankCast' });
+			expect(nextEvent).toBeNull();
+			expect(redistributed).toBe(true);
 			expect(loop.currentFish).toBeNull();
 		});
 	});
@@ -282,11 +295,9 @@ describe('FishingLoop', () => {
 			expect(loop.currentFish).toBeNull();
 
 			loop.tick(30000);
-			loop.tick(3000);
 			expect(tackleSwitchCount).toBe(0);
 
 			loop.tick(30000);
-			loop.tick(3000);
 			expect(tackleSwitchCount).toBe(1);
 		});
 
@@ -310,7 +321,6 @@ describe('FishingLoop', () => {
 			expect(loop.currentFish).toBeNull();
 
 			loop.tick(30000);
-			loop.tick(3000);
 
 			loop.updateTackle(tackle);
 			expect(loop.currentFish).not.toBeNull();

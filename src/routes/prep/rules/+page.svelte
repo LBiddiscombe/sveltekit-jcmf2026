@@ -63,11 +63,7 @@
 			<div class="mx-auto flex w-full max-w-sm shrink-0 flex-col items-center gap-3 px-4 pb-3">
 				<div class="relative overflow-hidden rounded-xl">
 					{#if pegImg(selectedPegData.image)}
-						<img
-							src={pegImg(selectedPegData.image)}
-							alt=""
-							class="h-full w-full object-contain"
-						/>
+						<img src={pegImg(selectedPegData.image)} alt="" class="h-full w-full object-contain" />
 					{:else}
 						<div class="flex h-full w-full items-center justify-center bg-surface/20">
 							<span class="text-6xl font-bold text-muted">{selectedPegData.name}</span>

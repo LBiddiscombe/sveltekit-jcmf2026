@@ -163,7 +163,6 @@
 		if (e?.type === 'hookBroken') return 'Hook smashed by big fish!';
 		if (e?.type === 'biteExpired') return 'Fish lost interest!';
 		if (e?.type === 'fishLost') return 'Missed it!';
-		if (e?.type === 'blankCast') return 'Nothing biting yet...';
 		if (e?.type === 'fishGotAway') return 'Fish got away!';
 		if (e?.type === 'lineBroke') return 'Line broke!';
 		if (e?.type === 'tooMuchSlackLine') return 'Too much slack line!';
@@ -224,9 +223,7 @@
 		else if (playerPhase === 'reeling' || playerPhase === 'landing') handleReel();
 	}
 
-	let isMidGameChange = $derived(
-		playerPhase === 'changing' && gameState.initialTackleChosen
-	);
+	let isMidGameChange = $derived(playerPhase === 'changing' && gameState.initialTackleChosen);
 
 	let timerDisplayForModal = $derived.by(() => {
 		if (isMulti && multiplayer.startTime) {
