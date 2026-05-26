@@ -2,13 +2,15 @@
 	import { goto } from '$app/navigation';
 	import { onMount } from 'svelte';
 	import { page } from '$app/state';
-	import { tackleFromGameUrl } from '$lib/game/prep-flow';
 	import { prepState } from '$lib/game/prep-state.svelte';
 	import { gameState } from '$lib/game/state.svelte';
 	import { multiplayer } from '$lib/game/party/connection.svelte';
 	import { venues } from '$lib/data';
+	import type { TackleSelection } from '$lib/data';
+	import { defaultTackle } from '$lib/game/tackle-utils';
 	import CatchToast from '$lib/components/CatchToast.svelte';
 	import DebugPanel from '$lib/components/DebugPanel.svelte';
+	import TackleModal from '$lib/components/TackleModal.svelte';
 	import { isTutorialCompleted, completeTutorial } from '$lib/game/tutorial';
 
 	const tackleImages = import.meta.glob<string>('$lib/assets/images/tackle/*.png', {
@@ -188,8 +190,6 @@
 		return filename ? (pegImages[`/src/lib/assets/images/pegs/${filename}`] ?? '') : '';
 	}
 
-	const tackleUrl = tackleFromGameUrl();
-
 	function formatWeight(oz: number): string {
 		const lb = Math.floor(oz / 16);
 		const remainder = oz % 16;
@@ -216,12 +216,36 @@
 	}
 
 	function handleChangeTackle() {
-		goto(tackleUrl);
+		gameState.beginChangeTackle();
 	}
 
 	function handlePegClick() {
 		if (playerPhase === 'bite') handleStrike();
 		else if (playerPhase === 'reeling' || playerPhase === 'landing') handleReel();
+	}
+
+	let isMidGameChange = $derived(
+		playerPhase === 'changing' && gameState.initialTackleChosen
+	);
+
+	let timerDisplayForModal = $derived.by(() => {
+		if (isMulti && multiplayer.startTime) {
+			const elapsed = now - multiplayer.startTime;
+			const remaining = Math.max(0, multiplayer.timeLimitMinutes * 60 - elapsed / 1000);
+			if (remaining <= 0) return '';
+			const m = Math.floor(remaining / 60);
+			const s = Math.floor(remaining % 60);
+			return `${m}:${String(s).padStart(2, '0')}`;
+		}
+		if (gameState.timeRemainingSeconds <= 0) return '';
+		const m = Math.floor(gameState.timeRemainingSeconds / 60);
+		const s = Math.floor(gameState.timeRemainingSeconds % 60);
+		return `${m}:${String(s).padStart(2, '0')}`;
+	});
+
+	function handleTackleConfirm(tackle: TackleSelection) {
+		gameState.updateTackle(tackle);
+		gameState.finishChangingTackle();
 	}
 
 	function toggleDebug() {
@@ -285,10 +309,17 @@
 	onMount(() => {
 		if (isMulti) {
 			setupMultiplayerGame();
-		}
-
-		if (gameState.playerSnapshot?.phase === 'idle') {
-			gameState.cast();
+		} else if (gameState.phase !== 'fishing') {
+			const venue = prepState.venue;
+			const lake = prepState.lake;
+			if (venue && lake && prepState.playerPeg) {
+				gameState.beginFishing(
+					prepState.anglers,
+					venue,
+					lake,
+					prepState.mode === 'match' ? prepState.timeLimitMinutes : undefined
+				);
+			}
 		}
 
 		function onKeydown(e: KeyboardEvent) {
@@ -572,6 +603,20 @@
 >
 	{debugMode ? 'resume' : 'debug'}
 </button>
+
+{#if playerPhase === 'changing'}
+	<TackleModal
+		isTimed={mode === 'match' || mode === 'multiplayer'}
+		isMidGame={isMidGameChange}
+		initialTackle={tackle ?? defaultTackle}
+		{pegName}
+		{selectedPegData}
+		{venueName}
+		{lakeName}
+		onconfirm={handleTackleConfirm}
+		timerDisplay={timerDisplayForModal}
+	/>
+{/if}
 
 <style>
 	.strike-glow {

@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { multiplayer } from '$lib/game/party/connection.svelte';
+	import { gameState } from '$lib/game/state.svelte';
 	import { venues } from '$lib/data';
 
 	const venue = venues[0];
@@ -18,7 +19,8 @@
 
 	$effect(() => {
 		if (multiplayer.phase === 'fishing') {
-			goto('/prep/tackle?timed=1&multi=1');
+			gameState.reset();
+			goto('/game?multi=1');
 		}
 		if (multiplayer.phase === 'idle') {
 			goto('/menu');

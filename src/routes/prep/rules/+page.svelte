@@ -1,7 +1,8 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { prepState } from '$lib/game/prep-state.svelte';
-	import { prepTackleUrl, prepDrawUrl } from '$lib/game/prep-flow';
+	import { gameState } from '$lib/game/state.svelte';
+	import { prepDrawUrl } from '$lib/game/prep-flow';
 	import { isTutorialCompleted, resetTutorial } from '$lib/game/tutorial';
 
 	let tutorialCompleted = $state(isTutorialCompleted());
@@ -39,7 +40,8 @@
 	}
 
 	function goToTackle() {
-		goto(prepTackleUrl());
+		gameState.reset();
+		goto('/game');
 	}
 
 	function selectTime(minutes: number) {

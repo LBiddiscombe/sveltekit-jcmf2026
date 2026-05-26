@@ -2,6 +2,7 @@
 	import { goto } from '$app/navigation';
 	import type { Peg } from '$lib/data';
 	import { prepState } from '$lib/game/prep-state.svelte';
+	import { gameState } from '$lib/game/state.svelte';
 	import { onMount } from 'svelte';
 
 	let mode = $derived(prepState.mode);
@@ -101,8 +102,8 @@
 		<div class="mx-auto mt-auto w-full max-w-sm px-4">
 			<button
 				onclick={() => {
-					prepState.startMatchTimer();
-					goto('/prep/tackle?timed=1');
+					gameState.reset();
+					goto('/game?timed=1');
 				}}
 				class="inline-flex w-full shrink-0 cursor-pointer items-center justify-center gap-2 rounded-xl bg-accent py-3 text-base font-semibold text-white shadow-lg transition-all hover:opacity-90 active:scale-[0.98]"
 			>

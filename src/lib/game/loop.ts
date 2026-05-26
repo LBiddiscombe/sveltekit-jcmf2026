@@ -10,6 +10,7 @@ export interface CaughtFish {
 
 export type FishingPhase =
 	| 'idle'
+	| 'changing'
 	| 'waiting'
 	| 'bite'
 	| 'striking'
@@ -78,6 +79,8 @@ export class FishingLoop {
 	private blankCycleCount = 0;
 	private onBlankCycle: (() => TackleSelection | null) | undefined;
 
+	private changingTimer = 0;
+
 	private static readonly BLANK_PATIENCE_DELAY = 30000;
 	private static readonly BLANK_MESSAGE_DURATION = 3000;
 
@@ -93,6 +96,35 @@ export class FishingLoop {
 		this.redistributeFn = redistributeFn;
 		this.onBlankCycle = onBlankCycle;
 		this.speciesMap = new Map(speciesList.map((s) => [s.name, s]));
+	}
+
+	preparePopulation(population: FishData[], removeFn: (id: string) => void): void {
+		this.population = population;
+		this.removeFn = removeFn;
+	}
+
+	enterChanging(): void {
+		this.phase = 'changing';
+		this.currentFish = null;
+		this.remainingMs = 0;
+		this.waitElapsedMs = 0;
+		this.biteWindowRemaining = 0;
+		this.biteWindowTotal = 0;
+		this.reelTimerMs = 0;
+		this.reelTimerRemaining = 0;
+		this.landingWindowMs = 0;
+		this.landingWindowRemaining = 0;
+		this.recastCountdown = 0;
+		this.blankPatienceMs = 0;
+		this.blankMessageTimer = 0;
+		this.blankCastEmitted = false;
+		this.autoActionTimer = 0;
+		this.blankCycleCount = 0;
+		if (this.isBot) {
+			this.changingTimer = skillDelay(this.skill, this.rng);
+		} else {
+			this.changingTimer = 0;
+		}
 	}
 
 	get isBlankCasting(): boolean {
@@ -230,6 +262,24 @@ export class FishingLoop {
 	}
 
 	tick(elapsedMs: number): FishingEvent | null {
+		if (this.phase === 'changing') {
+			if (this.isBot) {
+				this.changingTimer -= elapsedMs;
+				if (this.changingTimer <= 0) {
+					const newTackle = this.onBlankCycle?.() ?? null;
+					if (newTackle) {
+						this.tackle = newTackle;
+						this.blankCycleCount = 0;
+					}
+					if (this.population.length > 0) {
+						return this.autocast();
+					}
+					this.phase = 'idle';
+				}
+			}
+			return null;
+		}
+
 		if (!this.currentFish && this.phase !== 'waiting') return null;
 
 		if (this.phase === 'waiting') {

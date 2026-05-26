@@ -1,16 +1,11 @@
 <script lang="ts">
-	import { goto } from '$app/navigation';
-	import { page } from '$app/state';
-	import { venues, baits } from '$lib/data';
+	import { baits } from '$lib/data';
 	import { TackleBox } from '$lib/data/tackle';
+	import type { TackleSelection, Peg } from '$lib/data';
 	import type { Rod, Reel, Line, Hook, Bait } from '$lib/data';
-	import { prepState } from '$lib/game/prep-state.svelte';
-	import { gameState } from '$lib/game/state.svelte';
-	import { multiplayer } from '$lib/game/party/connection.svelte';
-	import { defaultTackle } from '$lib/game/tackle-utils';
 	import { presets, resolvePreset } from '$lib/data/presets';
 	import type { TacklePreset } from '$lib/data';
-	import PickerModal from '$lib/components/PickerModal.svelte';
+	import PickerModal from './PickerModal.svelte';
 
 	const tackleImages = import.meta.glob<string>('$lib/assets/images/tackle/*.png', {
 		eager: true,
@@ -30,68 +25,40 @@
 		import: 'default'
 	});
 
+	let {
+		isTimed,
+		isMidGame,
+		initialTackle,
+		pegName,
+		selectedPegData,
+		venueName,
+		lakeName,
+		onconfirm,
+		timerDisplay
+	}: {
+		isTimed: boolean;
+		isMidGame: boolean;
+		initialTackle: TackleSelection;
+		pegName: string | undefined;
+		selectedPegData: Peg | null;
+		venueName: string;
+		lakeName: string;
+		onconfirm: (tackle: TackleSelection) => void;
+		timerDisplay: string;
+	} = $props();
+
 	const box = new TackleBox();
 	const reelOptions = box.reels.filter((r) => r.name !== 'n/a');
 	const noReel = box.reels.find((r) => r.name === 'n/a')!;
 
-	let returnTo = $derived(page.url.searchParams.get('returnTo'));
-	let isMidGame = $derived(returnTo !== null);
-	let isTimed = $derived(page.url.searchParams.has('timed'));
-	let isMulti = $derived(page.url.searchParams.has('multi'));
-	let target = $derived(isMidGame ? returnTo! : isMulti ? '/game?multi=1' : '/game');
-
-	let tackle = $state({
-		...(page.url.searchParams.get('returnTo')
-			? (gameState.playerAngler?.tackle ?? defaultTackle)
-			: prepState.currentTackle)
-	});
-
-	let now = $state(Date.now());
-	$effect(() => {
-		if (!isTimed) return;
-		const interval = setInterval(() => {
-			now = Date.now();
-		}, 1000);
-		return () => clearInterval(interval);
-	});
-
-	let remainingMs = $derived.by(() => {
-		if (!isTimed) return 0;
-		if (isMulti && multiplayer.startTime) {
-			const elapsed = now - multiplayer.startTime;
-			return Math.max(0, multiplayer.timeLimitMinutes * 60 * 1000 - elapsed);
-		}
-		if (!isMulti && prepState.matchStartTime && prepState.timeLimitMinutes) {
-			const elapsed = now - prepState.matchStartTime;
-			return Math.max(0, prepState.timeLimitMinutes * 60 * 1000 - elapsed);
-		}
-		return 0;
-	});
-
-	let timerDisplay = $derived.by(() => {
-		if (!isTimed) return '';
-		const totalSec = Math.ceil(remainingMs / 1000);
-		const m = Math.floor(totalSec / 60);
-		const s = totalSec % 60;
-		return `${m}:${String(s).padStart(2, '0')}`;
-	});
+	// svelte-ignore state_referenced_locally
+	let tackle = $state({ ...initialTackle });
 
 	let isPole = $derived(tackle.rod.name === 'Pole');
 	let isLeger = $derived(tackle.rod.name === 'Leger');
 
 	const layers = ['Top', 'Middle', 'Bottom'];
-
 	const strataOptions = layers.map((name) => ({ name, image: '' }));
-
-	function strataIcon(name: string): string {
-		return `<svg viewBox="0 0 48 48" class="h-16 w-16">${layers
-			.map(
-				(layer, i) =>
-					`<rect x="14" y="${8 + i * 12}" width="20" height="8" rx="2" fill="currentColor" opacity="${layer === name ? 1 : 0.25}" />`
-			)
-			.join('')}</svg>`;
-	}
-
 	const castOptions = [
 		{ name: 'Short', image: '' },
 		{ name: 'Medium', image: '' },
@@ -110,22 +77,30 @@
 
 	const castLengths: Record<string, number> = { Short: 28, Medium: 36, Long: 44 };
 
+	function strataIcon(name: string): string {
+		return `<svg viewBox="0 0 48 48" class="h-16 w-16">${layers
+			.map(
+				(layer, i) =>
+					`<rect x="14" y="${8 + i * 12}" width="20" height="8" rx="2" fill="currentColor" opacity="${layer === name ? 1 : 0.25}" />`
+			)
+			.join('')}</svg>`;
+	}
+
 	function castIcon(name: string): string {
 		const len = castLengths[name];
 		return `<svg viewBox="0 0 48 48" class="h-16 w-16"><circle cx="8" cy="24" r="4" fill="currentColor" /><line x1="12" y1="24" x2="${len}" y2="24" stroke="currentColor" stroke-width="4" stroke-linecap="round" /></svg>`;
 	}
 
-	let pegName = $derived(isMulti ? (multiplayer.ownPeg ?? '') : (prepState.playerPeg ?? ''));
-	let selectedPegData = $derived(
-		isMulti
-			? (venues[0].lakes[0].pegs.find((p) => p.name === multiplayer.ownPeg) ?? null)
-			: (prepState.lake?.pegs.find((p) => p.name === pegName) ?? null)
-	);
-	let venueName = $derived(isMulti ? venues[0].name : prepState.venueName);
-	let lakeName = $derived(isMulti ? venues[0].lakes[0].name : prepState.lakeName);
-
 	function pegImg(filename: string | undefined): string {
 		return filename ? (pegImages[`/src/lib/assets/images/pegs/${filename}`] ?? '') : '';
+	}
+
+	function tackleImg(item: { image: string }): string {
+		return tackleImages[`/src/lib/assets/images/tackle/${item.image}`] ?? '';
+	}
+
+	function baitImg(item: { image: string }): string {
+		return baitImages[`/src/lib/assets/images/baits/${item.image}`] ?? '';
 	}
 
 	function selectRod(rod: Rod) {
@@ -164,36 +139,6 @@
 		closeModal();
 	}
 
-	let buttonLabel = $derived(isMidGame ? 'Return & Recast' : 'Start Fishing');
-
-	function handleConfirm() {
-		if (isMidGame) {
-			gameState.resetCast();
-			gameState.updateTackle(tackle);
-		} else {
-			prepState.chooseTackle(tackle);
-			if (!isMulti) {
-				if (prepState.timeLimitMinutes !== undefined) {
-					const elapsed = Date.now() - (prepState.matchStartTime ?? Date.now());
-					const remainingMinutes = Math.max(0, prepState.timeLimitMinutes - elapsed / 60000);
-					gameState.beginFishing(
-						prepState.anglers,
-						prepState.venue!,
-						prepState.lake!,
-						remainingMinutes
-					);
-				} else {
-					gameState.beginFishing(prepState.anglers, prepState.venue!, prepState.lake!);
-				}
-			}
-		}
-		goto(target);
-	}
-
-	function handleCancel() {
-		goto(returnTo!);
-	}
-
 	let activeModal = $state<'rod' | 'reel' | 'line' | 'hook' | 'bait' | 'strata' | 'cast' | null>(
 		null
 	);
@@ -206,14 +151,6 @@
 		activeModal = null;
 	}
 
-	function tackleImg(item: { image: string }): string {
-		return tackleImages[`/src/lib/assets/images/tackle/${item.image}`] ?? '';
-	}
-
-	function baitImg(item: { image: string }): string {
-		return baitImages[`/src/lib/assets/images/baits/${item.image}`] ?? '';
-	}
-
 	function applyPreset(preset: TacklePreset) {
 		const sel = resolvePreset(preset);
 		tackle.rod = sel.rod;
@@ -224,11 +161,19 @@
 		tackle.strata = sel.strata;
 		tackle.castStrength = sel.castStrength;
 	}
+
+	function handleConfirm() {
+		onconfirm(tackle);
+	}
+
+	let buttonLabel = $derived(isMidGame ? 'Return & Recast' : 'Start Fishing');
 </script>
 
-<div class="flex min-h-dvh flex-col items-center p-4">
-	<div class="flex w-full max-w-2xl flex-col gap-6">
-		{#if isTimed}
+<div
+	class="fixed inset-0 z-40 flex items-start justify-center overflow-y-auto bg-black/80 p-4 pt-8"
+>
+	<div class="flex w-full max-w-2xl flex-col gap-6 rounded-xl bg-white p-6 shadow-2xl">
+		{#if isTimed && timerDisplay}
 			<div class="mx-auto flex items-center gap-2 rounded-xl bg-danger/10 px-4 py-2 text-danger">
 				<span class="text-sm font-semibold">Match time remaining:</span>
 				<span class="text-lg font-bold">{timerDisplay}</span>
@@ -412,15 +357,7 @@
 				</div>
 
 				<!-- Buttons -->
-				<div class="flex justify-center gap-3">
-					{#if isMidGame}
-						<button
-							onclick={handleCancel}
-							class="inline-flex min-h-[44px] cursor-pointer items-center justify-center rounded bg-muted px-6 py-3 text-center text-white no-underline hover:bg-muted/80"
-						>
-							Cancel
-						</button>
-					{/if}
+				<div class="flex justify-center">
 					<button
 						onclick={handleConfirm}
 						class="inline-flex min-h-[44px] cursor-pointer items-center justify-center rounded bg-primary px-6 py-3 text-center text-white no-underline hover:bg-primary/80"

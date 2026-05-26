@@ -39,6 +39,7 @@ export class GameState {
 	botCatchFeed = $state<BotCatchEvent[]>([]);
 	catchAudit = $state<CatchAuditEntry[]>([]);
 	sessionStartMs = 0;
+	initialTackleChosen = $state(false);
 
 	private playerPeg = '';
 
@@ -65,6 +66,7 @@ export class GameState {
 
 		this.phase = 'fishing';
 		this.catchAudit = [];
+		this.initialTackleChosen = false;
 		this.sessionStartMs = Date.now();
 		resetIds();
 		this.generateFish(lake);
@@ -80,9 +82,12 @@ export class GameState {
 			const loop = angler?.isPlayer ? this.playerLoop : this.botLoops.get(angler?.id ?? '');
 
 			if (loop) {
-				loop.cast(pop, (id) => this.removeFishFromPeg(pegName, id));
+				loop.preparePopulation(pop, (id) => this.removeFishFromPeg(pegName, id));
+				loop.enterChanging();
 			}
 		}
+
+		this.syncPlayerState();
 	}
 
 	private createPlayerLoop(lake: Lake, player: AnglerState): FishingLoop | null {
@@ -159,9 +164,22 @@ export class GameState {
 	updateTackle(tackle: TackleSelection) {
 		const player = this.playerAngler;
 		if (player) player.tackle = tackle;
-		if (this.playerLoop && this.playerSnapshot?.phase) {
+		if (this.playerLoop) {
 			this.playerLoop.updateTackle(tackle);
 		}
+	}
+
+	beginChangeTackle() {
+		this.playerLoop?.enterChanging();
+		this.syncPlayerState();
+	}
+
+	finishChangingTackle() {
+		if (this.playerLoop && this.playerLoop.phase === 'changing') {
+			this.playerLoop.phase = 'idle';
+		}
+		this.initialTackleChosen = true;
+		this.syncPlayerState();
 	}
 
 	cast(): FishingEvent | null {
@@ -358,6 +376,22 @@ export class GameState {
 
 	endGame() {
 		this.finishGame();
+	}
+
+	reset() {
+		this.phase = 'idle';
+		this.timeRemainingSeconds = 0;
+		this.timeExpired = false;
+		this.anglers = [];
+		this.pegPopulations = new SvelteMap();
+		this.playerLoop = null;
+		this.botLoops = new SvelteMap();
+		this.playerSnapshot = null;
+		this.lastEvent = null;
+		this.botCatchFeed = [];
+		this.catchAudit = [];
+		this.sessionStartMs = 0;
+		this.initialTackleChosen = false;
 	}
 }
 
