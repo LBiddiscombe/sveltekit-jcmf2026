@@ -14,7 +14,9 @@
 	let mode = $derived(prepState.mode);
 	let pegs = $derived(prepState.lake?.pegs ?? []);
 	let selectedPeg = $state<string | null>(prepState.playerPeg ?? null);
-	let selectedPegData = $derived(pegs.find((p) => p.name === selectedPeg) ?? null);
+	let selectedPegData = $derived(
+		pegs.length > 0 ? (pegs.find((p) => p.name === selectedPeg) ?? pegs[0]) : null
+	);
 
 	const timePresets = [1, 5, 10, 20, 30, 60];
 	let selectedMinutes = $state<number | null>(null);
@@ -52,79 +54,80 @@
 </script>
 
 {#if mode === 'session'}
-	<div class="flex min-h-dvh flex-col items-center gap-3 p-4">
-		<h1 class="text-xl font-bold text-dark-teal sm:text-2xl">Pick Your Peg</h1>
-		<p class="text-sm text-muted">{prepState.lakeName}</p>
-
-		{#if selectedPegData}
-			<div
-				class="flex min-h-48 w-full max-w-sm items-start gap-3 rounded-xl border-2 border-primary bg-white p-3"
-			>
-				<div class="h-20 w-20 shrink-0 overflow-hidden rounded-lg bg-surface/40 sm:h-24 sm:w-24">
-					{#if pegImg(selectedPegData.image)}
-						<img src={pegImg(selectedPegData.image)} alt="" class="h-full w-full object-cover" />
-					{:else}
-						<div class="flex h-full w-full items-center justify-center">
-							<span class="text-2xl font-bold text-muted">{selectedPegData.name}</span>
-						</div>
-					{/if}
-				</div>
-				<div class="min-w-0">
-					<div class="mb-1 flex items-center gap-2">
-						<span class="rounded bg-primary/20 px-1.5 py-0.5 text-xs font-semibold text-primary"
-							>Your Peg</span
-						>
-						<span class="text-sm font-bold text-dark-teal">Peg {selectedPegData.name}</span>
-					</div>
-					<p class="text-xs leading-relaxed text-dark-teal">
-						{selectedPegData.description}
-					</p>
-				</div>
-			</div>
-		{/if}
-
-		<div class="grid w-full max-w-sm grid-cols-3 gap-2 sm:grid-cols-3">
-			{#each pegs as peg (peg.name)}
-				<button
-					onclick={() => selectPeg(peg.name)}
-					class="flex flex-col cursor-pointer items-center gap-2 rounded-lg border p-2 transition-all {selectedPeg ===
-					peg.name
-						? 'scale-105 border-primary ring-2 ring-primary ring-offset-2'
-						: 'border-olive bg-surface/20 hover:bg-surface/40'}"
-				>
-					<div class="h-8 w-8 shrink-0 overflow-hidden rounded bg-surface/40">
-						{#if pegImg(peg.image)}
-							<img src={pegImg(peg.image)} alt="" class="h-full w-full object-cover" />
+	{#if selectedPegData}
+		<div class="flex flex-col overflow-hidden pb-4 pt-6">
+			<div class="mx-auto flex w-full max-w-sm shrink-0 flex-col items-center gap-3 px-4 pb-3">
+				<div class="relative">
+					<div class="overflow-hidden rounded-2xl border-2 border-white/50 shadow-xl">
+						{#if pegImg(selectedPegData.image)}
+							<img
+								src={pegImg(selectedPegData.image)}
+								alt=""
+								class="object-cover"
+							/>
 						{:else}
-							<div class="flex h-full w-full items-center justify-center">
-								<span class="text-xs font-bold text-muted">{peg.name}</span>
+							<div class="flex items-center justify-center bg-primary/10">
+								<span class="text-5xl font-bold text-primary">P{selectedPegData.name}</span>
 							</div>
 						{/if}
 					</div>
-					<div class="min-w-0">
-						<p class="text-xs font-semibold text-dark-teal">Peg {peg.name}</p>
+					<div
+						class="absolute -right-2 -top-2 flex h-10 w-10 items-center justify-center rounded-full bg-accent text-sm font-bold text-white shadow-lg"
+					>
+						{selectedPegData.name}
 					</div>
-				</button>
-			{/each}
-		</div>
+				</div>
+				<p class="min-h-26 text-center text-xs leading-relaxed text-dark-teal/80">
+					{selectedPegData.description}
+				</p>
+			</div>
 
-		<div class="mt-auto flex flex-col items-center gap-2 pb-2">
-			<button
-				onclick={goToTackle}
-				class="inline-flex min-h-11 items-center justify-center rounded bg-primary px-6 py-3 text-center text-white no-underline hover:bg-primary/80"
+			<div
+				class="flex shrink-0 gap-2 overflow-x-auto px-4 pb-3 sm:overflow-visible sm:justify-center sm:-mx-4 sm:px-0"
+				style="scrollbar-width:none"
 			>
-				Next
-			</button>
-			{#if tutorialCompleted}
+				{#each pegs as peg (peg.name)}
+					<button
+						onclick={() => selectPeg(peg.name)}
+						class="relative cursor-pointer shrink-0 transition-all duration-200 hover:scale-105 {selectedPeg ===
+						peg.name
+							? 'scale-105'
+							: 'opacity-60 hover:opacity-90'}"
+					>
+						<div
+							class="h-20 w-20 overflow-hidden rounded-xl border-2 transition-all sm:h-24 sm:w-24 {selectedPeg ===
+							peg.name
+								? 'border-accent shadow-lg'
+								: 'border-white/30 shadow-md'}"
+						>
+							{#if pegImg(peg.image)}
+								<img src={pegImg(peg.image)} alt="" class="h-full w-full object-cover" />
+							{:else}
+								<div class="flex h-full w-full items-center justify-center bg-surface/60">
+									<span class="text-lg font-bold text-dark-teal">{peg.name}</span>
+								</div>
+							{/if}
+						</div>
+						<div
+							class="absolute -bottom-1 -right-1 flex h-6 w-6 items-center justify-center rounded-full bg-dark-teal/80 text-xs font-bold text-white"
+						>
+							{peg.name}
+						</div>
+					</button>
+				{/each}
+			</div>
+
+			<div class="mx-auto mt-auto w-full max-w-sm px-4">
 				<button
-					onclick={handleResetHints}
-					class="cursor-pointer text-xs text-muted underline hover:text-dark-teal"
+					onclick={goToTackle}
+					class="inline-flex w-full shrink-0 cursor-pointer items-center justify-center gap-2 rounded-xl bg-primary py-3 text-base font-semibold text-white shadow-lg transition-all hover:bg-primary/90 active:scale-[0.98]"
 				>
-					Show hints again
+					Fish Peg {selectedPegData.name}
+					<span class="text-lg">&rarr;</span>
 				</button>
-			{/if}
+			</div>
 		</div>
-	</div>
+	{/if}
 {:else}
 	<div class="flex min-h-dvh flex-col items-center justify-center gap-6 p-4">
 		<h1 class="text-2xl font-bold text-dark-teal sm:text-3xl md:text-4xl">Rules</h1>
