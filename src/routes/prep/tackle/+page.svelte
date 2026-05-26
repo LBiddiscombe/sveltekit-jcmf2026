@@ -239,6 +239,22 @@
 		<div class="grid gap-6 md:grid-cols-2">
 			<!-- Peg panel -->
 			<div class="flex flex-col gap-3">
+				<div class="relative aspect-square overflow-hidden rounded-xl bg-surface/20 hidden md:block">
+					{#if selectedPegData?.image && pegImg(selectedPegData.image)}
+						<img src={pegImg(selectedPegData.image)} alt="" class="h-full w-full object-contain" />
+					{:else}
+						<div class="flex h-full w-full items-center justify-center">
+							{#if pegName}
+								<span class="text-6xl font-bold text-muted">{pegName}</span>
+							{/if}
+						</div>
+					{/if}
+					<div class="absolute top-3 left-3 rounded-lg bg-black/40 px-2 py-1">
+						<p class="text-sm font-semibold tracking-wide text-white/80 uppercase">{venueName}</p>
+						<p class="text-xs text-white/60">{lakeName}</p>
+						<p class="text-lg font-bold text-white">Peg {pegName}</p>
+					</div>
+				</div>
 				{#if selectedPegData?.description}
 					<p class="text-base leading-relaxed text-dark-teal/90">{selectedPegData.description}</p>
 				{/if}
