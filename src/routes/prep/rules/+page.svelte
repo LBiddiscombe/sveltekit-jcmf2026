@@ -12,6 +12,8 @@
 	}
 
 	let mode = $derived(prepState.mode);
+	let venueName = $derived(prepState.venueName);
+	let lakeName = $derived(prepState.lakeName);
 	let pegs = $derived(prepState.lake?.pegs ?? []);
 	let selectedPeg = $state<string | null>(prepState.playerPeg ?? null);
 	let selectedPegData = $derived(
@@ -57,24 +59,22 @@
 	{#if selectedPegData}
 		<div class="flex flex-col overflow-hidden pb-4 pt-6">
 			<div class="mx-auto flex w-full max-w-sm shrink-0 flex-col items-center gap-3 px-4 pb-3">
-				<div class="relative">
-					<div class="overflow-hidden rounded-2xl border-2 border-white/50 shadow-xl">
-						{#if pegImg(selectedPegData.image)}
-							<img
-								src={pegImg(selectedPegData.image)}
-								alt=""
-								class="object-cover"
-							/>
-						{:else}
-							<div class="flex items-center justify-center bg-primary/10">
-								<span class="text-5xl font-bold text-primary">P{selectedPegData.name}</span>
-							</div>
-						{/if}
-					</div>
-					<div
-						class="absolute -right-2 -top-2 flex h-10 w-10 items-center justify-center rounded-full bg-accent text-sm font-bold text-white shadow-lg"
-					>
-						{selectedPegData.name}
+				<div class="relative overflow-hidden rounded-xl">
+					{#if pegImg(selectedPegData.image)}
+						<img
+							src={pegImg(selectedPegData.image)}
+							alt=""
+							class="h-full w-full object-contain"
+						/>
+					{:else}
+						<div class="flex h-full w-full items-center justify-center bg-surface/20">
+							<span class="text-6xl font-bold text-muted">{selectedPegData.name}</span>
+						</div>
+					{/if}
+					<div class="absolute top-3 left-3 rounded-lg bg-black/40 px-2 py-1">
+						<p class="text-sm font-semibold tracking-wide text-white/80 uppercase">{venueName}</p>
+						<p class="text-xs text-white/60">{lakeName}</p>
+						<p class="text-lg font-bold text-white">Peg {selectedPegData.name}</p>
 					</div>
 				</div>
 				<p class="min-h-26 text-center text-xs leading-relaxed text-dark-teal/80">

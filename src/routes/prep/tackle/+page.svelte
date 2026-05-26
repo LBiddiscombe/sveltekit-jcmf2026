@@ -229,9 +229,6 @@
 
 <div class="flex min-h-dvh flex-col items-center p-4">
 	<div class="flex w-full max-w-2xl flex-col gap-6">
-		<h1 class="text-center text-2xl font-bold text-dark-teal sm:text-3xl md:text-4xl">
-			{isMidGame ? 'Change Tackle' : 'Choose Tackle & Bait'}
-		</h1>
 		{#if isTimed}
 			<div class="mx-auto flex items-center gap-2 rounded-xl bg-danger/10 px-4 py-2 text-danger">
 				<span class="text-sm font-semibold">Match time remaining:</span>
@@ -242,24 +239,8 @@
 		<div class="grid gap-6 md:grid-cols-2">
 			<!-- Peg panel -->
 			<div class="flex flex-col gap-3">
-				<div class="relative aspect-square overflow-hidden rounded-xl bg-surface/20">
-					{#if selectedPegData?.image && pegImg(selectedPegData.image)}
-						<img src={pegImg(selectedPegData.image)} alt="" class="h-full w-full object-contain" />
-					{:else}
-						<div class="flex h-full w-full items-center justify-center">
-							{#if pegName}
-								<span class="text-6xl font-bold text-muted">{pegName}</span>
-							{/if}
-						</div>
-					{/if}
-					<div class="absolute top-3 left-3 rounded-lg bg-black/40 px-2 py-1">
-						<p class="text-sm font-semibold tracking-wide text-white/80 uppercase">{venueName}</p>
-						<p class="text-xs text-white/60">{lakeName}</p>
-						<p class="text-lg font-bold text-white">Peg {pegName}</p>
-					</div>
-				</div>
 				{#if selectedPegData?.description}
-					<p class="text-sm leading-relaxed text-dark-teal">{selectedPegData.description}</p>
+					<p class="text-base leading-relaxed text-dark-teal/90">{selectedPegData.description}</p>
 				{/if}
 				<div class="flex flex-col gap-1">
 					<label

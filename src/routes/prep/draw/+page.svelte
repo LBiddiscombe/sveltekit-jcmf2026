@@ -2,20 +2,15 @@
 	import { goto } from '$app/navigation';
 	import type { Peg } from '$lib/data';
 	import { prepState } from '$lib/game/prep-state.svelte';
-	import { prepTackleUrl } from '$lib/game/prep-flow';
 	import { onMount } from 'svelte';
 
 	let mode = $derived(prepState.mode);
 	let minutes = $derived(prepState.timeLimitMinutes);
+	let venueName = $derived(prepState.venueName);
+	let lakeName = $derived(prepState.lakeName);
 
 	let playerPeg = $state<Peg | undefined>(undefined);
 	let botAnglers = $state<{ name: string; pegName: string; pegImage: string | undefined }[]>([]);
-	let playerRevealed = $state(false);
-	let visibleBotCount = $state(0);
-	let allRevealed = $derived(
-		botAnglers.length > 0 ? visibleBotCount >= botAnglers.length : playerRevealed
-	);
-
 	let hasError = $state(false);
 
 	const pegImages = import.meta.glob<string>('$lib/assets/images/pegs/*.jpeg', {
@@ -34,41 +29,19 @@
 			return;
 		}
 
-		const timeout = setTimeout(() => {
-			prepState.drawMatch();
+		prepState.drawMatch();
 
-			const peg = prepState.lake?.pegs.find((p) => p.name === prepState.playerPeg);
-			playerPeg = peg;
+		playerPeg = prepState.lake?.pegs.find((p) => p.name === prepState.playerPeg);
 
-			botAnglers = prepState.anglers
-				.filter((a) => !a.isPlayer)
-				.map((a) => ({
-					name: a.name,
-					pegName: a.pegName,
-					pegImage: prepState.lake?.pegs.find((p) => p.name === a.pegName)?.image
-				}))
-				.sort((a, b) => Number(a.pegName) - Number(b.pegName));
-
-			playerRevealed = true;
-
-			if (botAnglers.length > 0) {
-				let count = 0;
-				const interval = setInterval(() => {
-					count++;
-					visibleBotCount = count;
-					if (count >= botAnglers.length) {
-						clearInterval(interval);
-					}
-				}, 300);
-			}
-		}, 500);
-
-		return () => clearTimeout(timeout);
+		botAnglers = prepState.anglers
+			.filter((a) => !a.isPlayer)
+			.map((a) => ({
+				name: a.name,
+				pegName: a.pegName,
+				pegImage: prepState.lake?.pegs.find((p) => p.name === a.pegName)?.image
+			}))
+			.sort((a, b) => Number(a.pegName) - Number(b.pegName));
 	});
-
-	function goToTackle() {
-		goto(prepTackleUrl());
-	}
 </script>
 
 {#if hasError}
@@ -82,93 +55,60 @@
 			Back to Menu
 		</a>
 	</div>
-{:else}
-	<div class="flex min-h-dvh flex-col items-center gap-3 p-4">
-		<h1 class="text-xl font-bold text-dark-teal sm:text-2xl">Peg Draw</h1>
-		<p class="text-sm text-muted">{prepState.lakeName} &middot; {minutes} min</p>
-
-		{#if playerPeg && playerRevealed}
-			<div
-				class="animate-fade-in-up flex w-full max-w-sm items-start gap-3 rounded-xl border-2 border-primary bg-white p-3"
-			>
-				<div class="h-20 w-20 shrink-0 overflow-hidden rounded-lg bg-surface/40 sm:h-24 sm:w-24">
-					{#if pegImg(playerPeg.image)}
-						<img src={pegImg(playerPeg.image)} alt="" class="h-full w-full object-cover" />
-					{:else}
-						<div class="flex h-full w-full items-center justify-center">
-							<span class="text-2xl font-bold text-muted">{playerPeg.name}</span>
-						</div>
-					{/if}
-				</div>
-				<div class="min-w-0">
-					<div class="mb-1 flex items-center gap-2">
-						<span class="rounded bg-primary/20 px-1.5 py-0.5 text-xs font-semibold text-primary"
-							>Your Peg</span
-						>
-						<span class="text-sm font-bold text-dark-teal">Peg {playerPeg.name}</span>
+{:else if playerPeg}
+	<div class="flex min-h-dvh flex-col overflow-hidden pb-4 pt-6">
+		<div class="mx-auto flex w-full max-w-sm shrink-0 flex-col items-center gap-3 px-4 pb-3">
+			<div class="relative overflow-hidden rounded-xl">
+				{#if pegImg(playerPeg.image)}
+					<img src={pegImg(playerPeg.image)} alt="" class="h-full w-full object-contain" />
+				{:else}
+					<div class="flex h-full w-full items-center justify-center bg-surface/20">
+						<span class="text-6xl font-bold text-muted">{playerPeg.name}</span>
 					</div>
-					<p class="text-xs leading-relaxed text-dark-teal">
-						{playerPeg.description}
-					</p>
+				{/if}
+				<div class="absolute top-3 left-3 rounded-lg bg-black/40 px-2 py-1">
+					<p class="text-sm font-semibold tracking-wide text-white/80 uppercase">{venueName}</p>
+					<p class="text-xs text-white/60">{lakeName}</p>
+					<p class="text-lg font-bold text-white">Peg {playerPeg.name}</p>
 				</div>
 			</div>
-		{/if}
+			<p class="min-h-26 text-center text-xs leading-relaxed text-dark-teal/80">
+				{playerPeg.description}
+			</p>
+		</div>
 
-		{#if botAnglers.length > 0}
-			<div class="grid w-full max-w-sm grid-cols-2 gap-2 sm:grid-cols-3">
-				{#each botAnglers as bot, i (bot.name)}
-					{#if visibleBotCount > i}
-						<div
-							class="animate-fade-in-up flex items-center gap-2 rounded-lg border border-olive bg-surface/20 p-2"
-						>
-							<div class="h-8 w-8 shrink-0 overflow-hidden rounded bg-surface/40">
-								{#if pegImg(bot.pegImage)}
-									<img src={pegImg(bot.pegImage)} alt="" class="h-full w-full object-cover" />
-								{:else}
-									<div class="flex h-full w-full items-center justify-center">
-										<span class="text-xs font-bold text-muted">{bot.pegName}</span>
-									</div>
-								{/if}
+		<div
+			class="flex shrink-0 gap-2 overflow-x-auto px-4 pb-3 sm:overflow-visible sm:justify-center sm:-mx-4 sm:px-0"
+			style="scrollbar-width:none"
+		>
+			{#each botAnglers as bot (bot.pegName)}
+				<div class="shrink-0">
+					<div class="h-20 w-20 overflow-hidden rounded-xl border-2 border-white/30 shadow-md">
+						{#if pegImg(bot.pegImage)}
+							<img src={pegImg(bot.pegImage)} alt="" class="h-full w-full object-cover" />
+						{:else}
+							<div class="flex h-full w-full items-center justify-center bg-surface/60">
+								<span class="text-lg font-bold text-dark-teal">{bot.pegName}</span>
 							</div>
-							<div class="min-w-0">
-								<p class="truncate text-xs font-semibold text-dark-teal">{bot.name}</p>
-								<p class="text-xs text-muted">Peg {bot.pegName}</p>
-							</div>
-						</div>
-					{/if}
-				{/each}
-			</div>
-		{/if}
+						{/if}
+					</div>
+					<p class="mt-1 truncate text-center text-xs font-semibold text-dark-teal">{bot.name}</p>
+					<p class="text-center text-xs text-muted">Peg {bot.pegName}</p>
+				</div>
+			{/each}
+		</div>
 
-		<div class="mt-auto flex justify-center pb-2">
-			{#if allRevealed}
-				<button
-					onclick={() => {
-						prepState.startMatchTimer();
-						goto('/prep/tackle?timed=1');
-					}}
-					class="animate-fade-in-up inline-flex min-h-[44px] cursor-pointer items-center justify-center rounded bg-accent px-6 py-3 text-center font-bold text-white no-underline shadow-md hover:opacity-90"
-				>
-					Start Match
-				</button>
-			{/if}
+		<div class="mx-auto mt-auto w-full max-w-sm px-4">
+			<button
+				onclick={() => {
+					prepState.startMatchTimer();
+					goto('/prep/tackle?timed=1');
+				}}
+				class="inline-flex w-full shrink-0 cursor-pointer items-center justify-center gap-2 rounded-xl bg-accent py-3 text-base font-semibold text-white shadow-lg transition-all hover:opacity-90 active:scale-[0.98]"
+			>
+				Start Match
+				<span class="text-lg">&rarr;</span>
+			</button>
 		</div>
 	</div>
 {/if}
-
-<style>
-	@keyframes fadeInUp {
-		from {
-			opacity: 0;
-			transform: translateY(20px);
-		}
-		to {
-			opacity: 1;
-			transform: translateY(0);
-		}
-	}
-
-	:global(.animate-fade-in-up) {
-		animation: fadeInUp 0.4s ease-out both;
-	}
-</style>
