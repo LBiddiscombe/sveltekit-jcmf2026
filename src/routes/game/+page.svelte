@@ -292,12 +292,31 @@
 	});
 
 	function setupMultiplayerGame() {
-		const angler = prepState.playerAngler;
-		if (!angler) return;
-		angler.pegName = multiplayer.ownPeg ?? '';
-		angler.catch = [];
-		angler.totalWeightOz = 0;
-		angler.biggestFish = null;
+		let angler = prepState.playerAngler;
+		if (!angler) {
+			prepState.anglers = [
+				{
+					id: 'player',
+					name: multiplayer.playerName || 'You',
+					image: '',
+					isPlayer: true,
+					skill: 0,
+					pegName: multiplayer.ownPeg ?? '',
+					phase: 'idle',
+					tackle: { ...defaultTackle },
+					totalWeightOz: 0,
+					biggestFish: null,
+					catch: []
+				}
+			];
+			angler = prepState.playerAngler;
+			if (!angler) return;
+		} else {
+			angler.pegName = multiplayer.ownPeg ?? '';
+			angler.catch = [];
+			angler.totalWeightOz = 0;
+			angler.biggestFish = null;
+		}
 		const venue = venues[0];
 		const lake = venue.lakes[0];
 		gameState.beginFishing([angler], venue, lake, multiplayer.timeLimitMinutes);

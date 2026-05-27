@@ -17,8 +17,8 @@
 				class="flex w-full cursor-pointer items-center gap-4 rounded-2xl bg-white/70 px-5 py-5 text-left shadow-md transition-shadow hover:shadow-lg no-underline"
 			>
 				<img src={venueThumb} alt="" class="h-14 w-14 shrink-0 rounded-xl object-cover" />
-					<div class="min-w-0">
-						<h2 class="text-lg font-bold text-dark-teal">Host a Match</h2>
+				<div class="min-w-0">
+					<h2 class="text-lg font-bold text-dark-teal">Host a Match</h2>
 					<p class="text-sm text-dark-teal/60">Create a match and share the code with friends</p>
 				</div>
 			</a>
@@ -27,8 +27,8 @@
 				class="flex w-full cursor-pointer items-center gap-4 rounded-2xl bg-white/70 px-5 py-5 text-left shadow-md transition-shadow hover:shadow-lg no-underline"
 			>
 				<img src={reelThumb} alt="" class="h-14 w-14 shrink-0 rounded-xl object-cover" />
-					<div class="min-w-0">
-						<h2 class="text-lg font-bold text-dark-teal">Join a Match</h2>
+				<div class="min-w-0">
+					<h2 class="text-lg font-bold text-dark-teal">Join a Match</h2>
 					<p class="text-sm text-dark-teal/60">Enter a code to join a friend's match</p>
 				</div>
 			</a>

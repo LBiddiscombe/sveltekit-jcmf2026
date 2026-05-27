@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { GameState } from './state.svelte';
 import type { AnglerState } from './prep-state.svelte';
 import type { Lake, Venue, TackleSelection } from '$lib/data';
+import { defaultTackle } from './tackle-utils';
 
 const venue: Venue = {
 	name: 'Test Venue',
@@ -328,5 +329,55 @@ describe('GameState match ending', () => {
 		gs.tick(100);
 		expect(gs.phase).toBe('results');
 		expect(gs.playerSnapshot?.phase).toBe('idle');
+	});
+
+	/* ─── MULTIPLAYER REGRESSION TESTS ─── */
+
+	it('beginFishing with defaultTackle (multiplayer path) enters changing phase', () => {
+		const player: AnglerState = {
+			id: 'player',
+			name: 'TestPlayer',
+			image: '',
+			isPlayer: true,
+			skill: 0,
+			pegName: '1',
+			phase: 'idle',
+			tackle: { ...defaultTackle },
+			totalWeightOz: 0,
+			biggestFish: null,
+			catch: []
+		};
+		gs.beginFishing([player], venue, lake);
+		expect(gs.phase).toBe('fishing');
+		expect(gs.initialTackleChosen).toBe(false);
+		expect(gs.playerSnapshot?.phase).toBe('changing');
+		expect(gs.playerLoop).not.toBeNull();
+	});
+
+	it('multiplayer path: after tackle confirm, auto-cast begins waiting phase', () => {
+		const player: AnglerState = {
+			id: 'player',
+			name: 'TestPlayer',
+			image: '',
+			isPlayer: true,
+			skill: 0,
+			pegName: '1',
+			phase: 'idle',
+			tackle: { ...defaultTackle },
+			totalWeightOz: 0,
+			biggestFish: null,
+			catch: []
+		};
+		gs.beginFishing([player], venue, lake);
+		expect(gs.playerSnapshot?.phase).toBe('changing');
+
+		gs.updateTackle({ ...defaultTackle });
+		gs.finishChangingTackle();
+
+		expect(gs.initialTackleChosen).toBe(true);
+		expect(gs.playerSnapshot?.phase).toBe('idle');
+
+		gs.tick(100);
+		expect(gs.playerSnapshot?.phase).toBe('waiting');
 	});
 });
