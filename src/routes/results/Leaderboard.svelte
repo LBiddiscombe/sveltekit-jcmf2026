@@ -268,9 +268,7 @@
 						: '-translate-x-full opacity-0'}"
 				>
 					<div class="flex w-full items-center gap-3 rounded-lg bg-black/30 px-3 py-2.5">
-						<span class="w-6 shrink-0 text-center text-base font-bold text-white/50"
-							>{i + 4}</span
-						>
+						<span class="w-6 shrink-0 text-center text-base font-bold text-white/50">{i + 4}</span>
 						<div class="h-8 w-8 shrink-0 overflow-hidden rounded-full border border-white/20">
 							{#if !isMulti && entry.image && imgSrc(entry)}
 								<img src={imgSrc(entry)} alt="" class="h-full w-full object-cover" />

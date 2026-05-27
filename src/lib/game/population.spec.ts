@@ -18,10 +18,10 @@ const mockSpecies: Species[] = [
 		preferences: { flow: 0.3, clarity: 0.5, substrate: 0.7, vegetation: 0.6, shelter: 0.5 },
 		tolerances: {},
 		classifications: [
-			{ label: 'Small', maxOz: 8, preferredBaits: [] },
-			{ label: '', maxOz: 34, preferredBaits: [] },
-			{ label: 'Specimen', maxOz: 51, preferredBaits: [] },
-			{ label: 'Monster', maxOz: Infinity, preferredBaits: [] }
+			{ id: 'small', label: 'Small', maxOz: 8, preferredBaits: [] },
+			{ id: 'medium', label: '', maxOz: 34, preferredBaits: [] },
+			{ id: 'specimen', label: 'Specimen', maxOz: 51, preferredBaits: [] },
+			{ id: 'monster', label: 'Monster', maxOz: Infinity, preferredBaits: [] }
 		]
 	},
 	{
@@ -32,10 +32,10 @@ const mockSpecies: Species[] = [
 		preferences: { flow: 0.2, clarity: 0.6, substrate: 0.5, vegetation: 0.8, shelter: 0.6 },
 		tolerances: {},
 		classifications: [
-			{ label: 'Small', maxOz: 8, preferredBaits: [] },
-			{ label: '', maxOz: 49, preferredBaits: [] },
-			{ label: 'Specimen', maxOz: 75, preferredBaits: [] },
-			{ label: 'Monster', maxOz: Infinity, preferredBaits: [] }
+			{ id: 'small', label: 'Small', maxOz: 8, preferredBaits: [] },
+			{ id: 'medium', label: '', maxOz: 49, preferredBaits: [] },
+			{ id: 'specimen', label: 'Specimen', maxOz: 75, preferredBaits: [] },
+			{ id: 'monster', label: 'Monster', maxOz: Infinity, preferredBaits: [] }
 		]
 	},
 	{
@@ -46,10 +46,10 @@ const mockSpecies: Species[] = [
 		preferences: { flow: 0.2, clarity: 0.6, substrate: 0.6, vegetation: 0.9, shelter: 0.8 },
 		tolerances: {},
 		classifications: [
-			{ label: 'Jack', maxOz: 80, preferredBaits: [] },
-			{ label: '', maxOz: 374, preferredBaits: [] },
-			{ label: 'Specimen', maxOz: 561, preferredBaits: [] },
-			{ label: 'Monster', maxOz: Infinity, preferredBaits: [] }
+			{ id: 'small', label: 'Jack', maxOz: 80, preferredBaits: [] },
+			{ id: 'medium', label: '', maxOz: 374, preferredBaits: [] },
+			{ id: 'specimen', label: 'Specimen', maxOz: 561, preferredBaits: [] },
+			{ id: 'monster', label: 'Monster', maxOz: Infinity, preferredBaits: [] }
 		]
 	}
 ];
@@ -227,10 +227,10 @@ describe('reassignDynamicProperties', () => {
 				preferences: { flow: 0.5, clarity: 0.5, substrate: 0.5, vegetation: 0.5, shelter: 0.5 },
 				tolerances: {},
 				classifications: [
-					{ label: 'Small', maxOz: 8, preferredBaits: ['maggot', 'caster'] },
-					{ label: '', maxOz: 34, preferredBaits: ['maggot'] },
-					{ label: 'Specimen', maxOz: 51, preferredBaits: ['worm'] },
-					{ label: 'Monster', maxOz: Infinity, preferredBaits: ['boilie'] }
+					{ id: 'small', label: 'Small', maxOz: 8, preferredBaits: ['maggot', 'caster'] },
+					{ id: 'medium', label: '', maxOz: 34, preferredBaits: ['maggot'] },
+					{ id: 'specimen', label: 'Specimen', maxOz: 51, preferredBaits: ['worm'] },
+					{ id: 'monster', label: 'Monster', maxOz: Infinity, preferredBaits: ['boilie'] }
 				]
 			}
 		];

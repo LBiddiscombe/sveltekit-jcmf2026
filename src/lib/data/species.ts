@@ -11,17 +11,29 @@ export const species: Species[] = [
 		tolerances: { flow: { min: 0.3, max: 1 } },
 		classifications: [
 			{
+				id: 'small',
 				label: 'Small',
 				maxOz: 36,
 				preferredBaits: ['maggot', 'caster', 'bread', 'worm', 'pellet', 'sweetcorn']
 			},
 			{
+				id: 'medium',
 				label: '',
 				maxOz: 169,
 				preferredBaits: ['maggot', 'caster', 'bread', 'worm', 'pellet', 'sweetcorn', 'boilie']
 			},
-			{ label: 'Specimen', maxOz: 253, preferredBaits: ['pellet', 'meat', 'boilie'] },
-			{ label: 'Monster', maxOz: Infinity, preferredBaits: ['pellet', 'meat', 'boilie'] }
+			{
+				id: 'specimen',
+				label: 'Specimen',
+				maxOz: 253,
+				preferredBaits: ['pellet', 'meat', 'boilie']
+			},
+			{
+				id: 'monster',
+				label: 'Monster',
+				maxOz: Infinity,
+				preferredBaits: ['pellet', 'meat', 'boilie']
+			}
 		]
 	},
 	{
@@ -34,21 +46,25 @@ export const species: Species[] = [
 		tolerances: { flow: { min: 0, max: 0.5 } },
 		classifications: [
 			{
+				id: 'small',
 				label: 'Skimmer',
 				maxOz: 16,
 				preferredBaits: ['maggot', 'caster', 'bread', 'worm', 'pellet', 'sweetcorn']
 			},
 			{
+				id: 'medium',
 				label: '',
 				maxOz: 181,
 				preferredBaits: ['maggot', 'caster', 'bread', 'worm', 'pellet', 'sweetcorn']
 			},
 			{
+				id: 'specimen',
 				label: 'Specimen',
 				maxOz: 272,
 				preferredBaits: ['caster', 'worm', 'pellet', 'sweetcorn', 'boilie']
 			},
 			{
+				id: 'monster',
 				label: 'Monster',
 				maxOz: Infinity,
 				preferredBaits: ['caster', 'worm', 'pellet', 'sweetcorn', 'boilie']
@@ -65,17 +81,24 @@ export const species: Species[] = [
 		tolerances: { flow: { min: 0, max: 0.5 } },
 		classifications: [
 			{
+				id: 'small',
 				label: 'Small',
 				maxOz: 64,
 				preferredBaits: ['maggot', 'caster', 'bread', 'worm', 'pellet', 'sweetcorn']
 			},
 			{
+				id: 'medium',
 				label: '',
 				maxOz: 544,
 				preferredBaits: ['caster', 'bread', 'worm', 'pellet', 'meat', 'sweetcorn', 'boilie']
 			},
-			{ label: 'Specimen', maxOz: 816, preferredBaits: ['bread', 'pellet', 'meat', 'boilie'] },
-			{ label: 'Monster', maxOz: Infinity, preferredBaits: ['meat', 'boilie'] }
+			{
+				id: 'specimen',
+				label: 'Specimen',
+				maxOz: 816,
+				preferredBaits: ['bread', 'pellet', 'meat', 'boilie']
+			},
+			{ id: 'monster', label: 'Monster', maxOz: Infinity, preferredBaits: ['meat', 'boilie'] }
 		]
 	},
 	{
@@ -88,17 +111,24 @@ export const species: Species[] = [
 		tolerances: { flow: { min: 0.3, max: 1 } },
 		classifications: [
 			{
+				id: 'small',
 				label: 'Small',
 				maxOz: 16,
 				preferredBaits: ['maggot', 'caster', 'bread', 'worm', 'pellet', 'sweetcorn']
 			},
 			{
+				id: 'medium',
 				label: '',
 				maxOz: 74,
 				preferredBaits: ['maggot', 'caster', 'bread', 'worm', 'pellet', 'sweetcorn']
 			},
-			{ label: 'Specimen', maxOz: 111, preferredBaits: ['worm', 'pellet', 'meat'] },
-			{ label: 'Monster', maxOz: Infinity, preferredBaits: ['worm', 'pellet', 'meat'] }
+			{ id: 'specimen', label: 'Specimen', maxOz: 111, preferredBaits: ['worm', 'pellet', 'meat'] },
+			{
+				id: 'monster',
+				label: 'Monster',
+				maxOz: Infinity,
+				preferredBaits: ['worm', 'pellet', 'meat']
+			}
 		]
 	},
 	{
@@ -111,21 +141,25 @@ export const species: Species[] = [
 		tolerances: { flow: { min: 0, max: 0.3 } },
 		classifications: [
 			{
+				id: 'small',
 				label: 'Small',
 				maxOz: 8,
 				preferredBaits: ['maggot', 'caster', 'bread', 'pellet', 'sweetcorn']
 			},
 			{
+				id: 'medium',
 				label: '',
 				maxOz: 37,
 				preferredBaits: ['maggot', 'caster', 'bread', 'pellet', 'sweetcorn']
 			},
 			{
+				id: 'specimen',
 				label: 'Specimen',
 				maxOz: 55,
 				preferredBaits: ['maggot', 'caster', 'bread', 'pellet', 'sweetcorn']
 			},
 			{
+				id: 'monster',
 				label: 'Monster',
 				maxOz: Infinity,
 				preferredBaits: ['maggot', 'caster', 'bread', 'pellet', 'sweetcorn']
@@ -141,10 +175,10 @@ export const species: Species[] = [
 		preferences: { flow: 0.8, clarity: 0.8, substrate: 0.2, vegetation: 0.4, shelter: 0.4 },
 		tolerances: { flow: { min: 0.3, max: 1 } },
 		classifications: [
-			{ label: 'Tiny', maxOz: 2, preferredBaits: ['maggot', 'caster'] },
-			{ label: '', maxOz: 10, preferredBaits: ['maggot', 'caster'] },
-			{ label: 'Specimen', maxOz: 15, preferredBaits: ['maggot', 'caster'] },
-			{ label: 'Monster', maxOz: Infinity, preferredBaits: ['maggot', 'caster'] }
+			{ id: 'small', label: 'Tiny', maxOz: 2, preferredBaits: ['maggot', 'caster'] },
+			{ id: 'medium', label: '', maxOz: 10, preferredBaits: ['maggot', 'caster'] },
+			{ id: 'specimen', label: 'Specimen', maxOz: 15, preferredBaits: ['maggot', 'caster'] },
+			{ id: 'monster', label: 'Monster', maxOz: Infinity, preferredBaits: ['maggot', 'caster'] }
 		]
 	},
 	{
@@ -156,10 +190,10 @@ export const species: Species[] = [
 		preferences: { flow: 0.2, clarity: 0.3, substrate: 0.9, vegetation: 0.7, shelter: 0.8 },
 		tolerances: { flow: { min: 0, max: 0.4 } },
 		classifications: [
-			{ label: 'Small', maxOz: 16, preferredBaits: ['maggot', 'worm'] },
-			{ label: '', maxOz: 86, preferredBaits: ['maggot', 'worm', 'meat'] },
-			{ label: 'Specimen', maxOz: 129, preferredBaits: ['worm', 'meat', 'fish'] },
-			{ label: 'Monster', maxOz: Infinity, preferredBaits: ['meat', 'fish'] }
+			{ id: 'small', label: 'Small', maxOz: 16, preferredBaits: ['maggot', 'worm'] },
+			{ id: 'medium', label: '', maxOz: 86, preferredBaits: ['maggot', 'worm', 'meat'] },
+			{ id: 'specimen', label: 'Specimen', maxOz: 129, preferredBaits: ['worm', 'meat', 'fish'] },
+			{ id: 'monster', label: 'Monster', maxOz: Infinity, preferredBaits: ['meat', 'fish'] }
 		]
 	},
 	{
@@ -171,10 +205,21 @@ export const species: Species[] = [
 		preferences: { flow: 0.8, clarity: 0.9, substrate: 0.2, vegetation: 0.2, shelter: 0.3 },
 		tolerances: { flow: { min: 0.3, max: 1 } },
 		classifications: [
-			{ label: 'Small', maxOz: 8, preferredBaits: ['maggot', 'caster', 'sweetcorn'] },
-			{ label: '', maxOz: 34, preferredBaits: ['maggot', 'caster', 'worm', 'sweetcorn'] },
-			{ label: 'Specimen', maxOz: 51, preferredBaits: ['maggot', 'caster', 'worm', 'sweetcorn'] },
+			{ id: 'small', label: 'Small', maxOz: 8, preferredBaits: ['maggot', 'caster', 'sweetcorn'] },
 			{
+				id: 'medium',
+				label: '',
+				maxOz: 34,
+				preferredBaits: ['maggot', 'caster', 'worm', 'sweetcorn']
+			},
+			{
+				id: 'specimen',
+				label: 'Specimen',
+				maxOz: 51,
+				preferredBaits: ['maggot', 'caster', 'worm', 'sweetcorn']
+			},
+			{
+				id: 'monster',
 				label: 'Monster',
 				maxOz: Infinity,
 				preferredBaits: ['maggot', 'caster', 'worm', 'sweetcorn']
@@ -190,10 +235,10 @@ export const species: Species[] = [
 		preferences: { flow: 0.2, clarity: 0.6, substrate: 0.5, vegetation: 0.8, shelter: 0.6 },
 		tolerances: { flow: { min: 0, max: 0.5 } },
 		classifications: [
-			{ label: 'Small', maxOz: 8, preferredBaits: ['maggot', 'caster', 'worm'] },
-			{ label: '', maxOz: 49, preferredBaits: ['maggot', 'caster', 'worm'] },
-			{ label: 'Specimen', maxOz: 75, preferredBaits: ['worm', 'meat', 'fish'] },
-			{ label: 'Monster', maxOz: Infinity, preferredBaits: ['meat', 'fish'] }
+			{ id: 'small', label: 'Small', maxOz: 8, preferredBaits: ['maggot', 'caster', 'worm'] },
+			{ id: 'medium', label: '', maxOz: 49, preferredBaits: ['maggot', 'caster', 'worm'] },
+			{ id: 'specimen', label: 'Specimen', maxOz: 75, preferredBaits: ['worm', 'meat', 'fish'] },
+			{ id: 'monster', label: 'Monster', maxOz: Infinity, preferredBaits: ['meat', 'fish'] }
 		]
 	},
 	{
@@ -205,10 +250,10 @@ export const species: Species[] = [
 		preferences: { flow: 0.2, clarity: 0.6, substrate: 0.6, vegetation: 0.9, shelter: 0.8 },
 		tolerances: { flow: { min: 0, max: 0.5 } },
 		classifications: [
-			{ label: 'Jack', maxOz: 80, preferredBaits: ['worm', 'meat'] },
-			{ label: '', maxOz: 374, preferredBaits: ['worm', 'meat', 'fish'] },
-			{ label: 'Specimen', maxOz: 561, preferredBaits: ['fish'] },
-			{ label: 'Monster', maxOz: Infinity, preferredBaits: ['fish'] }
+			{ id: 'small', label: 'Jack', maxOz: 80, preferredBaits: ['worm', 'meat'] },
+			{ id: 'medium', label: '', maxOz: 374, preferredBaits: ['worm', 'meat', 'fish'] },
+			{ id: 'specimen', label: 'Specimen', maxOz: 561, preferredBaits: ['fish'] },
+			{ id: 'monster', label: 'Monster', maxOz: Infinity, preferredBaits: ['fish'] }
 		]
 	},
 	{
@@ -220,18 +265,21 @@ export const species: Species[] = [
 		preferences: { flow: 0.3, clarity: 0.5, substrate: 0.7, vegetation: 0.6, shelter: 0.5 },
 		tolerances: { flow: { min: 0, max: 0.6 } },
 		classifications: [
-			{ label: 'Small', maxOz: 8, preferredBaits: ['maggot', 'caster'] },
+			{ id: 'small', label: 'Small', maxOz: 8, preferredBaits: ['maggot', 'caster'] },
 			{
+				id: 'medium',
 				label: '',
 				maxOz: 34,
 				preferredBaits: ['maggot', 'caster', 'bread', 'worm', 'pellet', 'sweetcorn']
 			},
 			{
+				id: 'specimen',
 				label: 'Specimen',
 				maxOz: 51,
 				preferredBaits: ['caster', 'bread', 'worm', 'pellet', 'meat', 'sweetcorn']
 			},
 			{
+				id: 'monster',
 				label: 'Monster',
 				maxOz: Infinity,
 				preferredBaits: ['bread', 'worm', 'pellet', 'meat', 'sweetcorn']
@@ -247,18 +295,21 @@ export const species: Species[] = [
 		preferences: { flow: 0.2, clarity: 0.6, substrate: 0.8, vegetation: 0.8, shelter: 0.7 },
 		tolerances: { flow: { min: 0, max: 0.5 } },
 		classifications: [
-			{ label: 'Small', maxOz: 8, preferredBaits: ['maggot', 'caster'] },
+			{ id: 'small', label: 'Small', maxOz: 8, preferredBaits: ['maggot', 'caster'] },
 			{
+				id: 'medium',
 				label: '',
 				maxOz: 37,
 				preferredBaits: ['maggot', 'caster', 'bread', 'worm', 'pellet', 'sweetcorn']
 			},
 			{
+				id: 'specimen',
 				label: 'Specimen',
 				maxOz: 55,
 				preferredBaits: ['caster', 'bread', 'worm', 'pellet', 'meat', 'sweetcorn']
 			},
 			{
+				id: 'monster',
 				label: 'Monster',
 				maxOz: Infinity,
 				preferredBaits: ['bread', 'worm', 'pellet', 'meat', 'sweetcorn']
@@ -274,10 +325,26 @@ export const species: Species[] = [
 		preferences: { flow: 0.1, clarity: 0.2, substrate: 1.0, vegetation: 0.9, shelter: 0.9 },
 		tolerances: { flow: { min: 0, max: 0.3 } },
 		classifications: [
-			{ label: 'Small', maxOz: 16, preferredBaits: ['maggot', 'caster', 'bread', 'sweetcorn'] },
-			{ label: '', maxOz: 121, preferredBaits: ['caster', 'bread', 'pellet', 'sweetcorn'] },
-			{ label: 'Specimen', maxOz: 182, preferredBaits: ['caster', 'bread', 'pellet', 'sweetcorn'] },
 			{
+				id: 'small',
+				label: 'Small',
+				maxOz: 16,
+				preferredBaits: ['maggot', 'caster', 'bread', 'sweetcorn']
+			},
+			{
+				id: 'medium',
+				label: '',
+				maxOz: 121,
+				preferredBaits: ['caster', 'bread', 'pellet', 'sweetcorn']
+			},
+			{
+				id: 'specimen',
+				label: 'Specimen',
+				maxOz: 182,
+				preferredBaits: ['caster', 'bread', 'pellet', 'sweetcorn']
+			},
+			{
+				id: 'monster',
 				label: 'Monster',
 				maxOz: Infinity,
 				preferredBaits: ['caster', 'bread', 'pellet', 'sweetcorn']

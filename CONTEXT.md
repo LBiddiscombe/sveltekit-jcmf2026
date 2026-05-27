@@ -32,7 +32,7 @@ Per-species min/max ranges for any subset of environmental dimensions. If a peg'
 A type of fish (e.g. Carp, Roach, Tench). Each species has a record weight, preferred strata, preferred environmental features, and size classifications. Abundance is defined per-lake via `LakeSpecies.frequency`.
 
 **FishClassification**:
-A size tier within a species (e.g. Small, Specimen, Monster) with a max weight and list of preferred baits.
+A size tier within a species with an `id` (`small`, `medium`, `specimen`, `monster`), a `label` (display name, blank for medium), a `maxOz` weight cap, and a list of preferred baits. The `id` is the canonical reference; the `label` may be species-specific (e.g. "Skimmer" for Bream small tier, "Jack" for Pike small tier). The medium tier deliberately has a blank label so it reads naturally in catch messages: "Small Carp", "Carp", "Specimen Carp", "Monster Carp".
 _Avoid_: SpeciesClass
 
 **Fish**:
@@ -155,7 +155,10 @@ A strike-time gate: if the fish's weight falls outside the hook's `minOz`–`max
 A cast-time filter: fish whose weight falls outside the bait's `minOz`–`maxOz` range will not be selected as bite candidates. The player sees a blank cast ("Nothing biting yet...") rather than a failed strike.
 
 **LineShyGate**:
-A cast-time lower-bound filter: fish whose weight falls below the line's `minOz` will not be selected as bite candidates (the line is too thick/visible for small fish to approach). No upper-bound gate at cast — the line's maxOz remains a reel-phase capacity check only.
+A cast-time lower-bound filter: fish whose weight falls below the line's `minOz` will not be selected as bite candidates (the line is too thick/visible for small fish to approach). No upper-bound gate at cast — the line's maxOz remains a reel-phase capacity check only. Line minOz values are steepened on heavier lines so 8lb+ gear gates out silver-fish tiers, and 12lb+ gear gates toward medium fish of larger species, helping players target larger fish without catching constant small fish.
+
+**HookRangeCheck**:
+A strike-time gate: if the fish's weight falls outside the hook's `minOz`–`maxOz` range, the strike fails. Hook minOz values follow a similar steepened progression as lines — size 10 and below increasingly filter toward medium-plus fish, while size 2 effectively targets specimen-grade fish of the larger species.
 
 ## Not in initial scope
 
@@ -175,7 +178,7 @@ A 0–1 score computed from the average absolute difference between a species' e
 A per-species value (in milliseconds) representing how long the fish's maximum possible wait for a bite can be. Ranges from 2,000 (Dace — bold, fast-biting) to 12,000 (Carp — cautious, slow-biting). Used within the bite-time bracket formula.
 
 **SizeMax**:
-A per-tier value (in milliseconds) representing how much longer larger fish can take to bite. Four tiers: 2,000 (smallest), 5,000 (medium), 10,000 (large/specimen), 16,000 (monster). Stored as `tierIndex` on each `FishData` instance for fast lookup.
+A per-tier value (in milliseconds) representing how much longer larger fish can take to bite. Four tiers: 2,000 (smallest), 5,000 (medium), 60,000 (specimen), 120,000 (monster). The upper tiers dominate the bracket ceiling so that big fish require genuine patience, while a fortuitous low random roll keeps quick catches possible. Stored as `tierIndex` on each `FishData` instance for fast lookup.
 
 **BiteTime**:
 The calculated milliseconds before a bite triggers, computed as:

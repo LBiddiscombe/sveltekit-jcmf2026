@@ -93,7 +93,9 @@
 		>
 			{#each botAnglers as bot (bot.pegName)}
 				<div class="shrink-0">
-					<div class="h-28 w-28 overflow-hidden rounded-xl border-2 border-white/30 shadow-md sm:h-36 sm:w-36">
+					<div
+						class="h-28 w-28 overflow-hidden rounded-xl border-2 border-white/30 shadow-md sm:h-36 sm:w-36"
+					>
 						{#if botImg(bot.image)}
 							<img src={botImg(bot.image)} alt="" class="h-full w-full object-cover" />
 						{:else}

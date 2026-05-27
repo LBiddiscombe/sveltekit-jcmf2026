@@ -202,7 +202,7 @@ export class FishingLoop {
 		Carp: 12000
 	};
 
-	private static readonly SIZE_MAX = [2000, 5000, 10000, 16000];
+	private static readonly SIZE_MAX = [2000, 5000, 60000, 120000];
 
 	private calcBiteTime(fish: FishData): number {
 		const species = this.speciesMap.get(fish.species);

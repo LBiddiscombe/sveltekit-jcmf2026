@@ -52,6 +52,7 @@ export interface Venue {
  * Fish size classification with associated baits
  */
 export interface FishClassification {
+	id: string;
 	label: string;
 	maxOz: number;
 	preferredBaits: string[];

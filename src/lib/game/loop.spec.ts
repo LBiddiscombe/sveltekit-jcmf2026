@@ -11,10 +11,10 @@ const roach: Species = {
 	preferences: { flow: 0.3, clarity: 0.5, substrate: 0.7, vegetation: 0.6, shelter: 0.5 },
 	tolerances: {},
 	classifications: [
-		{ label: 'Small', maxOz: 8, preferredBaits: ['maggot', 'caster'] },
-		{ label: '', maxOz: 34, preferredBaits: ['maggot', 'caster', 'worm'] },
-		{ label: 'Specimen', maxOz: 51, preferredBaits: ['worm', 'bread'] },
-		{ label: 'Monster', maxOz: Infinity, preferredBaits: ['worm', 'bread'] }
+		{ id: 'small', label: 'Small', maxOz: 8, preferredBaits: ['maggot', 'caster'] },
+		{ id: 'medium', label: '', maxOz: 34, preferredBaits: ['maggot', 'caster', 'worm'] },
+		{ id: 'specimen', label: 'Specimen', maxOz: 51, preferredBaits: ['worm', 'bread'] },
+		{ id: 'monster', label: 'Monster', maxOz: Infinity, preferredBaits: ['worm', 'bread'] }
 	]
 };
 
@@ -26,10 +26,10 @@ const carp: Species = {
 	preferences: { flow: 0.2, clarity: 0.4, substrate: 0.9, vegetation: 0.6, shelter: 0.5 },
 	tolerances: {},
 	classifications: [
-		{ label: 'Small', maxOz: 64, preferredBaits: ['pellet', 'sweetcorn'] },
-		{ label: '', maxOz: 544, preferredBaits: ['pellet', 'sweetcorn'] },
-		{ label: 'Specimen', maxOz: 816, preferredBaits: ['boilie'] },
-		{ label: 'Monster', maxOz: Infinity, preferredBaits: ['boilie'] }
+		{ id: 'small', label: 'Small', maxOz: 64, preferredBaits: ['pellet', 'sweetcorn'] },
+		{ id: 'medium', label: '', maxOz: 544, preferredBaits: ['pellet', 'sweetcorn'] },
+		{ id: 'specimen', label: 'Specimen', maxOz: 816, preferredBaits: ['boilie'] },
+		{ id: 'monster', label: 'Monster', maxOz: Infinity, preferredBaits: ['boilie'] }
 	]
 };
 
