@@ -1,17 +1,18 @@
 export interface BotAngler {
 	name: string;
 	skill: number;
+	image: string;
 }
 
 export const bots: BotAngler[] = [
-	{ name: 'Ashley', skill: 10 },
-	{ name: 'Becky', skill: 9 },
-	{ name: 'Bob', skill: 8 },
-	{ name: 'Emma', skill: 7 },
-	{ name: 'Jack', skill: 6 },
-	{ name: 'John', skill: 5 },
-	{ name: 'Matt', skill: 4 },
-	{ name: 'Mick', skill: 3 },
-	{ name: 'Paul', skill: 2 },
-	{ name: 'Sarah', skill: 1 }
+	{ name: 'Ashley', skill: 10, image: 'ashley.jpeg' },
+	{ name: 'Becky', skill: 9, image: 'becky.jpeg' },
+	{ name: 'Bob', skill: 8, image: 'bob.jpeg' },
+	{ name: 'Emma', skill: 7, image: 'emma.jpeg' },
+	{ name: 'Jack', skill: 6, image: 'jack.jpeg' },
+	{ name: 'John', skill: 5, image: 'john.jpeg' },
+	{ name: 'Matt', skill: 4, image: 'matt.jpeg' },
+	{ name: 'Mick', skill: 3, image: 'mick.jpeg' },
+	{ name: 'Paul', skill: 2, image: 'paul.jpeg' },
+	{ name: 'Sarah', skill: 1, image: 'sarah.jpeg' }
 ];

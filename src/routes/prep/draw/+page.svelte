@@ -11,7 +11,7 @@
 	let lakeName = $derived(prepState.lakeName);
 
 	let playerPeg = $state<Peg | undefined>(undefined);
-	let botAnglers = $state<{ name: string; pegName: string; pegImage: string | undefined }[]>([]);
+	let botAnglers = $state<{ name: string; pegName: string; image: string }[]>([]);
 	let hasError = $state(false);
 
 	const pegImages = import.meta.glob<string>('$lib/assets/images/pegs/*.jpeg', {
@@ -20,8 +20,18 @@
 		import: 'default'
 	});
 
+	const botImages = import.meta.glob<string>('$lib/assets/images/bots/*.jpeg', {
+		eager: true,
+		query: '?url',
+		import: 'default'
+	});
+
 	function pegImg(filename: string | undefined): string {
 		return filename ? (pegImages[`/src/lib/assets/images/pegs/${filename}`] ?? '') : '';
+	}
+
+	function botImg(filename: string): string {
+		return botImages[`/src/lib/assets/images/bots/${filename}`] ?? '';
 	}
 
 	onMount(() => {
@@ -39,7 +49,7 @@
 			.map((a) => ({
 				name: a.name,
 				pegName: a.pegName,
-				pegImage: prepState.lake?.pegs.find((p) => p.name === a.pegName)?.image
+				image: a.image
 			}))
 			.sort((a, b) => Number(a.pegName) - Number(b.pegName));
 	});
@@ -85,8 +95,8 @@
 			{#each botAnglers as bot (bot.pegName)}
 				<div class="shrink-0">
 					<div class="h-20 w-20 overflow-hidden rounded-xl border-2 border-white/30 shadow-md">
-						{#if pegImg(bot.pegImage)}
-							<img src={pegImg(bot.pegImage)} alt="" class="h-full w-full object-cover" />
+						{#if botImg(bot.image)}
+							<img src={botImg(bot.image)} alt="" class="h-full w-full object-cover" />
 						{:else}
 							<div class="flex h-full w-full items-center justify-center bg-surface/60">
 								<span class="text-lg font-bold text-dark-teal">{bot.pegName}</span>

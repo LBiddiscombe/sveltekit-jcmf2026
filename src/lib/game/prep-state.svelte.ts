@@ -20,6 +20,7 @@ export interface CaughtFish {
 export interface AnglerState {
 	id: string;
 	name: string;
+	image: string;
 	isPlayer: boolean;
 	skill: number;
 	pegName: string;
@@ -110,6 +111,7 @@ export class PrepState {
 		const player: AnglerState = {
 			id: 'player',
 			name: 'You',
+			image: '',
 			isPlayer: true,
 			skill: 0,
 			pegName: '',
@@ -236,6 +238,7 @@ export class PrepState {
 			const botAngler: AnglerState = {
 				id: `bot-${botDef.name.toLowerCase()}`,
 				name: botDef.name,
+				image: botDef.image,
 				isPlayer: false,
 				skill: botDef.skill,
 				pegName: peg.name,

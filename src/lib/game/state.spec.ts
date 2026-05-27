@@ -47,6 +47,7 @@ function makePlayer(pegName = '1'): AnglerState[] {
 		{
 			id: 'player',
 			name: 'You',
+			image: '',
 			isPlayer: true,
 			skill: 5,
 			pegName,
@@ -63,6 +64,7 @@ function makeBotAngler(): AnglerState {
 	return {
 		id: 'bot-1',
 		name: 'Bot',
+		image: '',
 		isPlayer: false,
 		skill: 10,
 		pegName: '2',
