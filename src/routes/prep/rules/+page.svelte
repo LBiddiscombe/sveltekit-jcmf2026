@@ -56,7 +56,7 @@
 
 {#if mode === 'session'}
 	{#if selectedPegData}
-		<div class="flex flex-col overflow-hidden pb-4 pt-6">
+		<div class="flex min-h-dvh flex-col pb-6 pt-6">
 			<div class="mx-auto flex w-full max-w-sm shrink-0 flex-col items-center gap-3 px-4 pb-3">
 				<div class="relative overflow-hidden rounded-xl">
 					{#if pegImg(selectedPegData.image)}
@@ -78,7 +78,7 @@
 			</div>
 
 			<div
-				class="flex shrink-0 gap-2 overflow-x-auto px-4 pb-3 sm:overflow-visible sm:justify-center sm:-mx-4 sm:px-0"
+				class="flex shrink-0 gap-3 overflow-x-auto px-4 pb-3 sm:overflow-visible sm:justify-center sm:-mx-4 sm:px-0"
 				style="scrollbar-width:none"
 			>
 				{#each pegs as peg (peg.name)}
@@ -90,7 +90,7 @@
 							: 'opacity-60 hover:opacity-90'}"
 					>
 						<div
-							class="h-20 w-20 overflow-hidden rounded-xl border-2 transition-all sm:h-24 sm:w-24 {selectedPeg ===
+							class="h-28 w-28 overflow-hidden rounded-xl border-2 transition-all sm:h-36 sm:w-36 {selectedPeg ===
 							peg.name
 								? 'border-accent shadow-lg'
 								: 'border-white/30 shadow-md'}"
@@ -104,7 +104,7 @@
 							{/if}
 						</div>
 						<div
-							class="absolute -bottom-1 -right-1 flex h-6 w-6 items-center justify-center rounded-full bg-dark-teal/80 text-xs font-bold text-white"
+							class="absolute -bottom-1 -right-1 flex h-8 w-8 items-center justify-center rounded-full bg-dark-teal/80 text-sm font-bold text-white"
 						>
 							{peg.name}
 						</div>

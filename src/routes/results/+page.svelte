@@ -93,9 +93,9 @@
 
 		{#if isMulti || mode === 'match'}
 			{#if isMulti && multiLeaderboard.length === 0}
-				<p class="text-muted">No fish were caught</p>
+				<p class="text-base text-muted">No fish were caught</p>
 			{:else if !isMulti && mode === 'match' && anglers.every((a) => a.catch.length === 0)}
-				<p class="text-muted">No fish were caught</p>
+				<p class="text-base text-muted">No fish were caught</p>
 			{:else}
 				<Leaderboard
 					{anglers}
@@ -109,27 +109,27 @@
 			{/if}
 			{#if isMulti}
 				<div class="mt-4 w-full max-w-md">
-					<h2 class="mb-2 text-lg font-bold text-dark-teal">Your Catch</h2>
+					<h2 class="mb-2 text-xl font-bold text-dark-teal">Your Catch</h2>
 					{#if totalFish === 0}
-						<p class="text-muted">No fish were caught</p>
+						<p class="text-base text-muted">No fish were caught</p>
 					{:else}
 						<div class="space-y-2">
 							{#each [...speciesGroups] as [species, group] (species)}
-								<div class="rounded border border-olive bg-surface/30 p-2 text-dark-teal">
+								<div class="rounded border border-olive bg-surface/30 p-2 text-sm text-dark-teal">
 									<div class="flex items-baseline justify-between gap-2">
 										<span>{species}</span>
 										<span class="text-nowrap"
 											>{group.count} @ {formatWeight(group.totalWeight)}</span
 										>
 									</div>
-									<div class="mt-0.5 text-xs text-muted">
+									<div class="mt-0.5 text-sm text-muted">
 										Best: {formatWeight(group.biggestWeight)}
 										{group.biggestLabel}
 									</div>
 								</div>
 							{/each}
 							<div
-								class="flex justify-between rounded border border-olive bg-surface/30 p-2 font-bold text-dark-teal"
+								class="flex justify-between rounded border border-olive bg-surface/30 p-2 font-bold text-dark-teal text-sm"
 							>
 								<span>Total</span>
 								<span>{totalFish} fish, {formatWeight(totalWeightOz)}</span>
@@ -139,25 +139,25 @@
 				</div>
 			{/if}
 		{:else}
-			<p class="text-lg text-muted">Your catch — species, weight, count</p>
+			<p class="text-xl text-muted">Your catch — species, weight, count</p>
 			{#if totalFish === 0}
-				<p class="text-muted">No fish were caught</p>
+				<p class="text-base text-muted">No fish were caught</p>
 			{:else}
 				<div class="w-full max-w-xs space-y-2">
 					{#each [...speciesGroups] as [species, group] (species)}
-						<div class="rounded border border-olive bg-surface/30 p-2 text-dark-teal">
+						<div class="rounded border border-olive bg-surface/30 p-2 text-sm text-dark-teal">
 							<div class="flex items-baseline justify-between gap-2">
 								<span>{species}</span>
 								<span class="text-nowrap">{group.count} @ {formatWeight(group.totalWeight)}</span>
 							</div>
-							<div class="mt-0.5 text-xs text-muted">
+							<div class="mt-0.5 text-sm text-muted">
 								Best: {formatWeight(group.biggestWeight)}
 								{group.biggestLabel}
 							</div>
 						</div>
 					{/each}
 					<div
-						class="flex justify-between rounded border border-olive bg-surface/30 p-2 font-bold text-dark-teal"
+						class="flex justify-between rounded border border-olive bg-surface/30 p-2 font-bold text-dark-teal text-sm"
 					>
 						<span>Total</span>
 						<span>{totalFish} fish, {formatWeight(totalWeightOz)}</span>

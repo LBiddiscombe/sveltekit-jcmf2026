@@ -124,14 +124,14 @@
 								<img src={playerPeg(second)} alt="" class="h-full w-full object-cover" />
 							{:else}
 								<div
-									class="flex h-full w-full items-center justify-center bg-primary/30 text-sm font-bold text-dark-teal"
+									class="flex h-full w-full items-center justify-center bg-primary/30 text-base font-bold text-dark-teal"
 								>
 									{second.name[0]}
 								</div>
 							{/if}
 						</div>
 						<p
-							class="mt-1 max-w-20 truncate text-xs font-bold text-dark-teal {second.isPlayer
+							class="mt-1 max-w-20 truncate text-sm font-bold text-dark-teal {second.isPlayer
 								? 'text-accent'
 								: ''}"
 						>
@@ -143,12 +143,12 @@
 						style="height: 120px"
 					>
 						<span class="text-2xl font-black text-white drop-shadow-md">🥈</span>
-						<span class="text-base font-black text-white drop-shadow-md"
+						<span class="text-lg font-black text-white drop-shadow-md"
 							>{formatWeight(second.weight)}</span
 						>
-						<span class="text-[10px] text-white/70">{second.fishCount} fish</span>
+						<span class="text-xs text-white/70">{second.fishCount} fish</span>
 						{#if second.biggestFish}
-							<span class="text-[9px] text-white/50"
+							<span class="text-xs text-white/50"
 								>Best: {formatWeight(second.biggestFish.weightOz)}
 								{second.biggestFish.species}</span
 							>
@@ -174,14 +174,14 @@
 								<img src={playerPeg(first)} alt="" class="h-full w-full object-cover" />
 							{:else}
 								<div
-									class="flex h-full w-full items-center justify-center bg-accent/30 text-sm font-bold text-accent"
+									class="flex h-full w-full items-center justify-center bg-accent/30 text-base font-bold text-accent"
 								>
 									{first.name[0]}
 								</div>
 							{/if}
 						</div>
 						<p
-							class="mt-1 max-w-20 truncate text-xs font-bold text-dark-teal {first.isPlayer
+							class="mt-1 max-w-20 truncate text-sm font-bold text-dark-teal {first.isPlayer
 								? 'text-accent'
 								: ''}"
 						>
@@ -193,12 +193,12 @@
 						style="height: 160px"
 					>
 						<span class="text-2xl font-black text-white drop-shadow-md">🥇</span>
-						<span class="text-base font-black text-white drop-shadow-md"
+						<span class="text-lg font-black text-white drop-shadow-md"
 							>{formatWeight(first.weight)}</span
 						>
-						<span class="text-[10px] text-white/70">{first.fishCount} fish</span>
+						<span class="text-xs text-white/70">{first.fishCount} fish</span>
 						{#if first.biggestFish}
-							<span class="text-[9px] text-white/50"
+							<span class="text-xs text-white/50"
 								>Best: {formatWeight(first.biggestFish.weightOz)} {first.biggestFish.species}</span
 							>
 						{/if}
@@ -223,14 +223,14 @@
 								<img src={playerPeg(third)} alt="" class="h-full w-full object-cover" />
 							{:else}
 								<div
-									class="flex h-full w-full items-center justify-center bg-primary/30 text-sm font-bold text-dark-teal"
+									class="flex h-full w-full items-center justify-center bg-primary/30 text-base font-bold text-dark-teal"
 								>
 									{third.name[0]}
 								</div>
 							{/if}
 						</div>
 						<p
-							class="mt-1 max-w-20 truncate text-xs font-bold text-dark-teal {third.isPlayer
+							class="mt-1 max-w-20 truncate text-sm font-bold text-dark-teal {third.isPlayer
 								? 'text-accent'
 								: ''}"
 						>
@@ -242,12 +242,12 @@
 						style="height: 100px"
 					>
 						<span class="text-2xl font-black text-white drop-shadow-md">🥉</span>
-						<span class="text-base font-black text-white drop-shadow-md"
+						<span class="text-lg font-black text-white drop-shadow-md"
 							>{formatWeight(third.weight)}</span
 						>
-						<span class="text-[10px] text-white/70">{third.fishCount} fish</span>
+						<span class="text-xs text-white/70">{third.fishCount} fish</span>
 						{#if third.biggestFish}
-							<span class="text-[9px] text-white/50"
+							<span class="text-xs text-white/50"
 								>Best: {formatWeight(third.biggestFish.weightOz)} {third.biggestFish.species}</span
 							>
 						{/if}
@@ -268,8 +268,8 @@
 						: '-translate-x-full opacity-0'}"
 				>
 					<div class="flex w-full items-center gap-3 rounded-lg bg-black/30 px-3 py-2.5">
-						<span class="w-6 shrink-0 text-center text-sm font-bold text-white/50"
-							>{sorted.length - i}</span
+						<span class="w-6 shrink-0 text-center text-base font-bold text-white/50"
+							>{i + 4}</span
 						>
 						<div class="h-8 w-8 shrink-0 overflow-hidden rounded-full border border-white/20">
 							{#if !isMulti && entry.image && imgSrc(entry)}
@@ -278,24 +278,24 @@
 								<img src={playerPeg(entry)} alt="" class="h-full w-full object-cover" />
 							{:else}
 								<div
-									class="flex h-full w-full items-center justify-center bg-primary/30 text-xs font-bold text-dark-teal"
+									class="flex h-full w-full items-center justify-center bg-primary/30 text-sm font-bold text-dark-teal"
 								>
 									{entry.name[0]}
 								</div>
 							{/if}
 						</div>
 						<span
-							class="min-w-0 flex-1 truncate text-sm {entry.isPlayer
+							class="min-w-0 flex-1 truncate text-base {entry.isPlayer
 								? 'font-bold text-white'
 								: 'text-white/80'}"
 						>
 							{entry.isPlayer ? 'You' : entry.name}
 						</span>
 						<div class="text-right shrink-0">
-							<span class="text-sm font-bold text-white">{formatWeight(entry.weight)}</span>
-							<p class="text-xs text-white/60">{entry.fishCount} fish</p>
+							<span class="text-base font-bold text-white">{formatWeight(entry.weight)}</span>
+							<p class="text-sm text-white/60">{entry.fishCount} fish</p>
 							{#if entry.biggestFish}
-								<p class="text-xs text-white/60">
+								<p class="text-sm text-white/60">
 									Best: {formatWeight(entry.biggestFish.weightOz)}
 									{entry.biggestFish.species}
 								</p>

@@ -66,7 +66,7 @@
 		</a>
 	</div>
 {:else if playerPeg}
-	<div class="flex min-h-dvh flex-col overflow-hidden pb-4 pt-6">
+	<div class="flex min-h-dvh flex-col pb-6 pt-6">
 		<div class="mx-auto flex w-full max-w-sm shrink-0 flex-col items-center gap-3 px-4 pb-3">
 			<div class="relative overflow-hidden rounded-xl">
 				{#if pegImg(playerPeg.image)}
@@ -88,12 +88,12 @@
 		</div>
 
 		<div
-			class="flex shrink-0 gap-2 overflow-x-auto px-4 pb-3 sm:overflow-visible sm:justify-center sm:-mx-4 sm:px-0"
+			class="flex shrink-0 gap-3 overflow-x-auto px-4 pb-3 sm:overflow-visible sm:justify-center sm:-mx-4 sm:px-0"
 			style="scrollbar-width:none"
 		>
 			{#each botAnglers as bot (bot.pegName)}
 				<div class="shrink-0">
-					<div class="h-20 w-20 overflow-hidden rounded-xl border-2 border-white/30 shadow-md">
+					<div class="h-28 w-28 overflow-hidden rounded-xl border-2 border-white/30 shadow-md sm:h-36 sm:w-36">
 						{#if botImg(bot.image)}
 							<img src={botImg(bot.image)} alt="" class="h-full w-full object-cover" />
 						{:else}
@@ -102,8 +102,8 @@
 							</div>
 						{/if}
 					</div>
-					<p class="mt-1 truncate text-center text-xs font-semibold text-dark-teal">{bot.name}</p>
-					<p class="text-center text-xs text-muted">Peg {bot.pegName}</p>
+					<p class="mt-1 truncate text-center text-sm font-semibold text-dark-teal">{bot.name}</p>
+					<p class="text-center text-sm text-muted">Peg {bot.pegName}</p>
 				</div>
 			{/each}
 		</div>
