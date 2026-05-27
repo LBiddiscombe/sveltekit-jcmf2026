@@ -129,15 +129,16 @@ Prep selection state is sourced from **PrepState** (mode, venue, lake, peg, time
 ## Routes (initial build)
 
 1. **Splash** (`/`) — branding/intro screen with full-bleed background image, Ken Burns animation, and a "Start" button
-2. **Menu** — welcome page showing the venue and lake name, a hero image of the lake, and three mode cards (Session / Solo Match / Multiplayer). Selecting a mode initialises PrepState and navigates to the appropriate flow.
+2. **Menu** — home screen with a hero image of the lake (venue/lake name overlaid top-centre) and three mode cards (Session / Solo Match / Multiplayer Match). A floating ⓘ icon top-right links to the About page. Selecting a mode initialises PrepState and navigates to the appropriate flow.
 3. **Prep** (nested):
    - **Session**: rules (pick peg) → game (tackle modal)
    - **Solo Match**: rules (pick time preset) → draw → Start Match (timer begins) → game (tackle modal, timer ticks)
    - **Lake** (`/prep/lake`): standalone entry point (initialises venue/lake selection if entered directly; not reached from the menu)
-4. **Multiplayer** (new):
-   - **Host** (`/multiplayer/host`): player enters name, picks time limit → room created with join code
-   - **Join** (`/multiplayer/join`): player enters name + join code → connects to room
-   - **Lobby** (`/multiplayer/lobby`): shows join code (host), player list with peg assignments (own peg in focus with description, others listed below), Start button (host only). Host clicks Start → timer begins for all → all navigate to game page (tackle modal).
+4. **Multiplayer**:
+   - **Landing** (`/multiplayer`): presents two cards — Host a Match / Join a Match
+   - **Host** (`/multiplayer/host`): player enters name, picks time limit → match created with join code
+   - **Join** (`/multiplayer/join`): player enters name + match code → connects to match
+   - **Lobby** (`/multiplayer/lobby`): shows match code (host), player list with peg assignments (own peg in focus with description, others listed below), Start button (host only). Host clicks Start → timer begins for all → all navigate to game page (tackle modal).
 5. **Game** — the fishing loop and tackle selection (full-screen modal when the player is in `changing` phase). During a Solo Match or Multiplayer game, the game clock runs throughout tackle selection (time decrements even while the modal is open).
 6. **Results** — post-session/match summary. Sessions show a personal catch list (species, weight, count). Solo Matches show a leaderboard (player + bots). Multiplayer shows a leaderboard of human players sourced from server broadcasts.
 

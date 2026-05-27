@@ -2,12 +2,13 @@
 	import { goto } from '$app/navigation';
 	import { browser } from '$app/environment';
 	import { multiplayer } from '$lib/game/party/connection.svelte';
+	import venueThumb from '$lib/assets/images/venues/jcs.jpeg';
 
 	const STORAGE_KEY = 'jcmf-player-name';
 	const TIME_PRESETS = [1, 5, 10, 20, 30, 60];
 
 	let name = $state(browser ? (localStorage.getItem(STORAGE_KEY) ?? '') : '');
-	let timeLimit = $state(10);
+	let timeLimit = $state(5);
 	let creating = $state(false);
 
 	$effect(() => {
@@ -16,7 +17,7 @@
 		}
 	});
 
-	function createRoom() {
+	function createMatch() {
 		if (!name.trim()) return;
 		creating = true;
 		multiplayer.createRoom(name.trim(), timeLimit);
@@ -34,10 +35,16 @@
 </script>
 
 <div class="flex min-h-dvh flex-col items-center justify-center bg-surface px-4 py-8">
-	<div class="flex w-full max-w-sm flex-col gap-6">
-		<h1 class="text-center text-2xl font-bold text-dark-teal">Host a Game</h1>
+	<div class="flex w-full max-w-sm flex-col items-center gap-4">
+		<div class="flex w-full items-center gap-4 rounded-2xl bg-white/70 px-5 py-5 shadow-md">
+			<img src={venueThumb} alt="" class="h-14 w-14 shrink-0 rounded-xl object-cover" />
+			<div class="min-w-0">
+				<h1 class="text-lg font-bold text-dark-teal">Host a Match</h1>
+				<p class="text-sm text-dark-teal/60">Create a match and share the code with friends</p>
+			</div>
+		</div>
 
-		<div class="flex flex-col gap-4">
+		<div class="flex w-full flex-col gap-4 rounded-2xl bg-white/70 px-5 py-5 shadow-md">
 			<div class="flex flex-col gap-1">
 				<label for="name" class="text-sm font-medium text-dark-teal">Your Name</label>
 				<input
@@ -46,7 +53,7 @@
 					maxlength="15"
 					bind:value={name}
 					placeholder="Enter your name"
-					class="rounded-xl border border-dark-teal/20 bg-white/70 px-4 py-3 text-dark-teal outline-none focus:border-accent"
+					class="rounded-xl border border-dark-teal/20 bg-white px-4 py-3 text-dark-teal outline-none focus:border-accent"
 				/>
 			</div>
 
@@ -59,7 +66,7 @@
 							class="rounded-xl border px-3 py-2 text-center text-sm font-medium transition-colors {timeLimit ===
 							preset
 								? 'border-accent bg-accent/10 text-accent'
-								: 'border-dark-teal/20 bg-white/70 text-dark-teal hover:border-dark-teal/40'}"
+								: 'border-dark-teal/20 bg-white text-dark-teal hover:border-dark-teal/40'}"
 						>
 							{preset}m
 						</button>
@@ -68,16 +75,16 @@
 			</div>
 
 			<button
-				onclick={createRoom}
+				onclick={createMatch}
 				disabled={!name.trim() || creating}
-				class="mt-2 w-full cursor-pointer rounded-xl bg-accent px-5 py-3 text-center font-bold text-white shadow-md transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+				class="w-full cursor-pointer rounded-xl bg-accent px-5 py-3 text-center font-bold text-white shadow-md transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
 			>
-				{creating ? 'Creating...' : 'Create Room'}
+				{creating ? 'Creating...' : 'Create Match'}
 			</button>
 		</div>
 
 		<a
-			href="/menu"
+			href="/multiplayer"
 			class="text-center text-sm text-muted underline underline-offset-2 hover:text-dark-teal"
 		>
 			Back

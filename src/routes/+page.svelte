@@ -11,39 +11,25 @@
 	onclick={() => goto('/menu')}
 	onkeydown={(e) => e.key === 'Enter' && goto('/menu')}
 >
-	<img
-		src={jcsMatch}
-		alt=""
-		class="ken-burns absolute inset-0 h-full w-full object-cover"
-	/>
+	<img src={jcsMatch} alt="" class="ken-burns absolute inset-0 h-full w-full object-cover" />
 
 	<div
 		class="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/70 via-black/30 to-black/70"
 	></div>
 
-	<div
-		class="relative z-10 flex h-lvh flex-col items-center justify-center px-8"
-	>
+	<div class="relative z-10 flex h-lvh flex-col items-center justify-center px-8">
 		<div class="tv-frame relative w-full max-w-lg">
 			<div
 				class="rounded-2xl border-4 border-gray-800 bg-black p-3 shadow-[0_0_60px_rgba(196,152,83,0.2)]"
 			>
 				<div class="relative overflow-hidden rounded-lg">
-					<img
-						src={spectrumOriginal}
-						alt=""
-						class="h-auto w-full"
-					/>
-					<div
-						class="scanlines pointer-events-none absolute inset-0"
-					></div>
+					<img src={spectrumOriginal} alt="" class="h-auto w-full" />
+					<div class="scanlines pointer-events-none absolute inset-0"></div>
 				</div>
 			</div>
 		</div>
 
-		<p class="mt-8 animate-pulse text-lg text-white/60 sm:text-2xl">
-			tap anywhere to begin
-		</p>
+		<p class="mt-8 animate-pulse text-lg text-white/60 sm:text-2xl">tap anywhere to begin</p>
 	</div>
 </div>
 

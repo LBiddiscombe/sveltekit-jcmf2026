@@ -42,7 +42,7 @@
 		<h1 class="text-center text-2xl font-bold text-dark-teal">Lobby</h1>
 
 		<div class="rounded-2xl bg-white/70 px-5 py-4 text-center shadow-md">
-			<p class="text-xs text-dark-teal/60">Room Code</p>
+			<p class="text-xs text-dark-teal/60">Match Code</p>
 			<p class="text-3xl font-bold tracking-[0.3em] text-accent">{multiplayer.joinCode}</p>
 		</div>
 
@@ -98,7 +98,7 @@
 				</button>
 				<p class="text-center text-xs text-dark-teal/40">
 					{multiplayer.players.length < 8
-						? 'Waiting for players — {8 - multiplayer.players.length} pegs open'
+						? `Waiting for players — ${8 - multiplayer.players.length} pegs open`
 						: 'All pegs filled'}
 				</p>
 			{:else}
