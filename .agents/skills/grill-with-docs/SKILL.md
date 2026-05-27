@@ -51,6 +51,17 @@ If a `CONTEXT-MAP.md` exists at the root, the repo has multiple contexts. The ma
 
 Create files lazily — only when you have something to write. If no `CONTEXT.md` exists, create one when the first term is resolved. If no `docs/adr/` exists, create it when the first ADR is needed.
 
+## Required companion skills
+
+This project uses Svelte 5 with runes mode enforced. Before exploring or discussing any Svelte code (`.svelte`, `.svelte.ts`, `.svelte.js` files), **load the Svelte skills** via the `skill` tool:
+
+```json
+skill({ name: "svelte-code-writer" })
+skill({ name: "svelte-core-bestpractices" })
+```
+
+This ensures code examples and discussion match the project's runes-mode setup, not legacy Svelte 4 patterns.
+
 ## During the session
 
 ### Challenge against the glossary

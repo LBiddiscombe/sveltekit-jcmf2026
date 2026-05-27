@@ -83,6 +83,15 @@ Examples: [src/lib/vitest-examples/](src/lib/vitest-examples/)
 2. Import via `$lib/components/Button.svelte`
 3. Add component tests as `Button.svelte.spec.ts`
 
+## Required Skills (Always Load)
+
+Whenever creating, editing, or reviewing any `.svelte`, `.svelte.ts`, or `.svelte.js` file, the agent **MUST** load these skills first:
+
+1. `skill({ name: "svelte-code-writer" })` — CLI tools for Svelte 5 docs lookup, autofix, and validation
+2. `skill({ name: "svelte-core-bestpractices" })` — Guidelines for Svelte 5 runes mode, reactivity, events, styling
+
+This applies regardless of which skill (prototype, grill-with-docs, etc.) triggered the work. Run `svelte-autofixer` via the code-writer skill before finalizing any Svelte component.
+
 ## Documentation
 
 - [README.md](README.md) — Project setup details
