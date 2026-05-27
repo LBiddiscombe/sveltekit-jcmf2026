@@ -28,13 +28,9 @@
 	function handleKeydown(e: KeyboardEvent) {
 		if (e.key === 'Escape') onclose();
 	}
-
-	$effect(() => {
-		const handler = (e: KeyboardEvent) => handleKeydown(e);
-		document.addEventListener('keydown', handler);
-		return () => document.removeEventListener('keydown', handler);
-	});
 </script>
+
+<svelte:window onkeydown={handleKeydown} />
 
 <!-- svelte-ignore a11y_no_static_element_interactions -->
 <!-- svelte-ignore a11y_click_events_have_key_events -->

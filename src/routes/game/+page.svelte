@@ -48,7 +48,9 @@
 	let debugMode = $state(false);
 	let intervalId: ReturnType<typeof setInterval> | null = null;
 	let now = $state(Date.now());
-	let waitingForPlayers = $state(false);
+	let waitingForPlayers = $derived(
+		gameState.phase === 'results' && isMulti && multiplayer.phase !== 'results'
+	);
 
 	let multiplayerCatches = $derived(
 		multiplayer.catchEvents
@@ -61,9 +63,14 @@
 			}))
 	);
 
-	let tutorialCompleted = $state(isTutorialCompleted());
-	let hintsConsumed = $state({ bite: false, reeling: false, landing: false });
-	let lastHintPhase: string | null = null;
+	let hintsConsumed = $state(
+		isTutorialCompleted()
+			? { bite: true, reeling: true, landing: true }
+			: { bite: false, reeling: false, landing: false }
+	);
+	let tutorialCompleted = $derived(
+		hintsConsumed.bite && hintsConsumed.reeling && hintsConsumed.landing
+	);
 
 	let currentHint = $derived.by(() => {
 		if (tutorialCompleted) return '';
@@ -83,35 +90,19 @@
 				!!(playerPhase === 'landing' && !hintsConsumed.landing))
 	);
 
-	let reelHintTimer: ReturnType<typeof setTimeout> | null = null;
-
 	$effect(() => {
-		if (tutorialCompleted) return;
-		const phase = playerPhase;
-		const prev = lastHintPhase;
-		lastHintPhase = phase;
-
-		if (prev === 'bite' && phase !== 'bite') hintsConsumed.bite = true;
-		else if (prev === 'reeling' && phase !== 'reeling') hintsConsumed.reeling = true;
-		else if (prev === 'landing' && phase !== 'landing') hintsConsumed.landing = true;
-
-		if (hintsConsumed.bite && hintsConsumed.reeling && hintsConsumed.landing) {
-			completeTutorial();
-			tutorialCompleted = true;
+		if (tutorialCompleted || hintsConsumed.reeling) return;
+		if (playerPhase === 'reeling') {
+			const timer = setTimeout(() => {
+				hintsConsumed.reeling = true;
+			}, 5000);
+			return () => clearTimeout(timer);
 		}
 	});
 
 	$effect(() => {
-		if (tutorialCompleted) return;
-		if (playerPhase === 'reeling' && !hintsConsumed.reeling) {
-			reelHintTimer = setTimeout(() => {
-				hintsConsumed.reeling = true;
-			}, 5000);
-		} else {
-			if (reelHintTimer) {
-				clearTimeout(reelHintTimer);
-				reelHintTimer = null;
-			}
+		if (tutorialCompleted) {
+			completeTutorial();
 		}
 	});
 
@@ -198,10 +189,13 @@
 	}
 
 	function handleStrike() {
+		hintsConsumed.bite = true;
 		gameState.strike();
 	}
 
 	function handleReel() {
+		hintsConsumed.reeling = true;
+		hintsConsumed.landing = true;
 		const event = gameState.reel();
 		if (isMulti && event?.type === 'fishCaught' && multiplayer.ownPeg) {
 			multiplayer.sendCatch({
@@ -265,10 +259,6 @@
 		const gp = gameState.phase;
 		const mp = isMulti ? multiplayer.phase : null;
 
-		if (gp !== 'results') {
-			waitingForPlayers = false;
-		}
-
 		if (isMulti && mp === 'grace-period') {
 			gameState.timeExpired = true;
 		}
@@ -278,15 +268,12 @@
 				goto('/results');
 			} else {
 				multiplayer.sendDoneFishing();
-				if (mp === 'results') {
-					goto('/results?multi=1');
-				} else {
-					waitingForPlayers = true;
-				}
 			}
 		}
+	});
 
-		if (isMulti && mp === 'results' && waitingForPlayers) {
+	$effect(() => {
+		if (isMulti && gameState.phase === 'results' && multiplayer.phase === 'results') {
 			goto('/results?multi=1');
 		}
 	});
@@ -322,6 +309,15 @@
 		gameState.beginFishing([angler], venue, lake, multiplayer.timeLimitMinutes);
 	}
 
+	function onKeydown(e: KeyboardEvent) {
+		if (e.code !== 'Space' || e.repeat || debugMode) return;
+		e.preventDefault();
+		const p = gameState.playerSnapshot?.phase;
+		if (p === 'bite') handleStrike();
+		else if (p === 'reeling') handleReel();
+		else if (p === 'landing') handleReel();
+	}
+
 	onMount(() => {
 		if (isMulti) {
 			setupMultiplayerGame();
@@ -338,17 +334,6 @@
 			}
 		}
 
-		function onKeydown(e: KeyboardEvent) {
-			if (e.code !== 'Space' || e.repeat || debugMode) return;
-			e.preventDefault();
-			const p = gameState.playerSnapshot?.phase;
-			if (p === 'bite') handleStrike();
-			else if (p === 'reeling') handleReel();
-			else if (p === 'landing') handleReel();
-		}
-
-		document.addEventListener('keydown', onKeydown);
-
 		intervalId = setInterval(() => {
 			if (hintBlocking || waitingForPlayers) return;
 			now = Date.now();
@@ -357,10 +342,11 @@
 
 		return () => {
 			if (intervalId) clearInterval(intervalId);
-			document.removeEventListener('keydown', onKeydown);
 		};
 	});
 </script>
+
+<svelte:window onkeydown={onKeydown} />
 
 <div class="min-h-dvh lg:flex lg:flex-row">
 	<div class="flex min-h-dvh flex-1 flex-col items-center gap-4 p-4">
@@ -370,9 +356,9 @@
 			class="relative w-full overflow-hidden rounded-xl bg-surface/20 sm:max-w-sm
 				{playerPhase === 'bite' || playerPhase === 'reeling' || playerPhase === 'landing'
 				? 'cursor-pointer'
-				: ''}"
-			class:strike-glow={playerPhase === 'bite'}
-			class:land-glow={playerPhase === 'landing'}
+				: ''}
+				{playerPhase === 'bite' ? 'strike-glow' : ''}
+				{playerPhase === 'landing' ? 'land-glow' : ''}"
 			onclick={handlePegClick}
 			onkeydown={(e) => e.key === 'Enter' && handlePegClick()}
 			role={playerPhase === 'bite' || playerPhase === 'reeling' || playerPhase === 'landing'
@@ -387,13 +373,16 @@
 					<img
 						src={pegImg(selectedPegData.image)}
 						alt=""
-						class="h-full w-full object-contain"
-						class:shake={playerPhase === 'bite' || playerPhase === 'landing'}
+						class="h-full w-full object-contain {playerPhase === 'bite' || playerPhase === 'landing'
+							? 'shake'
+							: ''}"
 					/>
 				{:else}
 					<div
-						class="flex h-full w-full items-center justify-center"
-						class:shake={playerPhase === 'bite' || playerPhase === 'landing'}
+						class="flex h-full w-full items-center justify-center {playerPhase === 'bite' ||
+						playerPhase === 'landing'
+							? 'shake'
+							: ''}"
 					>
 						{#if pegName}
 							<span class="text-6xl font-bold text-muted">{pegName}</span>

@@ -249,7 +249,7 @@ export class GameState {
 			}
 		}
 
-		if (!event && this.playerSnapshot?.phase === 'waiting' && this.playerLoop?.currentFish) {
+		if (!event && this.playerSnapshot?.phase === 'waiting') {
 			this.lastEvent = null;
 		}
 

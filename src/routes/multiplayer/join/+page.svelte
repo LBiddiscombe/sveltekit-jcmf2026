@@ -11,9 +11,7 @@
 	let joining = $state(false);
 
 	$effect(() => {
-		if (browser) {
-			localStorage.setItem(STORAGE_KEY, name);
-		}
+		localStorage.setItem(STORAGE_KEY, name);
 	});
 
 	function joinMatch() {

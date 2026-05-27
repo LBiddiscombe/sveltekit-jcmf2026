@@ -16,7 +16,10 @@
 	let venueName = $derived(prepState.venueName);
 	let lakeName = $derived(prepState.lakeName);
 	let pegs = $derived(prepState.lake?.pegs ?? []);
-	let selectedPeg = $state<string | null>(prepState.playerPeg ?? null);
+	let manualPeg = $state<string | null>(prepState.playerPeg ?? null);
+	let selectedPeg = $derived(
+		mode === 'session' && pegs.length > 0 ? (manualPeg ?? pegs[0].name) : manualPeg
+	);
 	let selectedPegData = $derived(
 		pegs.length > 0 ? (pegs.find((p) => p.name === selectedPeg) ?? pegs[0]) : null
 	);
@@ -35,7 +38,7 @@
 	}
 
 	function selectPeg(name: string) {
-		selectedPeg = name;
+		manualPeg = name;
 		prepState.assignPeg(name);
 	}
 
@@ -49,12 +52,6 @@
 		prepState.setMatchTimeLimit(minutes);
 		goto(prepDrawUrl());
 	}
-
-	$effect(() => {
-		if (mode === 'session' && pegs.length > 0 && selectedPeg === null) {
-			selectPeg(pegs[0].name);
-		}
-	});
 </script>
 
 {#if mode === 'session'}

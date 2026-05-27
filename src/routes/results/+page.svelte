@@ -15,7 +15,7 @@
 
 	let multiLeaderboard = $derived.by(() => {
 		if (!isMulti) return [];
-		const totals = new Map<string, { name: string; totalOz: number; count: number }>();
+		const totals = new SvelteMap<string, { name: string; totalOz: number; count: number }>();
 		for (const c of multiplayer.catchEvents) {
 			const e = totals.get(c.anglerName) ?? {
 				name: c.anglerName,

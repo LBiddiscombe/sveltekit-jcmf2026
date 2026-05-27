@@ -6,7 +6,6 @@
 	import { onMount } from 'svelte';
 
 	let mode = $derived(prepState.mode);
-	let minutes = $derived(prepState.timeLimitMinutes);
 	let venueName = $derived(prepState.venueName);
 	let lakeName = $derived(prepState.lakeName);
 

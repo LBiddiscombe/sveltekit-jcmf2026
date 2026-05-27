@@ -8,33 +8,27 @@
 
 	let { events }: { events: CatchToastEvent[] } = $props();
 
-	let current: CatchToastEvent | null = $state(null);
-	let queue: CatchToastEvent[] = $state([]);
 	let processedCount = 0;
+	let currentIndex = $state(-1);
 
 	$effect(() => {
-		while (processedCount < events.length) {
-			queue = [...queue, events[processedCount]];
-			processedCount++;
-		}
+		if (currentIndex !== -1) return;
+		if (processedCount >= events.length) return;
+		currentIndex = processedCount;
+		processedCount++;
 	});
 
 	$effect(() => {
-		if (current !== null || queue.length === 0) return;
-
-		current = queue[0];
-		queue = queue.slice(1);
-	});
-
-	$effect(() => {
-		if (current === null) return;
-
+		if (currentIndex === -1) return;
 		const timer = setTimeout(() => {
-			current = null;
+			currentIndex = -1;
 		}, 3000);
-
 		return () => clearTimeout(timer);
 	});
+
+	let current = $derived(
+		currentIndex >= 0 && currentIndex < events.length ? events[currentIndex] : null
+	);
 
 	let message = $derived.by(() => {
 		if (!current) return '';

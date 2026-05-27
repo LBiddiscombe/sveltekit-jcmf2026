@@ -12,9 +12,7 @@
 	let creating = $state(false);
 
 	$effect(() => {
-		if (browser) {
-			localStorage.setItem(STORAGE_KEY, name);
-		}
+		localStorage.setItem(STORAGE_KEY, name);
 	});
 
 	function createMatch() {
@@ -60,7 +58,7 @@
 			<div class="flex flex-col gap-1">
 				<span class="text-sm font-medium text-dark-teal">Time Limit</span>
 				<div class="grid grid-cols-3 gap-2" role="radiogroup">
-					{#each TIME_PRESETS as preset}
+					{#each TIME_PRESETS as preset (preset)}
 						<button
 							onclick={() => (timeLimit = preset)}
 							class="rounded-xl border px-3 py-2 text-center text-sm font-medium transition-colors {timeLimit ===
