@@ -43,6 +43,7 @@
 	}
 
 	function goToTackle() {
+		if (selectedPeg) prepState.assignPeg(selectedPeg);
 		gameState.reset();
 		goto('/game');
 	}
