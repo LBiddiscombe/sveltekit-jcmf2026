@@ -8,6 +8,7 @@
 	import { venues } from '$lib/data';
 	import type { TackleSelection } from '$lib/data';
 	import { defaultTackle } from '$lib/game/tackle-utils';
+	import { formatWeight, formatShortDuration } from '$lib/utils/format';
 	import CatchToast from '$lib/components/CatchToast.svelte';
 	import DebugPanel from '$lib/components/DebugPanel.svelte';
 	import TackleModal from '$lib/components/TackleModal.svelte';
@@ -150,15 +151,11 @@
 			const elapsed = now - multiplayer.startTime;
 			const remaining = Math.max(0, multiplayer.timeLimitMinutes * 60 - elapsed / 1000);
 			if (remaining <= 0) return '';
-			const m = Math.floor(remaining / 60);
-			const s = Math.floor(remaining % 60);
-			return `${m}m ${s}s`;
+			return formatShortDuration(remaining);
 		}
 		const totalSec = Math.ceil(gameState.timeRemainingSeconds);
 		if (totalSec <= 0) return '';
-		const m = Math.floor(totalSec / 60);
-		const s = totalSec % 60;
-		return `${m}m ${s}s`;
+		return formatShortDuration(totalSec);
 	});
 
 	let statusMessage = $derived.by(() => {
@@ -174,7 +171,7 @@
 		if (e?.type === 'lineBroke') return 'Line broke!';
 		if (e?.type === 'tooMuchSlackLine') return 'Too much slack line!';
 
-		if (playerPhase === 'waiting') return `Line in the water (${waitSeconds.toFixed(0)}s)...`;
+		if (playerPhase === 'waiting') return `Line in the water (${formatShortDuration(waitSeconds)})...`;
 		if (playerPhase === 'bite') return 'Fish biting!';
 		if (playerPhase === 'reeling') return 'Reeling in...';
 		if (playerPhase === 'landing') return 'Strike now!';
@@ -194,14 +191,6 @@
 
 	function pegImg(filename: string | undefined): string {
 		return filename ? (pegImages[`/src/lib/assets/images/pegs/${filename}`] ?? '') : '';
-	}
-
-	function formatWeight(oz: number): string {
-		const lb = Math.floor(oz / 16);
-		const remainder = oz % 16;
-		if (lb === 0) return `${oz} oz`;
-		if (remainder === 0) return `${lb} lb`;
-		return `${lb} lb ${remainder} oz`;
 	}
 
 	function handleStrike() {
@@ -242,15 +231,9 @@
 		if (isMulti && multiplayer.startTime) {
 			const elapsed = now - multiplayer.startTime;
 			const remaining = Math.max(0, multiplayer.timeLimitMinutes * 60 - elapsed / 1000);
-			if (remaining <= 0) return '';
-			const m = Math.floor(remaining / 60);
-			const s = Math.floor(remaining % 60);
-			return `${m}:${String(s).padStart(2, '0')}`;
+			return formatShortDuration(remaining);
 		}
-		if (gameState.timeRemainingSeconds <= 0) return '';
-		const m = Math.floor(gameState.timeRemainingSeconds / 60);
-		const s = Math.floor(gameState.timeRemainingSeconds % 60);
-		return `${m}:${String(s).padStart(2, '0')}`;
+		return formatShortDuration(gameState.timeRemainingSeconds);
 	});
 
 	function handleTackleConfirm(tackle: TackleSelection) {

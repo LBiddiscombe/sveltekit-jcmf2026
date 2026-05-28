@@ -2,6 +2,7 @@
 	import { gameState } from '$lib/game/state.svelte';
 	import { prepState } from '$lib/game/prep-state.svelte';
 	import type { TackleSelection } from '$lib/data';
+	import { formatWeight, formatShortDuration } from '$lib/utils/format';
 
 	let playerAngler = $derived(gameState.playerAngler);
 	let catchAudit = $derived(gameState.catchAudit);
@@ -14,21 +15,6 @@
 
 	function toggle(key: string) {
 		expanded[key] = !expanded[key];
-	}
-
-	function formatWeight(oz: number): string {
-		const lb = Math.floor(oz / 16);
-		const r = oz % 16;
-		if (lb === 0) return `${oz} oz`;
-		if (r === 0) return `${lb} lb`;
-		return `${lb} lb ${r} oz`;
-	}
-
-	function formatTime(ms: number): string {
-		const totalSec = Math.floor(ms / 1000);
-		const m = Math.floor(totalSec / 60);
-		const s = totalSec % 60;
-		return `+${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
 	}
 
 	function tackleSummary(t: TackleSelection): string {
@@ -108,7 +94,7 @@
 				<div class="space-y-1">
 					{#each myCatches as entry (entry.caughtAtMs + entry.species)}
 						<div class="flex justify-between rounded bg-surface/20 px-2 py-1 text-dark-teal">
-							<span>{formatTime(entry.caughtAtMs)}</span>
+							<span>{formatShortDuration(entry.caughtAtMs / 1000)}</span>
 							<span>{entry.classificationLabel} {entry.species}</span>
 							<span class="text-muted">{formatWeight(entry.weightOz)}</span>
 						</div>
@@ -153,7 +139,7 @@
 						<div class="mt-1 space-y-0.5">
 							{#each botCatches as entry (entry.caughtAtMs + entry.species)}
 								<div class="flex justify-between text-dark-teal">
-									<span>{formatTime(entry.caughtAtMs)}</span>
+									<span>{formatShortDuration(entry.caughtAtMs / 1000)}</span>
 									<span>{entry.classificationLabel} {entry.species}</span>
 									<span class="text-muted">{formatWeight(entry.weightOz)}</span>
 								</div>

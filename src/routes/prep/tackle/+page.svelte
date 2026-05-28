@@ -8,6 +8,7 @@
 	import { gameState } from '$lib/game/state.svelte';
 	import { multiplayer } from '$lib/game/party/connection.svelte';
 	import { defaultTackle } from '$lib/game/tackle-utils';
+	import { formatShortDuration } from '$lib/utils/format';
 	import { presets, resolvePreset } from '$lib/data/presets';
 	import type { TacklePreset } from '$lib/data';
 	import PickerModal from '$lib/components/PickerModal.svelte';
@@ -70,10 +71,7 @@
 
 	let timerDisplay = $derived.by(() => {
 		if (!isTimed) return '';
-		const totalSec = Math.ceil(remainingMs / 1000);
-		const m = Math.floor(totalSec / 60);
-		const s = totalSec % 60;
-		return `${m}:${String(s).padStart(2, '0')}`;
+		return formatShortDuration(Math.ceil(remainingMs / 1000));
 	});
 
 	let isPole = $derived(tackle.rod.name === 'Pole');

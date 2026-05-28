@@ -6,6 +6,7 @@
 	import { multiplayer } from '$lib/game/party/connection.svelte';
 	import DebugPanel from '$lib/components/DebugPanel.svelte';
 	import Leaderboard from './Leaderboard.svelte';
+	import { formatWeight } from '$lib/utils/format';
 
 	let isMulti = $derived(page.url.searchParams.has('multi'));
 	let mode = $derived(isMulti ? 'multiplayer' : prepState.mode);
@@ -56,14 +57,6 @@
 	let totalWeightOz = $derived(playerAngler?.totalWeightOz ?? 0);
 
 	let btnHref = $derived('/menu');
-
-	function formatWeight(oz: number): string {
-		const lb = Math.floor(oz / 16);
-		const r = oz % 16;
-		if (lb === 0) return `${oz} oz`;
-		if (r === 0) return `${lb} lb`;
-		return `${lb} lb ${r} oz`;
-	}
 
 	const pegImages = import.meta.glob<string>('$lib/assets/images/pegs/*.jpeg', {
 		eager: true,
