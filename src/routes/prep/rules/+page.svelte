@@ -113,6 +113,17 @@
 				{/each}
 			</div>
 
+			{#if tutorialCompleted}
+				<div class="mx-auto w-full max-w-sm px-4">
+					<button
+						onclick={handleResetHints}
+						class="w-full cursor-pointer text-center text-xs text-muted underline hover:text-dark-teal"
+					>
+						Show hints again
+					</button>
+				</div>
+			{/if}
+
 			<div class="mx-auto mt-auto w-full max-w-sm px-4">
 				<button
 					onclick={goToTackle}
@@ -143,14 +154,6 @@
 					</p>
 				</button>
 			{/each}
-			{#if tutorialCompleted}
-				<button
-					onclick={handleResetHints}
-					class="cursor-pointer text-xs text-muted underline hover:text-dark-teal"
-				>
-					Show hints again
-				</button>
-			{/if}
 		</div>
 	</div>
 {/if}

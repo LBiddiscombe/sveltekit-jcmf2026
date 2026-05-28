@@ -12,6 +12,12 @@
 	import DebugPanel from '$lib/components/DebugPanel.svelte';
 	import TackleModal from '$lib/components/TackleModal.svelte';
 	import { isTutorialCompleted, completeTutorial } from '$lib/game/tutorial';
+	import {
+		startWakeLock,
+		stopWakeLock,
+		acquireWakeLock,
+		wakeLock
+	} from '$lib/game/screen-wake-lock.svelte';
 
 	const tackleImages = import.meta.glob<string>('$lib/assets/images/tackle/*.png', {
 		eager: true,
@@ -65,15 +71,16 @@
 
 	let hintsConsumed = $state(
 		isTutorialCompleted()
-			? { bite: true, reeling: true, landing: true }
-			: { bite: false, reeling: false, landing: false }
+			? { bite: true, reeling: true, landing: true, intro: true }
+			: { bite: false, reeling: false, landing: false, intro: false }
 	);
 	let tutorialCompleted = $derived(
 		hintsConsumed.bite && hintsConsumed.reeling && hintsConsumed.landing
 	);
 
 	let currentHint = $derived.by(() => {
-		if (tutorialCompleted) return '';
+		if (mode !== 'session' || tutorialCompleted) return '';
+		if (!hintsConsumed.intro) return "You're fishing! Wait for a bite...";
 		const p = playerPhase;
 		if (p === 'bite' && !hintsConsumed.bite)
 			return 'Tap the image or press Space to hook the fish!';
@@ -85,13 +92,22 @@
 	});
 
 	let hintBlocking = $derived(
-		!tutorialCompleted &&
+		mode === 'session' &&
+			!tutorialCompleted &&
 			(!!(playerPhase === 'bite' && !hintsConsumed.bite) ||
 				!!(playerPhase === 'landing' && !hintsConsumed.landing))
 	);
 
 	$effect(() => {
-		if (tutorialCompleted || hintsConsumed.reeling) return;
+		if (mode !== 'session' || hintsConsumed.intro) return;
+		const timer = setTimeout(() => {
+			hintsConsumed.intro = true;
+		}, 5000);
+		return () => clearTimeout(timer);
+	});
+
+	$effect(() => {
+		if (mode !== 'session' || tutorialCompleted || hintsConsumed.reeling) return;
 		if (playerPhase === 'reeling') {
 			const timer = setTimeout(() => {
 				hintsConsumed.reeling = true;
@@ -101,7 +117,7 @@
 	});
 
 	$effect(() => {
-		if (tutorialCompleted) {
+		if (mode === 'session' && tutorialCompleted) {
 			completeTutorial();
 		}
 	});
@@ -189,13 +205,15 @@
 	}
 
 	function handleStrike() {
-		hintsConsumed.bite = true;
+		if (mode === 'session') hintsConsumed.bite = true;
 		gameState.strike();
 	}
 
 	function handleReel() {
-		hintsConsumed.reeling = true;
-		hintsConsumed.landing = true;
+		if (mode === 'session') {
+			hintsConsumed.reeling = true;
+			hintsConsumed.landing = true;
+		}
 		const event = gameState.reel();
 		if (isMulti && event?.type === 'fishCaught' && multiplayer.ownPeg) {
 			multiplayer.sendCatch({
@@ -215,6 +233,7 @@
 	function handlePegClick() {
 		if (playerPhase === 'bite') handleStrike();
 		else if (playerPhase === 'reeling' || playerPhase === 'landing') handleReel();
+		if (!wakeLock.active) acquireWakeLock();
 	}
 
 	let isMidGameChange = $derived(playerPhase === 'changing' && gameState.initialTackleChosen);
@@ -237,6 +256,7 @@
 	function handleTackleConfirm(tackle: TackleSelection) {
 		gameState.updateTackle(tackle);
 		gameState.finishChangingTackle();
+		acquireWakeLock();
 	}
 
 	function toggleDebug() {
@@ -319,6 +339,7 @@
 	}
 
 	onMount(() => {
+		startWakeLock();
 		if (isMulti) {
 			setupMultiplayerGame();
 		} else if (gameState.phase !== 'fishing') {
@@ -341,6 +362,7 @@
 		}, 100);
 
 		return () => {
+			stopWakeLock();
 			if (intervalId) clearInterval(intervalId);
 		};
 	});
@@ -432,10 +454,17 @@
 					</div>
 				{/if}
 			</div>
-			<div class="absolute top-3 left-3 rounded-lg bg-black/40 px-2 py-1">
-				<p class="text-sm font-semibold tracking-wide text-white/80 uppercase">{venueName}</p>
-				<p class="text-xs text-white/60">{lakeName}</p>
-				<p class="text-lg font-bold text-white">Peg {pegName}</p>
+			<div class="absolute top-3 left-3 flex items-start gap-1 rounded-lg bg-black/40 px-2 py-1">
+				<div class="flex-1">
+					<p class="text-sm font-semibold tracking-wide text-white/80 uppercase">{venueName}</p>
+					<p class="text-xs text-white/60">{lakeName}</p>
+					<p class="text-lg font-bold text-white">Peg {pegName}</p>
+				</div>
+				{#if wakeLock.active}
+					<span
+						class="mt-1 h-2 w-2 flex-shrink-0 rounded-full bg-green-400 shadow-[0_0_4px_theme(colors.green.400)]"
+					></span>
+				{/if}
 			</div>
 			{#if (mode === 'match' || mode === 'multiplayer') && matchTimeDisplay}
 				<div class="absolute top-3 right-3 rounded-lg bg-black/40 px-3 py-1.5">
