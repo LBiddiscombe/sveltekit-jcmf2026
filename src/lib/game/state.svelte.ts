@@ -5,6 +5,7 @@ import { populatePeg, reassignDynamicProperties, resetIds } from './population';
 import type { FishData } from './population';
 import { FishingLoop } from './loop';
 import type { FishingEvent, PlayerLoopSnapshot } from './loop';
+import { BotController } from './bot-controller';
 import { pickBotTackle } from './tackle-utils';
 import type { AnglerState, GamePhase } from './prep-state.svelte';
 
@@ -33,7 +34,7 @@ export class GameState {
 	anglers = $state<AnglerState[]>([]);
 	pegPopulations = new SvelteMap<string, FishData[]>();
 	playerLoop: FishingLoop | null = null;
-	botLoops = new SvelteMap<string, FishingLoop>();
+	botControllers = new SvelteMap<string, BotController>();
 	playerSnapshot = $state<PlayerLoopSnapshot | null>(null);
 	lastEvent = $state<FishingEvent | null>(null);
 	botCatchFeed = $state<BotCatchEvent[]>([]);
@@ -72,18 +73,23 @@ export class GameState {
 		this.generateFish(lake);
 
 		this.playerLoop = this.createPlayerLoop(lake, player);
-		this.initBotLoops(lake);
+		this.initBotControllers(lake);
 
 		for (const pegName of this.pegPopulations.keys()) {
 			const pop = this.pegPopulations.get(pegName);
 			if (!pop) continue;
 
 			const angler = this.anglers.find((a) => a.pegName === pegName);
-			const loop = angler?.isPlayer ? this.playerLoop : this.botLoops.get(angler?.id ?? '');
 
-			if (loop) {
-				loop.preparePopulation(pop, (id) => this.removeFishFromPeg(pegName, id));
-				loop.enterChanging();
+			if (angler?.isPlayer && this.playerLoop) {
+				this.playerLoop.preparePopulation(pop, (id) => this.removeFishFromPeg(pegName, id));
+				this.playerLoop.enterChanging();
+			} else {
+				const controller = this.botControllers.get(angler?.id ?? '');
+				if (controller) {
+					controller.loop.preparePopulation(pop, (id) => this.removeFishFromPeg(pegName, id));
+					controller.enterChanging();
+				}
 			}
 		}
 
@@ -94,7 +100,7 @@ export class GameState {
 		const peg = lake.pegs.find((p) => p.name === player.pegName);
 		if (!peg) return null;
 
-		const loop = new FishingLoop(player.tackle, player.skill, species, false, undefined, () => {
+		const loop = new FishingLoop(player.tackle, player.skill, species, undefined, () => {
 			const pop = this.pegPopulations.get(this.playerPeg);
 			if (pop) reassignDynamicProperties(pop, species);
 		});
@@ -102,8 +108,8 @@ export class GameState {
 		return loop;
 	}
 
-	private initBotLoops(lake: Lake) {
-		this.botLoops.clear();
+	private initBotControllers(lake: Lake) {
+		this.botControllers.clear();
 
 		for (const bot of this.anglers) {
 			if (bot.isPlayer) continue;
@@ -111,20 +117,19 @@ export class GameState {
 			const peg = lake.pegs.find((p) => p.name === bot.pegName);
 			if (!peg) continue;
 
-			const loop = new FishingLoop(
-				bot.tackle,
+			const loop = new FishingLoop(bot.tackle, bot.skill, species, undefined, () => {
+				const pop = this.pegPopulations.get(bot.pegName);
+				if (pop) reassignDynamicProperties(pop, species);
+			});
+
+			const controller = new BotController(
+				loop,
 				bot.skill,
-				species,
-				true,
-				undefined,
-				() => {
-					const pop = this.pegPopulations.get(bot.pegName);
-					if (pop) reassignDynamicProperties(pop, species);
-				},
+				Math.random,
 				() => pickBotTackle(bot.skill, peg, lake)
 			);
 
-			this.botLoops.set(bot.id, loop);
+			this.botControllers.set(bot.id, controller);
 		}
 	}
 
@@ -207,14 +212,15 @@ export class GameState {
 			return null;
 		}
 
-		for (const [id, loop] of this.botLoops) {
+		for (const [id, controller] of this.botControllers) {
 			const angler = this.anglers.find((a) => a.id === id);
 			if (!angler || angler.phase === 'finished') continue;
 
+			const loop = controller.loop;
 			angler.phase = loop.phase;
 			angler.tackle = loop['tackle' as keyof FishingLoop] as unknown as TackleSelection;
 
-			const event = loop.tick(elapsedMs);
+			const event = controller.tick(elapsedMs);
 			if (event && event.type === 'fishCaught') {
 				this.syncBotAngler(angler, loop);
 				this.botCatchFeed = [
@@ -237,6 +243,7 @@ export class GameState {
 			}
 		}
 
+		this.playerLoop?.advanceReelTimer(elapsedMs);
 		const event = this.playerLoop?.tick(elapsedMs) ?? null;
 		if (event) this.lastEvent = event;
 		this.syncPlayerState();
@@ -275,11 +282,11 @@ export class GameState {
 	}
 
 	private cutOffBots() {
-		for (const [id, loop] of this.botLoops) {
+		for (const [id, controller] of this.botControllers) {
 			const angler = this.anglers.find((a) => a.id === id);
 			if (!angler) continue;
 
-			loop.phase = 'finished';
+			controller.loop.phase = 'finished';
 			angler.phase = 'finished';
 		}
 	}
@@ -378,7 +385,7 @@ export class GameState {
 		this.anglers = [];
 		this.pegPopulations = new SvelteMap();
 		this.playerLoop = null;
-		this.botLoops = new SvelteMap();
+		this.botControllers = new SvelteMap();
 		this.playerSnapshot = null;
 		this.lastEvent = null;
 		this.botCatchFeed = [];

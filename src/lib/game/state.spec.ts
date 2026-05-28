@@ -168,7 +168,7 @@ describe('GameState match ending', () => {
 		expect(gs.timeExpired).toBe(true);
 		expect(gs.phase).toBe('fishing');
 
-		loop.tick(loop.reelTimerRemaining);
+		loop.advanceReelTimer(loop.reelTimerRemaining);
 		expect(loop.phase).toBe('landing');
 
 		loop.reel();
@@ -252,7 +252,7 @@ describe('GameState match ending', () => {
 		gs.cast();
 		gs.tick(100);
 
-		const botLoop = gs.botLoops.get('bot-1')!;
+		const botLoop = gs.botControllers.get('bot-1')!.loop;
 		botLoop.phase = 'caught';
 		botLoop.currentFish = null;
 
@@ -272,7 +272,7 @@ describe('GameState match ending', () => {
 		const anglers = [...makePlayer(), makeBotAngler()];
 		gs.beginFishing(anglers, venue, lake, 10);
 
-		const botLoop = gs.botLoops.get('bot-1')!;
+		const botLoop = gs.botControllers.get('bot-1')!.loop;
 		botLoop.phase = 'reeling';
 		botLoop.currentFish = {
 			id: 'f1',
