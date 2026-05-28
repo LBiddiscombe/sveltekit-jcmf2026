@@ -55,6 +55,7 @@ export interface FishClassification {
 	id: string;
 	label: string;
 	maxOz: number;
+	biteSizeExtraMs: number;
 	preferredBaits: string[];
 }
 
@@ -81,6 +82,7 @@ export interface EnvironmentalTolerances {
  */
 export interface Species {
 	name: string;
+	cautionMs: number;
 	record: number;
 	strata: string[];
 	description: string;

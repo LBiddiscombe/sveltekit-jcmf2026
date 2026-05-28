@@ -6,16 +6,17 @@ import type { Species, TackleSelection } from '$lib/data';
 
 const roach: Species = {
 	name: 'Roach',
+	cautionMs: 3000,
 	record: 68,
 	strata: ['Top', 'Middle', 'Bottom'],
 	description: '',
 	preferences: { flow: 0.3, clarity: 0.5, substrate: 0.7, vegetation: 0.6, shelter: 0.5 },
 	tolerances: {},
 	classifications: [
-		{ id: 'small', label: 'Small', maxOz: 8, preferredBaits: ['maggot', 'caster'] },
-		{ id: 'medium', label: '', maxOz: 34, preferredBaits: ['maggot', 'caster', 'worm'] },
-		{ id: 'specimen', label: 'Specimen', maxOz: 51, preferredBaits: ['worm', 'bread'] },
-		{ id: 'monster', label: 'Monster', maxOz: Infinity, preferredBaits: ['worm', 'bread'] }
+		{ id: 'small', label: 'Small', maxOz: 8, biteSizeExtraMs: 2000, preferredBaits: ['maggot', 'caster'] },
+		{ id: 'medium', label: '', maxOz: 34, biteSizeExtraMs: 5000, preferredBaits: ['maggot', 'caster', 'worm'] },
+		{ id: 'specimen', label: 'Specimen', maxOz: 51, biteSizeExtraMs: 60000, preferredBaits: ['worm', 'bread'] },
+		{ id: 'monster', label: 'Monster', maxOz: Infinity, biteSizeExtraMs: 120000, preferredBaits: ['worm', 'bread'] }
 	]
 };
 

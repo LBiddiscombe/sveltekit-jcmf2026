@@ -165,24 +165,6 @@ export class FishingLoop {
 		return candidates[Math.floor(this.rng() * candidates.length)];
 	}
 
-	private static readonly SPECIES_CAUTION: Record<string, number> = {
-		Dace: 2000,
-		Roach: 3000,
-		Rudd: 3000,
-		Perch: 4000,
-		Grayling: 4000,
-		Bream: 5000,
-		Crucian: 5000,
-		Chub: 6000,
-		Barbel: 7000,
-		Eel: 8000,
-		Pike: 9000,
-		Tench: 10000,
-		Carp: 12000
-	};
-
-	private static readonly SIZE_MAX = [2000, 5000, 60000, 120000];
-
 	private calcBiteTime(fish: FishData): number {
 		const species = this.speciesMap.get(fish.species);
 		if (!species) return 5000;
@@ -193,10 +175,9 @@ export class FishingLoop {
 			this.tackle.line.deter +
 			this.tackle.hook.deter;
 		const deterMax = deterTotal * 50_000;
-		const speciesMax = FishingLoop.SPECIES_CAUTION[species.name] ?? 5000;
-		const tierIndex = Math.min(fish.tierIndex, FishingLoop.SIZE_MAX.length - 1);
-		const sizeMax = FishingLoop.SIZE_MAX[tierIndex];
-		return Math.floor(base + this.rng() * (deterMax + speciesMax + sizeMax));
+		const classification = species.classifications[fish.tierIndex];
+		const sizeMax = classification?.biteSizeExtraMs ?? 2000;
+		return Math.floor(base + this.rng() * (deterMax + species.cautionMs + sizeMax));
 	}
 
 	cast(population: FishData[], removeFn: (id: string) => void): FishingEvent | null {

@@ -12,44 +12,47 @@ import type { EnvironmentalFeatures, Lake, Peg, Species } from '$lib/data';
 const mockSpecies: Species[] = [
 	{
 		name: 'Roach',
+		cautionMs: 3000,
 		record: 68,
 		strata: ['Top', 'Middle', 'Bottom'],
 		description: '',
 		preferences: { flow: 0.3, clarity: 0.5, substrate: 0.7, vegetation: 0.6, shelter: 0.5 },
 		tolerances: {},
 		classifications: [
-			{ id: 'small', label: 'Small', maxOz: 8, preferredBaits: [] },
-			{ id: 'medium', label: '', maxOz: 34, preferredBaits: [] },
-			{ id: 'specimen', label: 'Specimen', maxOz: 51, preferredBaits: [] },
-			{ id: 'monster', label: 'Monster', maxOz: Infinity, preferredBaits: [] }
+			{ id: 'small', label: 'Small', maxOz: 8, biteSizeExtraMs: 2000, preferredBaits: [] },
+			{ id: 'medium', label: '', maxOz: 34, biteSizeExtraMs: 5000, preferredBaits: [] },
+			{ id: 'specimen', label: 'Specimen', maxOz: 51, biteSizeExtraMs: 60000, preferredBaits: [] },
+			{ id: 'monster', label: 'Monster', maxOz: Infinity, biteSizeExtraMs: 120000, preferredBaits: [] }
 		]
 	},
 	{
 		name: 'Perch',
+		cautionMs: 4000,
 		record: 99,
 		strata: ['Middle', 'Bottom'],
 		description: '',
 		preferences: { flow: 0.2, clarity: 0.6, substrate: 0.5, vegetation: 0.8, shelter: 0.6 },
 		tolerances: {},
 		classifications: [
-			{ id: 'small', label: 'Small', maxOz: 8, preferredBaits: [] },
-			{ id: 'medium', label: '', maxOz: 49, preferredBaits: [] },
-			{ id: 'specimen', label: 'Specimen', maxOz: 75, preferredBaits: [] },
-			{ id: 'monster', label: 'Monster', maxOz: Infinity, preferredBaits: [] }
+			{ id: 'small', label: 'Small', maxOz: 8, biteSizeExtraMs: 2000, preferredBaits: [] },
+			{ id: 'medium', label: '', maxOz: 49, biteSizeExtraMs: 5000, preferredBaits: [] },
+			{ id: 'specimen', label: 'Specimen', maxOz: 75, biteSizeExtraMs: 60000, preferredBaits: [] },
+			{ id: 'monster', label: 'Monster', maxOz: Infinity, biteSizeExtraMs: 120000, preferredBaits: [] }
 		]
 	},
 	{
 		name: 'Pike',
+		cautionMs: 9000,
 		record: 749,
 		strata: ['Top', 'Middle', 'Bottom'],
 		description: '',
 		preferences: { flow: 0.2, clarity: 0.6, substrate: 0.6, vegetation: 0.9, shelter: 0.8 },
 		tolerances: {},
 		classifications: [
-			{ id: 'small', label: 'Jack', maxOz: 80, preferredBaits: [] },
-			{ id: 'medium', label: '', maxOz: 374, preferredBaits: [] },
-			{ id: 'specimen', label: 'Specimen', maxOz: 561, preferredBaits: [] },
-			{ id: 'monster', label: 'Monster', maxOz: Infinity, preferredBaits: [] }
+			{ id: 'small', label: 'Jack', maxOz: 80, biteSizeExtraMs: 2000, preferredBaits: [] },
+			{ id: 'medium', label: '', maxOz: 374, biteSizeExtraMs: 5000, preferredBaits: [] },
+			{ id: 'specimen', label: 'Specimen', maxOz: 561, biteSizeExtraMs: 60000, preferredBaits: [] },
+			{ id: 'monster', label: 'Monster', maxOz: Infinity, biteSizeExtraMs: 120000, preferredBaits: [] }
 		]
 	}
 ];
@@ -221,16 +224,17 @@ describe('reassignDynamicProperties', () => {
 		const species: Species[] = [
 			{
 				name: 'Roach',
+				cautionMs: 3000,
 				record: 68,
 				strata: ['Bottom'],
 				description: '',
 				preferences: { flow: 0.5, clarity: 0.5, substrate: 0.5, vegetation: 0.5, shelter: 0.5 },
 				tolerances: {},
 				classifications: [
-					{ id: 'small', label: 'Small', maxOz: 8, preferredBaits: ['maggot', 'caster'] },
-					{ id: 'medium', label: '', maxOz: 34, preferredBaits: ['maggot'] },
-					{ id: 'specimen', label: 'Specimen', maxOz: 51, preferredBaits: ['worm'] },
-					{ id: 'monster', label: 'Monster', maxOz: Infinity, preferredBaits: ['boilie'] }
+					{ id: 'small', label: 'Small', maxOz: 8, biteSizeExtraMs: 2000, preferredBaits: ['maggot', 'caster'] },
+					{ id: 'medium', label: '', maxOz: 34, biteSizeExtraMs: 5000, preferredBaits: ['maggot'] },
+					{ id: 'specimen', label: 'Specimen', maxOz: 51, biteSizeExtraMs: 60000, preferredBaits: ['worm'] },
+					{ id: 'monster', label: 'Monster', maxOz: Infinity, biteSizeExtraMs: 120000, preferredBaits: ['boilie'] }
 				]
 			}
 		];

@@ -5,31 +5,33 @@ import type { Species, TackleSelection } from '$lib/data';
 
 const roach: Species = {
 	name: 'Roach',
+	cautionMs: 3000,
 	record: 68,
 	strata: ['Top', 'Middle', 'Bottom'],
 	description: '',
 	preferences: { flow: 0.3, clarity: 0.5, substrate: 0.7, vegetation: 0.6, shelter: 0.5 },
 	tolerances: {},
 	classifications: [
-		{ id: 'small', label: 'Small', maxOz: 8, preferredBaits: ['maggot', 'caster'] },
-		{ id: 'medium', label: '', maxOz: 34, preferredBaits: ['maggot', 'caster', 'worm'] },
-		{ id: 'specimen', label: 'Specimen', maxOz: 51, preferredBaits: ['worm', 'bread'] },
-		{ id: 'monster', label: 'Monster', maxOz: Infinity, preferredBaits: ['worm', 'bread'] }
+		{ id: 'small', label: 'Small', maxOz: 8, biteSizeExtraMs: 2000, preferredBaits: ['maggot', 'caster'] },
+		{ id: 'medium', label: '', maxOz: 34, biteSizeExtraMs: 5000, preferredBaits: ['maggot', 'caster', 'worm'] },
+		{ id: 'specimen', label: 'Specimen', maxOz: 51, biteSizeExtraMs: 60000, preferredBaits: ['worm', 'bread'] },
+		{ id: 'monster', label: 'Monster', maxOz: Infinity, biteSizeExtraMs: 120000, preferredBaits: ['worm', 'bread'] }
 	]
 };
 
 const carp: Species = {
 	name: 'Carp',
+	cautionMs: 12000,
 	record: 1089,
 	strata: ['Bottom'],
 	description: '',
 	preferences: { flow: 0.2, clarity: 0.4, substrate: 0.9, vegetation: 0.6, shelter: 0.5 },
 	tolerances: {},
 	classifications: [
-		{ id: 'small', label: 'Small', maxOz: 64, preferredBaits: ['pellet', 'sweetcorn'] },
-		{ id: 'medium', label: '', maxOz: 544, preferredBaits: ['pellet', 'sweetcorn'] },
-		{ id: 'specimen', label: 'Specimen', maxOz: 816, preferredBaits: ['boilie'] },
-		{ id: 'monster', label: 'Monster', maxOz: Infinity, preferredBaits: ['boilie'] }
+		{ id: 'small', label: 'Small', maxOz: 64, biteSizeExtraMs: 2000, preferredBaits: ['pellet', 'sweetcorn'] },
+		{ id: 'medium', label: '', maxOz: 544, biteSizeExtraMs: 5000, preferredBaits: ['pellet', 'sweetcorn'] },
+		{ id: 'specimen', label: 'Specimen', maxOz: 816, biteSizeExtraMs: 60000, preferredBaits: ['boilie'] },
+		{ id: 'monster', label: 'Monster', maxOz: Infinity, biteSizeExtraMs: 120000, preferredBaits: ['boilie'] }
 	]
 };
 
