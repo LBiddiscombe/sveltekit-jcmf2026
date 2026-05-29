@@ -12,6 +12,7 @@
 	import CatchToast from '$lib/components/CatchToast.svelte';
 	import DebugPanel from '$lib/components/DebugPanel.svelte';
 	import TackleModal from '$lib/components/TackleModal.svelte';
+	import FishingCanvas from '$lib/components/FishingCanvas.svelte';
 	import { isTutorialCompleted, completeTutorial } from '$lib/game/tutorial';
 	import {
 		startWakeLock,
@@ -73,11 +74,9 @@
 	let hintsConsumed = $state(
 		isTutorialCompleted()
 			? { bite: true, reeling: true, landing: true, intro: true }
-			: { bite: false, reeling: false, landing: false, intro: false }
+			: { bite: false, reeling: true, landing: true, intro: false }
 	);
-	let tutorialCompleted = $derived(
-		hintsConsumed.bite && hintsConsumed.reeling && hintsConsumed.landing
-	);
+	let tutorialCompleted = $derived(hintsConsumed.bite && hintsConsumed.reeling && hintsConsumed.landing);
 
 	let currentHint = $derived.by(() => {
 		if (mode !== 'session' || tutorialCompleted) return '';
@@ -85,18 +84,13 @@
 		const p = playerPhase;
 		if (p === 'bite' && !hintsConsumed.bite)
 			return 'Tap the image or press Space to hook the fish!';
-		if (p === 'reeling' && !hintsConsumed.reeling)
-			return 'Your catch is being reeled in.\nDon\u2019t tap until it\u2019s ready to land!';
-		if (p === 'landing' && !hintsConsumed.landing)
-			return 'Tap the image or press Space to land the fish!';
 		return '';
 	});
 
 	let hintBlocking = $derived(
 		mode === 'session' &&
 			!tutorialCompleted &&
-			(!!(playerPhase === 'bite' && !hintsConsumed.bite) ||
-				!!(playerPhase === 'landing' && !hintsConsumed.landing))
+			!!(playerPhase === 'bite' && !hintsConsumed.bite)
 	);
 
 	$effect(() => {
@@ -105,16 +99,6 @@
 			hintsConsumed.intro = true;
 		}, 5000);
 		return () => clearTimeout(timer);
-	});
-
-	$effect(() => {
-		if (mode !== 'session' || tutorialCompleted || hintsConsumed.reeling) return;
-		if (playerPhase === 'reeling') {
-			const timer = setTimeout(() => {
-				hintsConsumed.reeling = true;
-			}, 5000);
-			return () => clearTimeout(timer);
-		}
 	});
 
 	$effect(() => {
@@ -129,22 +113,8 @@
 			: 0
 	);
 
-	let reelProgress = $derived(
-		gameState.playerSnapshot && gameState.playerSnapshot.reelTimerMs > 0
-			? 1 - gameState.playerSnapshot.reelTimerRemaining / gameState.playerSnapshot.reelTimerMs
-			: 0
-	);
-
-	let reelGradientStyle = $derived.by(() => {
-		if (playerPhase !== 'reeling' && playerPhase !== 'landing') return '';
-		const p = playerPhase === 'landing' ? 1 : reelProgress;
-		const w = 110 - p * 30;
-		const h = 90 - p * 20;
-		const clear = 92 - p * 42;
-		const dark = 0.25 + p * 0.25;
-		const edge = 97 - p * 19;
-		return `radial-gradient(ellipse ${w}% ${h}% at 50% 100%, transparent ${clear}%, rgba(0,0,0,${dark}) ${edge}%)`;
-	});
+	let fishWeightOz = $derived(gameState.playerSnapshot?.currentFishOz ?? 0);
+	let lineMaxOz = $derived(tackle?.line.maxOz ?? 100);
 
 	let matchTimeDisplay = $derived.by(() => {
 		if (isMulti && multiplayer.startTime) {
@@ -174,7 +144,6 @@
 		if (playerPhase === 'waiting') return `Line in the water (${formatShortDuration(waitSeconds)})...`;
 		if (playerPhase === 'bite') return 'Fish biting!';
 		if (playerPhase === 'reeling') return 'Reeling in...';
-		if (playerPhase === 'landing') return 'Strike now!';
 		if (playerPhase === 'striking') return 'Striking...';
 		if (playerPhase === 'idle') return 'Ready';
 
@@ -198,21 +167,12 @@
 		gameState.strike();
 	}
 
-	function handleReel() {
+	function handleReelingResult(result: 'caught' | 'lost') {
 		if (mode === 'session') {
 			hintsConsumed.reeling = true;
 			hintsConsumed.landing = true;
 		}
-		const event = gameState.reel();
-		if (isMulti && event?.type === 'fishCaught' && multiplayer.ownPeg) {
-			multiplayer.sendCatch({
-				anglerName: multiplayer.playerName,
-				pegName: multiplayer.ownPeg,
-				species: event.species,
-				classificationLabel: event.classificationLabel,
-				weightOz: event.weightOz
-			});
-		}
+		gameState.handleReelingOutcome(result);
 	}
 
 	function handleChangeTackle() {
@@ -221,7 +181,6 @@
 
 	function handlePegClick() {
 		if (playerPhase === 'bite') handleStrike();
-		else if (playerPhase === 'reeling' || playerPhase === 'landing') handleReel();
 		if (!wakeLock.active) acquireWakeLock();
 	}
 
@@ -317,8 +276,6 @@
 		e.preventDefault();
 		const p = gameState.playerSnapshot?.phase;
 		if (p === 'bite') handleStrike();
-		else if (p === 'reeling') handleReel();
-		else if (p === 'landing') handleReel();
 	}
 
 	onMount(() => {
@@ -355,50 +312,24 @@
 
 <div class="min-h-dvh lg:flex lg:flex-row">
 	<div class="flex min-h-dvh flex-1 flex-col items-center gap-4 p-4">
-		<!-- svelte-ignore a11y_no_noninteractive_tabindex -->
-		<!-- Peg image header -->
 		<div
 			class="relative w-full overflow-hidden rounded-xl bg-surface/20 sm:max-w-sm
-				{playerPhase === 'bite' || playerPhase === 'reeling' || playerPhase === 'landing'
-				? 'cursor-pointer'
-				: ''}
-				{playerPhase === 'bite' ? 'strike-glow' : ''}
-				{playerPhase === 'landing' ? 'land-glow' : ''}"
-			onclick={handlePegClick}
-			onkeydown={(e) => e.key === 'Enter' && handlePegClick()}
-			role={playerPhase === 'bite' || playerPhase === 'reeling' || playerPhase === 'landing'
-				? 'button'
-				: undefined}
-			tabindex={playerPhase === 'bite' || playerPhase === 'reeling' || playerPhase === 'landing'
-				? 0
-				: undefined}
+				{playerPhase === 'bite' ? 'strike-glow' : ''}"
 		>
 			<div class="relative aspect-square">
-				{#if selectedPegData?.image && pegImg(selectedPegData.image)}
-					<img
-						src={pegImg(selectedPegData.image)}
-						alt=""
-						class="h-full w-full object-contain {playerPhase === 'bite' || playerPhase === 'landing'
-							? 'shake'
-							: ''}"
-					/>
-				{:else}
-					<div
-						class="flex h-full w-full items-center justify-center {playerPhase === 'bite' ||
-						playerPhase === 'landing'
-							? 'shake'
-							: ''}"
-					>
-						{#if pegName}
-							<span class="text-6xl font-bold text-muted">{pegName}</span>
-						{/if}
-					</div>
-				{/if}
-				{#if playerPhase === 'reeling' || playerPhase === 'landing'}
-					<div
-						class="pointer-events-none absolute inset-0"
-						style="background: {reelGradientStyle}"
-					></div>
+				<FishingCanvas
+					phase={playerPhase ?? 'idle'}
+					pegImageUrl={pegImg(selectedPegData?.image ?? '')}
+					fishWeightOz={fishWeightOz}
+					lineMaxOz={lineMaxOz}
+					onResult={handleReelingResult}
+				/>
+				{#if playerPhase === 'bite'}
+					<button
+						class="absolute inset-0 cursor-pointer bg-transparent"
+						onclick={handlePegClick}
+						aria-label="Strike"
+					></button>
 				{/if}
 				{#if playerPhase === 'caught' || playerPhase === 'lost'}
 					<div class="pointer-events-none absolute inset-0 flex items-center justify-center">
@@ -468,11 +399,9 @@
 					? 'animate-pulse bg-yellow-400'
 					: playerPhase === 'bite'
 						? 'animate-ping bg-red-500'
-						: playerPhase === 'reeling'
-							? 'bg-green-500'
-							: playerPhase === 'landing'
-								? 'animate-ping bg-yellow-400'
-								: playerPhase === 'caught'
+				: playerPhase === 'reeling'
+					? 'bg-green-500'
+					: playerPhase === 'caught'
 									? 'bg-blue-500'
 									: 'bg-muted'}"
 			></span>
@@ -647,37 +576,6 @@
 		}
 		50% {
 			box-shadow: 0 0 30px 15px rgba(220, 38, 38, 0.3);
-		}
-	}
-
-	.land-glow {
-		animation: land-breathe 0.8s ease-in-out infinite;
-	}
-
-	@keyframes land-breathe {
-		0%,
-		100% {
-			box-shadow: 0 0 8px 4px rgba(180, 130, 30, 0.9);
-		}
-		50% {
-			box-shadow: 0 0 30px 20px rgba(180, 130, 30, 0.6);
-		}
-	}
-
-	.shake {
-		animation: shake 0.15s ease-in-out infinite;
-	}
-
-	@keyframes shake {
-		0%,
-		100% {
-			transform: translateX(0);
-		}
-		25% {
-			transform: translateX(-2px);
-		}
-		75% {
-			transform: translateX(2px);
 		}
 	}
 

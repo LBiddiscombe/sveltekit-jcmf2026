@@ -36,12 +36,9 @@ export interface PlayerLoopSnapshot {
 	waitElapsedMs: number;
 	biteWindowRemaining: number;
 	biteWindowTotal: number;
-	reelTimerMs: number;
-	reelTimerRemaining: number;
-	landingWindowMs: number;
-	landingWindowRemaining: number;
 	caughtFishCount: number;
 	isBlankCasting: boolean;
+	currentFishOz: number;
 }
 
 const PLAYER_RECAST_DELAY_CAUGHT = 2500;
@@ -112,12 +109,9 @@ export class FishingLoop {
 			waitElapsedMs: this.waitElapsedMs,
 			biteWindowRemaining: this.biteWindowRemaining,
 			biteWindowTotal: this.biteWindowTotal,
-			reelTimerMs: this.reelTimerMs,
-			reelTimerRemaining: this.reelTimerRemaining,
-			landingWindowMs: this.landingWindowMs,
-			landingWindowRemaining: this.landingWindowRemaining,
 			caughtFishCount: this.caughtFish.length,
-			isBlankCasting: this.isBlankCasting
+			isBlankCasting: this.isBlankCasting,
+			currentFishOz: this.currentFish?.weightOz ?? 0
 		};
 	}
 
@@ -369,6 +363,42 @@ export class FishingLoop {
 		}
 
 		const fish = this.currentFish;
+		this.removeFn(fish.id);
+		this.population = this.population.filter((f) => f.id !== fish.id);
+		this.caughtFish.push({
+			species: fish.species,
+			classificationLabel: fish.classificationLabel,
+			weightOz: fish.weightOz,
+			caughtAtMs: Date.now()
+		});
+		this.phase = 'caught';
+		this.recastCountdown = PLAYER_RECAST_DELAY_CAUGHT;
+		return {
+			type: 'fishCaught',
+			species: fish.species,
+			classificationLabel: fish.classificationLabel,
+			weightOz: fish.weightOz
+		};
+	}
+
+	handleReelingOutcome(result: 'caught' | 'lost'): FishingEvent | null {
+		if (this.phase !== 'reeling' || !this.currentFish) return null;
+
+		if (result === 'lost') {
+			this.phase = 'lost';
+			this.recastCountdown = PLAYER_RECAST_DELAY_LOST;
+			return { type: 'fishGotAway' };
+		}
+
+		const fish = this.currentFish;
+		const capacity = this.tackle.line.maxOz;
+		const success = fish.weightOz <= capacity || this.rng() < 0.3;
+		if (!success) {
+			this.phase = 'lost';
+			this.recastCountdown = PLAYER_RECAST_DELAY_LOST;
+			return { type: 'lineBroke' };
+		}
+
 		this.removeFn(fish.id);
 		this.population = this.population.filter((f) => f.id !== fish.id);
 		this.caughtFish.push({
