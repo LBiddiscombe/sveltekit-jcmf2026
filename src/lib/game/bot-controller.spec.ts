@@ -13,17 +13,41 @@ const roach: Species = {
 	preferences: { flow: 0.3, clarity: 0.5, substrate: 0.7, vegetation: 0.6, shelter: 0.5 },
 	tolerances: {},
 	classifications: [
-		{ id: 'small', label: 'Small', maxOz: 8, biteSizeExtraMs: 2000, preferredBaits: ['maggot', 'caster'] },
-		{ id: 'medium', label: '', maxOz: 34, biteSizeExtraMs: 5000, preferredBaits: ['maggot', 'caster', 'worm'] },
-		{ id: 'specimen', label: 'Specimen', maxOz: 51, biteSizeExtraMs: 60000, preferredBaits: ['worm', 'bread'] },
-		{ id: 'monster', label: 'Monster', maxOz: Infinity, biteSizeExtraMs: 120000, preferredBaits: ['worm', 'bread'] }
+		{
+			id: 'small',
+			label: 'Small',
+			maxOz: 8,
+			biteSizeExtraMs: 2000,
+			preferredBaits: ['maggot', 'caster']
+		},
+		{
+			id: 'medium',
+			label: '',
+			maxOz: 34,
+			biteSizeExtraMs: 5000,
+			preferredBaits: ['maggot', 'caster', 'worm']
+		},
+		{
+			id: 'specimen',
+			label: 'Specimen',
+			maxOz: 51,
+			biteSizeExtraMs: 60000,
+			preferredBaits: ['worm', 'bread']
+		},
+		{
+			id: 'monster',
+			label: 'Monster',
+			maxOz: Infinity,
+			biteSizeExtraMs: 120000,
+			preferredBaits: ['worm', 'bread']
+		}
 	]
 };
 
 const speciesList = [roach];
 
 const tackle: TackleSelection = {
-	rod: { name: 'Float', image: 'rod-float.png', deter: 0.1 },
+	rod: { name: 'Float', image: 'rod-float.png', deter: 0.1, rodMultiplier: 1.0 },
 	reel: { name: 'Fixed Spool', image: 'reel-fixed-spool.png', deter: 0.2 },
 	line: { name: '4 lb', image: 'line.png', size: 64, minOz: 3, maxOz: 160, deter: 0.15 },
 	hook: { name: '16', image: 'hook.png', size: 16, minOz: 10, maxOz: 200, deter: 0.15 },
@@ -116,7 +140,11 @@ describe('BotController', () => {
 		});
 
 		it('higher skill means shorter skill delay', () => {
-			const c1 = new BotController(new FishingLoop(tackle, 10, speciesList, () => 0), 10, () => 0.5);
+			const c1 = new BotController(
+				new FishingLoop(tackle, 10, speciesList, () => 0),
+				10,
+				() => 0.5
+			);
 			const c2 = new BotController(new FishingLoop(tackle, 1, speciesList, () => 0), 1, () => 0.5);
 
 			c1.enterChanging();

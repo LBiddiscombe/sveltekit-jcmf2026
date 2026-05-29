@@ -76,7 +76,9 @@
 			? { bite: true, reeling: true, landing: true, intro: true }
 			: { bite: false, reeling: true, landing: true, intro: false }
 	);
-	let tutorialCompleted = $derived(hintsConsumed.bite && hintsConsumed.reeling && hintsConsumed.landing);
+	let tutorialCompleted = $derived(
+		hintsConsumed.bite && hintsConsumed.reeling && hintsConsumed.landing
+	);
 
 	let currentHint = $derived.by(() => {
 		if (mode !== 'session' || tutorialCompleted) return '';
@@ -88,9 +90,7 @@
 	});
 
 	let hintBlocking = $derived(
-		mode === 'session' &&
-			!tutorialCompleted &&
-			!!(playerPhase === 'bite' && !hintsConsumed.bite)
+		mode === 'session' && !tutorialCompleted && !!(playerPhase === 'bite' && !hintsConsumed.bite)
 	);
 
 	$effect(() => {
@@ -115,6 +115,8 @@
 
 	let fishWeightOz = $derived(gameState.playerSnapshot?.currentFishOz ?? 0);
 	let lineMaxOz = $derived(tackle?.line.maxOz ?? 100);
+	let rodMultiplier = $derived(tackle?.rod.rodMultiplier ?? 1.0);
+	let castStrength = $derived(tackle?.castStrength ?? 'Medium');
 
 	let matchTimeDisplay = $derived.by(() => {
 		if (isMulti && multiplayer.startTime) {
@@ -141,7 +143,8 @@
 		if (e?.type === 'lineBroke') return 'Line broke!';
 		if (e?.type === 'tooMuchSlackLine') return 'Too much slack line!';
 
-		if (playerPhase === 'waiting') return `Line in the water (${formatShortDuration(waitSeconds)})...`;
+		if (playerPhase === 'waiting')
+			return `Line in the water (${formatShortDuration(waitSeconds)})...`;
 		if (playerPhase === 'bite') return 'Fish biting!';
 		if (playerPhase === 'reeling') return 'Reeling in...';
 		if (playerPhase === 'striking') return 'Striking...';
@@ -320,8 +323,10 @@
 				<FishingCanvas
 					phase={playerPhase ?? 'idle'}
 					pegImageUrl={pegImg(selectedPegData?.image ?? '')}
-					fishWeightOz={fishWeightOz}
-					lineMaxOz={lineMaxOz}
+					{fishWeightOz}
+					{lineMaxOz}
+					{rodMultiplier}
+					{castStrength}
 					onResult={handleReelingResult}
 				/>
 				{#if playerPhase === 'bite'}
@@ -399,11 +404,11 @@
 					? 'animate-pulse bg-yellow-400'
 					: playerPhase === 'bite'
 						? 'animate-ping bg-red-500'
-				: playerPhase === 'reeling'
-					? 'bg-green-500'
-					: playerPhase === 'caught'
-									? 'bg-blue-500'
-									: 'bg-muted'}"
+						: playerPhase === 'reeling'
+							? 'bg-green-500'
+							: playerPhase === 'caught'
+								? 'bg-blue-500'
+								: 'bg-muted'}"
 			></span>
 			<span class="text-sm font-medium text-dark-teal">{statusMessage}</span>
 		</div>

@@ -108,6 +108,7 @@ export interface Rod {
 	name: string;
 	image: string;
 	deter: number;
+	rodMultiplier: number;
 }
 
 /**

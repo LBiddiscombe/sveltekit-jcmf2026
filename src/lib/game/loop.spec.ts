@@ -12,10 +12,34 @@ const roach: Species = {
 	preferences: { flow: 0.3, clarity: 0.5, substrate: 0.7, vegetation: 0.6, shelter: 0.5 },
 	tolerances: {},
 	classifications: [
-		{ id: 'small', label: 'Small', maxOz: 8, biteSizeExtraMs: 2000, preferredBaits: ['maggot', 'caster'] },
-		{ id: 'medium', label: '', maxOz: 34, biteSizeExtraMs: 5000, preferredBaits: ['maggot', 'caster', 'worm'] },
-		{ id: 'specimen', label: 'Specimen', maxOz: 51, biteSizeExtraMs: 60000, preferredBaits: ['worm', 'bread'] },
-		{ id: 'monster', label: 'Monster', maxOz: Infinity, biteSizeExtraMs: 120000, preferredBaits: ['worm', 'bread'] }
+		{
+			id: 'small',
+			label: 'Small',
+			maxOz: 8,
+			biteSizeExtraMs: 2000,
+			preferredBaits: ['maggot', 'caster']
+		},
+		{
+			id: 'medium',
+			label: '',
+			maxOz: 34,
+			biteSizeExtraMs: 5000,
+			preferredBaits: ['maggot', 'caster', 'worm']
+		},
+		{
+			id: 'specimen',
+			label: 'Specimen',
+			maxOz: 51,
+			biteSizeExtraMs: 60000,
+			preferredBaits: ['worm', 'bread']
+		},
+		{
+			id: 'monster',
+			label: 'Monster',
+			maxOz: Infinity,
+			biteSizeExtraMs: 120000,
+			preferredBaits: ['worm', 'bread']
+		}
 	]
 };
 
@@ -28,17 +52,41 @@ const carp: Species = {
 	preferences: { flow: 0.2, clarity: 0.4, substrate: 0.9, vegetation: 0.6, shelter: 0.5 },
 	tolerances: {},
 	classifications: [
-		{ id: 'small', label: 'Small', maxOz: 64, biteSizeExtraMs: 2000, preferredBaits: ['pellet', 'sweetcorn'] },
-		{ id: 'medium', label: '', maxOz: 544, biteSizeExtraMs: 5000, preferredBaits: ['pellet', 'sweetcorn'] },
-		{ id: 'specimen', label: 'Specimen', maxOz: 816, biteSizeExtraMs: 60000, preferredBaits: ['boilie'] },
-		{ id: 'monster', label: 'Monster', maxOz: Infinity, biteSizeExtraMs: 120000, preferredBaits: ['boilie'] }
+		{
+			id: 'small',
+			label: 'Small',
+			maxOz: 64,
+			biteSizeExtraMs: 2000,
+			preferredBaits: ['pellet', 'sweetcorn']
+		},
+		{
+			id: 'medium',
+			label: '',
+			maxOz: 544,
+			biteSizeExtraMs: 5000,
+			preferredBaits: ['pellet', 'sweetcorn']
+		},
+		{
+			id: 'specimen',
+			label: 'Specimen',
+			maxOz: 816,
+			biteSizeExtraMs: 60000,
+			preferredBaits: ['boilie']
+		},
+		{
+			id: 'monster',
+			label: 'Monster',
+			maxOz: Infinity,
+			biteSizeExtraMs: 120000,
+			preferredBaits: ['boilie']
+		}
 	]
 };
 
 const speciesList = [roach, carp];
 
 const tackle: TackleSelection = {
-	rod: { name: 'Float', image: 'rod-float.png', deter: 0.1 },
+	rod: { name: 'Float', image: 'rod-float.png', deter: 0.1, rodMultiplier: 1.0 },
 	reel: { name: 'Fixed Spool', image: 'reel-fixed-spool.png', deter: 0.2 },
 	line: { name: '4 lb', image: 'line.png', size: 64, minOz: 3, maxOz: 160, deter: 0.15 },
 	hook: { name: '16', image: 'hook.png', size: 16, minOz: 10, maxOz: 200, deter: 0.15 },
@@ -184,13 +232,7 @@ describe('FishingLoop', () => {
 			const redistributeFn = () => {
 				redistributed = true;
 			};
-			const loop = new FishingLoop(
-				baitMismatchTackle,
-				5,
-				speciesList,
-				() => 0,
-				redistributeFn
-			);
+			const loop = new FishingLoop(baitMismatchTackle, 5, speciesList, () => 0, redistributeFn);
 			loop.cast(population, noopRemove);
 			expect(loop.phase).toBe('waiting');
 			expect(loop.currentFish).toBeNull();

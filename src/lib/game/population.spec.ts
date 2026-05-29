@@ -22,7 +22,13 @@ const mockSpecies: Species[] = [
 			{ id: 'small', label: 'Small', maxOz: 8, biteSizeExtraMs: 2000, preferredBaits: [] },
 			{ id: 'medium', label: '', maxOz: 34, biteSizeExtraMs: 5000, preferredBaits: [] },
 			{ id: 'specimen', label: 'Specimen', maxOz: 51, biteSizeExtraMs: 60000, preferredBaits: [] },
-			{ id: 'monster', label: 'Monster', maxOz: Infinity, biteSizeExtraMs: 120000, preferredBaits: [] }
+			{
+				id: 'monster',
+				label: 'Monster',
+				maxOz: Infinity,
+				biteSizeExtraMs: 120000,
+				preferredBaits: []
+			}
 		]
 	},
 	{
@@ -37,7 +43,13 @@ const mockSpecies: Species[] = [
 			{ id: 'small', label: 'Small', maxOz: 8, biteSizeExtraMs: 2000, preferredBaits: [] },
 			{ id: 'medium', label: '', maxOz: 49, biteSizeExtraMs: 5000, preferredBaits: [] },
 			{ id: 'specimen', label: 'Specimen', maxOz: 75, biteSizeExtraMs: 60000, preferredBaits: [] },
-			{ id: 'monster', label: 'Monster', maxOz: Infinity, biteSizeExtraMs: 120000, preferredBaits: [] }
+			{
+				id: 'monster',
+				label: 'Monster',
+				maxOz: Infinity,
+				biteSizeExtraMs: 120000,
+				preferredBaits: []
+			}
 		]
 	},
 	{
@@ -52,7 +64,13 @@ const mockSpecies: Species[] = [
 			{ id: 'small', label: 'Jack', maxOz: 80, biteSizeExtraMs: 2000, preferredBaits: [] },
 			{ id: 'medium', label: '', maxOz: 374, biteSizeExtraMs: 5000, preferredBaits: [] },
 			{ id: 'specimen', label: 'Specimen', maxOz: 561, biteSizeExtraMs: 60000, preferredBaits: [] },
-			{ id: 'monster', label: 'Monster', maxOz: Infinity, biteSizeExtraMs: 120000, preferredBaits: [] }
+			{
+				id: 'monster',
+				label: 'Monster',
+				maxOz: Infinity,
+				biteSizeExtraMs: 120000,
+				preferredBaits: []
+			}
 		]
 	}
 ];
@@ -231,10 +249,28 @@ describe('reassignDynamicProperties', () => {
 				preferences: { flow: 0.5, clarity: 0.5, substrate: 0.5, vegetation: 0.5, shelter: 0.5 },
 				tolerances: {},
 				classifications: [
-					{ id: 'small', label: 'Small', maxOz: 8, biteSizeExtraMs: 2000, preferredBaits: ['maggot', 'caster'] },
+					{
+						id: 'small',
+						label: 'Small',
+						maxOz: 8,
+						biteSizeExtraMs: 2000,
+						preferredBaits: ['maggot', 'caster']
+					},
 					{ id: 'medium', label: '', maxOz: 34, biteSizeExtraMs: 5000, preferredBaits: ['maggot'] },
-					{ id: 'specimen', label: 'Specimen', maxOz: 51, biteSizeExtraMs: 60000, preferredBaits: ['worm'] },
-					{ id: 'monster', label: 'Monster', maxOz: Infinity, biteSizeExtraMs: 120000, preferredBaits: ['boilie'] }
+					{
+						id: 'specimen',
+						label: 'Specimen',
+						maxOz: 51,
+						biteSizeExtraMs: 60000,
+						preferredBaits: ['worm']
+					},
+					{
+						id: 'monster',
+						label: 'Monster',
+						maxOz: Infinity,
+						biteSizeExtraMs: 120000,
+						preferredBaits: ['boilie']
+					}
 				]
 			}
 		];

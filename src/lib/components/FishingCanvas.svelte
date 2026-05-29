@@ -8,6 +8,8 @@
 		pegImageUrl: string;
 		fishWeightOz: number;
 		lineMaxOz: number;
+		rodMultiplier: number;
+		castStrength: string;
 		onResult?: (result: 'caught' | 'lost') => void;
 	}
 
@@ -16,13 +18,22 @@
 		pegImageUrl = '',
 		fishWeightOz = 0,
 		lineMaxOz = 100,
+		rodMultiplier = 1.0,
+		castStrength = 'Medium',
 		onResult = () => {}
 	}: Props = $props();
 
 	let container: HTMLDivElement;
 	let p5Inst: p5 | null = null;
 
-	let reelingParams = $state({ weight: 0, lineMax: 100, active: false });
+	let reelingParams = $state({
+		weight: 0,
+		lineMaxOz: 100,
+		rodMultiplier: 1.0,
+		castStrength: 'Medium',
+		active: false
+	});
+
 	let minigameResolve: ((result: 'caught' | 'lost') => void) | null = null;
 
 	let overTensionTime = 0;
@@ -31,17 +42,35 @@
 
 	$effect(() => {
 		if (phase === 'reeling' && fishWeightOz > 0 && !reelingParams.active) {
-			reelingParams = { weight: fishWeightOz, lineMax: lineMaxOz, active: true };
+			reelingParams = {
+				weight: fishWeightOz,
+				lineMaxOz,
+				rodMultiplier,
+				castStrength,
+				active: true
+			};
 			overTensionTime = 0;
 			minigameState = 'active';
 			minigameResolve = (result: 'caught' | 'lost') => {
 				minigameResolve = null;
-				reelingParams = { weight: 0, lineMax: 100, active: false };
+				reelingParams = {
+					weight: 0,
+					lineMaxOz: 100,
+					rodMultiplier: 1.0,
+					castStrength: 'Medium',
+					active: false
+				};
 				onResult(result);
 			};
 		} else if (phase !== 'reeling' && reelingParams.active) {
 			minigameResolve = null;
-			reelingParams = { weight: 0, lineMax: 100, active: false };
+			reelingParams = {
+				weight: 0,
+				lineMaxOz: 100,
+				rodMultiplier: 1.0,
+				castStrength: 'Medium',
+				active: false
+			};
 		}
 	});
 
@@ -56,10 +85,10 @@
 			let angler: ReturnType<typeof createAngler>;
 			let fish: ReturnType<typeof createFish>;
 
-			function createAngler(options: { rodMultiplier?: number; tackleStrength?: number } = {}) {
+			function createAngler(options: { rodMultiplier?: number; lineMaxOz?: number } = {}) {
 				return {
 					rodMultiplier: options.rodMultiplier ?? 1.0,
-					tackleStrength: options.tackleStrength ?? 100,
+					lineMaxOz: options.lineMaxOz ?? 100,
 					pull: 0,
 					tension: 0,
 					a: 5,
@@ -69,22 +98,23 @@
 							this.a = p.map(p.mouseX, 0, p.width, -30, 30, true);
 							if (p.mouseIsPressed) {
 								this.pull = p.lerp(this.pull, 2, p.deltaTime / 400);
-								this.tension = (this.pull * fish.pull * fish.stamina * fish.weight)
-									/ (this.tackleStrength * this.rodMultiplier);
+								this.tension =
+									(this.pull * fish.pull * fish.stamina * fish.weight) /
+									(this.lineMaxOz * this.rodMultiplier);
 							} else {
 								this.pull = p.lerp(this.pull, 1, p.deltaTime / 200);
-								this.tension = (fish.pull * fish.stamina * fish.weight)
-									/ (this.tackleStrength * this.rodMultiplier);
+								this.tension =
+									(fish.pull * fish.stamina * fish.weight) / (this.lineMaxOz * this.rodMultiplier);
 							}
 						}
 					}
 				};
 			}
 
-			function createFish(options: { weight?: number; pattern?: number[] } = {}) {
+			function createFish(options: { weight?: number; y?: number; pattern?: number[] } = {}) {
 				return {
 					x: p.width * 0.5,
-					y: p.height * 0.2,
+					y: options.y ?? p.height * 0.2,
 					weight: options.weight ?? 16,
 					pattern: options.pattern ?? [1, 0, 0],
 					stamina: 1,
@@ -109,6 +139,19 @@
 						this.xoff += 0.01;
 					}
 				};
+			}
+
+			function castFishY(castStr: string): number {
+				const yMap: Record<string, number> = { Short: 0.6, Medium: 0.4, Long: 0.2 };
+				return (yMap[castStr] ?? 0.4) * p.height;
+			}
+
+			function resetToIdleView() {
+				fish.x = p.width * 0.5;
+				fish.y = castFishY(castStrength);
+				angler.a = 5;
+				angler.pull = 1;
+				angler.tension = 0;
 			}
 
 			function drawWater() {
@@ -148,7 +191,7 @@
 				sw *= 0.8;
 				if (h > 10) {
 					p.push();
-					p.rotate((-angler.a / 2) * power * p.PI / 180);
+					p.rotate(((-angler.a / 2) * power * p.PI) / 180);
 					p.strokeWeight(sw);
 					p.line(0, 0, 0, -h);
 					p.translate(0, -h);
@@ -181,7 +224,7 @@
 				p.push();
 				p.translate(p.width / 2, p.height);
 				p.scale(0.625);
-				p.rotate(angler.a * 2 * angler.pull * p.PI / 180);
+				p.rotate((angler.a * 2 * angler.pull * p.PI) / 180);
 				p.stroke(0);
 				p.strokeWeight(16);
 				p.line(-20, -20, 0, -60);
@@ -193,7 +236,7 @@
 				p.push();
 				p.translate(p.width / 2, p.height);
 				p.scale(0.625);
-				p.rotate(angler.a / 2 * p.PI / 180);
+				p.rotate(((angler.a / 2) * p.PI) / 180);
 				if (anglerImage) {
 					p.image(anglerImage, -64, -128, 128, 256);
 				}
@@ -218,7 +261,11 @@
 					p.noStroke();
 					p.rect(fish.x - 15, gaugeY, 30, 8);
 					const tensionClamped = Math.min(angler.tension, 1);
-					const tensionColor = p.lerpColor(p.color(64, 255, 0), p.color(255, 64, 0), tensionClamped);
+					const tensionColor = p.lerpColor(
+						p.color(64, 255, 0),
+						p.color(255, 64, 0),
+						tensionClamped
+					);
 					p.fill(tensionColor);
 					p.rect(fish.x - 15, gaugeY, 30 * tensionClamped, 8);
 
@@ -261,8 +308,9 @@
 
 				bankY = p.height * 0.8;
 
-				angler = createAngler({ rodMultiplier: 2.0, tackleStrength: 100 });
-				fish = createFish({ weight: 50, pattern: [1, 1, 0, 0] });
+				angler = createAngler({ rodMultiplier, lineMaxOz });
+				fish = createFish({ weight: 50, y: p.height * 0.5, pattern: [1, 1, 0, 0] });
+				resetToIdleView();
 			};
 
 			p.draw = () => {
@@ -271,8 +319,15 @@
 					p.loop();
 					minigameState = 'active';
 					overTensionTime = 0;
-					angler = createAngler({ rodMultiplier: 2.0, tackleStrength: reelingParams.lineMax });
-					fish = createFish({ weight: reelingParams.weight, pattern: [1, 1, 0, 0] });
+					angler = createAngler({
+						rodMultiplier: reelingParams.rodMultiplier,
+						lineMaxOz: reelingParams.lineMaxOz
+					});
+					fish = createFish({
+						weight: reelingParams.weight,
+						y: castFishY(reelingParams.castStrength),
+						pattern: [1, 1, 0, 0]
+					});
 				} else if (!reelingParams.active && activeAtSetup) {
 					activeAtSetup = false;
 				}
@@ -295,17 +350,17 @@
 					update();
 				}
 
+				if (!activeAtSetup) {
+					fish.y = castFishY(castStrength);
+				}
+
 				drawGame();
 
 				if (minigameState !== 'active' && activeAtSetup) {
 					const resolve = minigameResolve;
 					if (resolve) {
 						activeAtSetup = false;
-						angler.a = 5;
-						angler.pull = 1;
-						angler.tension = 0;
-						fish.x = p.width * 0.5;
-						fish.y = p.height * 0.2;
+						resetToIdleView();
 						const result = minigameState;
 						minigameState = 'idle';
 						resolve(result as 'caught' | 'lost');
@@ -330,4 +385,7 @@
 	});
 </script>
 
-<div bind:this={container} class="aspect-square w-full overflow-hidden rounded-xl bg-surface/20"></div>
+<div
+	bind:this={container}
+	class="aspect-square w-full overflow-hidden rounded-xl bg-surface/20"
+></div>

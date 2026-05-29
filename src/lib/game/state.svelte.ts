@@ -122,11 +122,8 @@ export class GameState {
 				if (pop) reassignDynamicProperties(pop, species);
 			});
 
-			const controller = new BotController(
-				loop,
-				bot.skill,
-				Math.random,
-				() => pickBotTackle(bot.skill, peg, lake)
+			const controller = new BotController(loop, bot.skill, Math.random, () =>
+				pickBotTackle(bot.skill, peg, lake)
 			);
 
 			this.botControllers.set(bot.id, controller);

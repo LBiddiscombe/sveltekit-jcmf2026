@@ -34,7 +34,7 @@ const venue: Venue = {
 const lake: Lake = venue.lakes[0];
 
 const tackle: TackleSelection = {
-	rod: { name: 'Float', image: 'rod-float.png', deter: 0.1 },
+	rod: { name: 'Float', image: 'rod-float.png', deter: 0.1, rodMultiplier: 1.0 },
 	reel: { name: 'Fixed Spool', image: 'reel-fixed-spool.png', deter: 0.2 },
 	line: { name: '4 lb', image: 'line.png', size: 64, minOz: 3, maxOz: 160, deter: 0.15 },
 	hook: { name: '16', image: 'hook.png', size: 16, minOz: 10, maxOz: 200, deter: 0.15 },
