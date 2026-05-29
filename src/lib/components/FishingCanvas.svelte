@@ -26,6 +26,12 @@
 	let container: HTMLDivElement;
 	let p5Inst: p5 | null = null;
 
+	$effect(() => {
+		if (phase === 'reeling') {
+			container?.focus();
+		}
+	});
+
 	let reelingParams = $state({
 		weight: 0,
 		lineMaxOz: 100,
@@ -96,7 +102,7 @@
 					update() {
 						if (p.mouseX >= 0 && p.mouseX <= p.width && p.mouseY >= 0 && p.mouseY <= p.height) {
 							this.a = p.map(p.mouseX, 0, p.width, -30, 30, true);
-							if (p.mouseIsPressed) {
+							if (p.mouseIsPressed || p.keyIsDown(' ')) {
 								this.pull = p.lerp(this.pull, 2, p.deltaTime / 400);
 								this.tension =
 									(this.pull * fish.pull * fish.stamina * fish.weight) /
@@ -280,7 +286,7 @@
 			}
 
 			function update() {
-				if (p.mouseIsPressed) {
+				if (p.mouseIsPressed || p.keyIsDown(' ')) {
 					fish.y += p.map(angler.tension, 0, 1, 2, 0.1, true);
 					if (p.mouseX <= p.width && p.mouseX >= 0 && p.mouseY <= p.height && p.mouseY >= 0) {
 						fish.x = p.lerp(fish.x, p.mouseX, p.deltaTime / 5000);
@@ -385,7 +391,11 @@
 	});
 </script>
 
+<!-- svelte-ignore a11y_no_noninteractive_tabindex -->
 <div
 	bind:this={container}
-	class="aspect-square w-full overflow-hidden rounded-xl bg-surface/20"
+	tabindex="0"
+	role="application"
+	class="aspect-square w-full overflow-hidden rounded-xl bg-surface/20 select-none"
+	style="-webkit-touch-callout: none; touch-action: none"
 ></div>
