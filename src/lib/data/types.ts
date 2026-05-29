@@ -88,6 +88,7 @@ export interface Species {
 	description: string;
 	preferences: EnvironmentalFeatures;
 	tolerances: EnvironmentalTolerances;
+	pattern: number[];
 	classifications: FishClassification[];
 }
 

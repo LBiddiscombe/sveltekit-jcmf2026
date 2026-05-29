@@ -39,10 +39,13 @@ export interface PlayerLoopSnapshot {
 	caughtFishCount: number;
 	isBlankCasting: boolean;
 	currentFishOz: number;
+	currentFishPattern: number[];
+	currentFishStepMs: number;
 }
 
 const PLAYER_RECAST_DELAY_CAUGHT = 2500;
 const PLAYER_RECAST_DELAY_LOST = 2500;
+const BOT_RECAST_DELAY = 1;
 
 export class FishingLoop {
 	phase: FishingPhase = 'idle';
@@ -111,7 +114,9 @@ export class FishingLoop {
 			biteWindowTotal: this.biteWindowTotal,
 			caughtFishCount: this.caughtFish.length,
 			isBlankCasting: this.isBlankCasting,
-			currentFishOz: this.currentFish?.weightOz ?? 0
+			currentFishOz: this.currentFish?.weightOz ?? 0,
+			currentFishPattern: this.currentFish?.pattern ?? [],
+			currentFishStepMs: this.currentFish?.stepMs ?? 1000
 		};
 	}
 
@@ -425,7 +430,7 @@ export class FishingLoop {
 		const success = fish.weightOz <= capacity || this.rng() < 0.3;
 		if (!success) {
 			this.phase = 'lost';
-			this.recastCountdown = 0;
+			this.recastCountdown = BOT_RECAST_DELAY;
 			return { type: 'fishLost' };
 		}
 
@@ -438,7 +443,7 @@ export class FishingLoop {
 			caughtAtMs: Date.now()
 		});
 		this.phase = 'caught';
-		this.recastCountdown = 0;
+		this.recastCountdown = BOT_RECAST_DELAY;
 		return {
 			type: 'fishCaught',
 			species: fish.species,

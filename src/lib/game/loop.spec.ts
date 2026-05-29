@@ -11,6 +11,7 @@ const roach: Species = {
 	description: '',
 	preferences: { flow: 0.3, clarity: 0.5, substrate: 0.7, vegetation: 0.6, shelter: 0.5 },
 	tolerances: {},
+	pattern: [],
 	classifications: [
 		{
 			id: 'small',
@@ -51,6 +52,7 @@ const carp: Species = {
 	description: '',
 	preferences: { flow: 0.2, clarity: 0.4, substrate: 0.9, vegetation: 0.6, shelter: 0.5 },
 	tolerances: {},
+	pattern: [],
 	classifications: [
 		{
 			id: 'small',
@@ -108,7 +110,9 @@ const smallRoach: FishData = {
 	tierIndex: 0,
 	weightOz: 12,
 	castStrength: 'Medium',
-	preferredBait: 'maggot'
+	preferredBait: 'maggot',
+	pattern: [],
+	stepMs: 1000
 };
 
 const monsterRoach: FishData = {
@@ -119,7 +123,9 @@ const monsterRoach: FishData = {
 	tierIndex: 3,
 	weightOz: 60,
 	castStrength: 'Medium',
-	preferredBait: 'maggot'
+	preferredBait: 'maggot',
+	pattern: [],
+	stepMs: 1000
 };
 
 const smallCarp: FishData = {
@@ -130,7 +136,9 @@ const smallCarp: FishData = {
 	tierIndex: 0,
 	weightOz: 32,
 	castStrength: 'Medium',
-	preferredBait: 'pellet'
+	preferredBait: 'pellet',
+	pattern: [],
+	stepMs: 1000
 };
 
 const mediumRoach: FishData = {
@@ -141,7 +149,9 @@ const mediumRoach: FishData = {
 	tierIndex: 1,
 	weightOz: 20,
 	castStrength: 'Medium',
-	preferredBait: 'maggot'
+	preferredBait: 'maggot',
+	pattern: [],
+	stepMs: 1000
 };
 
 const population: FishData[] = [smallRoach, monsterRoach, smallCarp, mediumRoach];
@@ -350,7 +360,9 @@ describe('FishingLoop', () => {
 				tierIndex: 1,
 				weightOz: 200,
 				castStrength: 'Medium',
-				preferredBait: 'maggot'
+				preferredBait: 'maggot',
+				pattern: [],
+				stepMs: 1000
 			};
 			const heavyPopulation = [heavyFish];
 			const loop = new FishingLoop(tackle, 5, speciesList, () => 0.5);

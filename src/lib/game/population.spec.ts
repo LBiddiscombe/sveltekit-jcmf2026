@@ -18,6 +18,7 @@ const mockSpecies: Species[] = [
 		description: '',
 		preferences: { flow: 0.3, clarity: 0.5, substrate: 0.7, vegetation: 0.6, shelter: 0.5 },
 		tolerances: {},
+		pattern: [],
 		classifications: [
 			{ id: 'small', label: 'Small', maxOz: 8, biteSizeExtraMs: 2000, preferredBaits: [] },
 			{ id: 'medium', label: '', maxOz: 34, biteSizeExtraMs: 5000, preferredBaits: [] },
@@ -39,6 +40,7 @@ const mockSpecies: Species[] = [
 		description: '',
 		preferences: { flow: 0.2, clarity: 0.6, substrate: 0.5, vegetation: 0.8, shelter: 0.6 },
 		tolerances: {},
+		pattern: [],
 		classifications: [
 			{ id: 'small', label: 'Small', maxOz: 8, biteSizeExtraMs: 2000, preferredBaits: [] },
 			{ id: 'medium', label: '', maxOz: 49, biteSizeExtraMs: 5000, preferredBaits: [] },
@@ -60,6 +62,7 @@ const mockSpecies: Species[] = [
 		description: '',
 		preferences: { flow: 0.2, clarity: 0.6, substrate: 0.6, vegetation: 0.9, shelter: 0.8 },
 		tolerances: {},
+		pattern: [],
 		classifications: [
 			{ id: 'small', label: 'Jack', maxOz: 80, biteSizeExtraMs: 2000, preferredBaits: [] },
 			{ id: 'medium', label: '', maxOz: 374, biteSizeExtraMs: 5000, preferredBaits: [] },
@@ -227,7 +230,9 @@ describe('reassignDynamicProperties', () => {
 				tierIndex: 0,
 				weightOz: 4,
 				castStrength: '',
-				preferredBait: ''
+				preferredBait: '',
+				pattern: [],
+				stepMs: 1000
 			}
 		];
 
@@ -248,6 +253,7 @@ describe('reassignDynamicProperties', () => {
 				description: '',
 				preferences: { flow: 0.5, clarity: 0.5, substrate: 0.5, vegetation: 0.5, shelter: 0.5 },
 				tolerances: {},
+				pattern: [],
 				classifications: [
 					{
 						id: 'small',
@@ -284,7 +290,9 @@ describe('reassignDynamicProperties', () => {
 				tierIndex: 0,
 				weightOz: 4,
 				castStrength: '',
-				preferredBait: ''
+				preferredBait: '',
+				pattern: [],
+				stepMs: 1000
 			},
 			{
 				id: 'fish-2',
@@ -294,7 +302,9 @@ describe('reassignDynamicProperties', () => {
 				tierIndex: 1,
 				weightOz: 20,
 				castStrength: '',
-				preferredBait: ''
+				preferredBait: '',
+				pattern: [],
+				stepMs: 1000
 			},
 			{
 				id: 'fish-3',
@@ -304,7 +314,9 @@ describe('reassignDynamicProperties', () => {
 				tierIndex: 2,
 				weightOz: 40,
 				castStrength: '',
-				preferredBait: ''
+				preferredBait: '',
+				pattern: [],
+				stepMs: 1000
 			}
 		];
 

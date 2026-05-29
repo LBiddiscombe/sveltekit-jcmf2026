@@ -10,6 +10,8 @@
 		lineMaxOz: number;
 		rodMultiplier: number;
 		castStrength: string;
+		pattern: number[];
+		stepMs: number;
 		onResult?: (result: 'caught' | 'lost') => void;
 	}
 
@@ -20,6 +22,8 @@
 		lineMaxOz = 100,
 		rodMultiplier = 1.0,
 		castStrength = 'Medium',
+		pattern = [1, 1, 0, 0],
+		stepMs = 1000,
 		onResult = () => {}
 	}: Props = $props();
 
@@ -37,6 +41,8 @@
 		lineMaxOz: 100,
 		rodMultiplier: 1.0,
 		castStrength: 'Medium',
+		pattern: [1, 1, 0, 0],
+		stepMs: 1000,
 		active: false
 	});
 
@@ -53,6 +59,8 @@
 				lineMaxOz,
 				rodMultiplier,
 				castStrength,
+				pattern,
+				stepMs,
 				active: true
 			};
 			overTensionTime = 0;
@@ -64,6 +72,8 @@
 					lineMaxOz: 100,
 					rodMultiplier: 1.0,
 					castStrength: 'Medium',
+					pattern: [1, 1, 0, 0],
+					stepMs: 1000,
 					active: false
 				};
 				onResult(result);
@@ -75,6 +85,8 @@
 				lineMaxOz: 100,
 				rodMultiplier: 1.0,
 				castStrength: 'Medium',
+				pattern: [1, 1, 0, 0],
+				stepMs: 1000,
 				active: false
 			};
 		}
@@ -117,12 +129,13 @@
 				};
 			}
 
-			function createFish(options: { weight?: number; y?: number; pattern?: number[] } = {}) {
+			function createFish(options: { weight?: number; y?: number; pattern?: number[]; stepMs?: number } = {}) {
 				return {
 					x: p.width * 0.5,
 					y: options.y ?? p.height * 0.2,
 					weight: options.weight ?? 16,
 					pattern: options.pattern ?? [1, 0, 0],
+					stepMs: options.stepMs ?? 1000,
 					stamina: 1,
 					isPulling: false,
 					pull: 0,
@@ -131,7 +144,7 @@
 					dt: 0,
 					update() {
 						this.dt += p.deltaTime;
-						if (this.dt >= 1000) {
+						if (this.dt >= this.stepMs) {
 							this.patternIdx = (this.patternIdx + 1) % this.pattern.length;
 							this.dt = 0;
 							this.isPulling = this.pattern[this.patternIdx] > 0;
@@ -161,8 +174,17 @@
 			}
 
 			function drawWater() {
+				p.push();
+				if (phase === 'bite') {
+					p.translate(p.random(-3, 3), p.random(-3, 3));
+				}
 				if (pegImage && pegImage.width > 0) {
 					p.image(pegImage, 0, 0, p.width, p.height);
+				}
+				p.pop();
+				p.push();
+				if (phase === 'bite') {
+					p.translate(p.random(-1.5, 1.5), p.random(-1.5, 1.5));
 				}
 
 				p.noFill();
@@ -190,6 +212,7 @@
 					p.fill(200, 235, 255, 10);
 					p.ellipse(x, y, s, s * 0.2);
 				}
+				p.pop();
 			}
 
 			function drawRodSection(h: number, sw: number, power: number) {
@@ -315,7 +338,7 @@
 				bankY = p.height * 0.8;
 
 				angler = createAngler({ rodMultiplier, lineMaxOz });
-				fish = createFish({ weight: 50, y: p.height * 0.5, pattern: [1, 1, 0, 0] });
+				fish = createFish({ weight: 50, y: p.height * 0.5, pattern, stepMs });
 				resetToIdleView();
 			};
 
@@ -332,7 +355,8 @@
 					fish = createFish({
 						weight: reelingParams.weight,
 						y: castFishY(reelingParams.castStrength),
-						pattern: [1, 1, 0, 0]
+						pattern: reelingParams.pattern,
+						stepMs: reelingParams.stepMs
 					});
 				} else if (!reelingParams.active && activeAtSetup) {
 					activeAtSetup = false;

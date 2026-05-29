@@ -27,10 +27,26 @@ export interface FishData {
 	weightOz: number;
 	castStrength: string;
 	preferredBait: string;
+	pattern: number[];
+	stepMs: number;
 }
 
 const TIER_WEIGHTS = [0.6, 0.28, 0.1, 0.02];
 const CAST_STRENGTHS = ['Short', 'Medium', 'Long'];
+
+const STEP_MS_RANGES: [number, number][] = [
+	[100, 200],
+	[200, 500],
+	[300, 800],
+	[400, 1000]
+];
+
+const MAX_RECORD = 1089;
+
+function calcStepMs(tierIndex: number, record: number): number {
+	const [min, max] = STEP_MS_RANGES[tierIndex];
+	return Math.round(min + (record / MAX_RECORD) * (max - min));
+}
 
 let nextId = 0;
 
@@ -143,7 +159,9 @@ export function populatePeg(
 			tierIndex: tierIdx,
 			weightOz,
 			castStrength: '',
-			preferredBait: ''
+			preferredBait: '',
+			pattern: species.pattern,
+			stepMs: calcStepMs(tierIdx, species.record)
 		});
 	}
 

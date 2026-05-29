@@ -12,6 +12,7 @@ const roach: Species = {
 	description: '',
 	preferences: { flow: 0.3, clarity: 0.5, substrate: 0.7, vegetation: 0.6, shelter: 0.5 },
 	tolerances: {},
+	pattern: [],
 	classifications: [
 		{
 			id: 'small',
@@ -69,7 +70,9 @@ const smallRoach: FishData = {
 	tierIndex: 0,
 	weightOz: 12,
 	castStrength: 'Medium',
-	preferredBait: 'maggot'
+	preferredBait: 'maggot',
+	pattern: [],
+	stepMs: 1000
 };
 
 const population: FishData[] = [smallRoach];
@@ -268,6 +271,22 @@ describe('BotController', () => {
 			});
 			expect(loop.phase).toBe('caught');
 			expect(loop.caughtFish).toHaveLength(1);
+		});
+
+		it('restarts fishing after first catch instead of staying caught', () => {
+			const loop = new FishingLoop(tackle, 10, speciesList, () => 0);
+			loop.preparePopulation(population, noopRemove);
+			const controller = new BotController(loop, 10, () => 0);
+
+			loop.cast(population, noopRemove);
+			loop.tick(loop.remainingMs);
+			controller.tick(1);
+			controller.tick(1);
+			expect(loop.phase).toBe('caught');
+			expect(loop.caughtFish).toHaveLength(1);
+
+			controller.tick(3000);
+			expect(loop.phase).toBe('waiting');
 		});
 	});
 });

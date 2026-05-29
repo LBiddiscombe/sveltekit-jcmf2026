@@ -114,6 +114,8 @@
 	);
 
 	let fishWeightOz = $derived(gameState.playerSnapshot?.currentFishOz ?? 0);
+	let fishPattern = $derived(gameState.playerSnapshot?.currentFishPattern ?? [1, 1, 0, 0]);
+	let fishStepMs = $derived(gameState.playerSnapshot?.currentFishStepMs ?? 1000);
 	let lineMaxOz = $derived(tackle?.line.maxOz ?? 100);
 	let rodMultiplier = $derived(tackle?.rod.rodMultiplier ?? 1.0);
 	let castStrength = $derived(tackle?.castStrength ?? 'Medium');
@@ -324,6 +326,8 @@
 					phase={playerPhase ?? 'idle'}
 					pegImageUrl={pegImg(selectedPegData?.image ?? '')}
 					{fishWeightOz}
+					pattern={fishPattern}
+					stepMs={fishStepMs}
 					{lineMaxOz}
 					{rodMultiplier}
 					{castStrength}

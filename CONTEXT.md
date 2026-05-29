@@ -230,6 +230,12 @@ A single-angler state machine (`changing → idle → wait → bite → strike �
 **Prep Navigation module** (`src/lib/game/prep-flow.ts`):
 A shallow module centralising prep step URL strings so routes don't hardcode paths. Kept minimal until multiplayer reframes the navigation model entirely.
 
+**FishPullPattern**:
+A binary array (e.g. `[1, 0, 1, 0]`) defining the fish's pulling cycle during the ReelingMinigame. A value of `1` means the fish pulls (applies resistance, depletes stamina); `0` means it rests. Defined per-species on the Species data as a required field. Each species gets a unique pattern so players can learn to identify the species by feel during the reel, adding to the "I think this one's a carp!" moment. At fish-population time, the pattern is copied from the species + the stepMs from the classification onto each FishData instance, so the ReelingMinigame receives resolved values and doesn't need a species/classification lookup.
+
+**StepMs**:
+The milliseconds between advancing to the next index in the FishPullPattern. Computed at fish-population time from the tier index and the species' record weight: each tier has a [min, max] range (small: 100–200, medium: 200–500, specimen: 300–800, monster: 400–1000) and the species' record weight interpolates within it against the heaviest species record (Carp, 1089oz). A monster Dace (412ms) cycles distinctly faster than a medium Carp (500ms), making species feel different regardless of size.
+
 ## Resolved ambiguities
 
 - "Zone" (3×3 grid per peg) was discussed but deferred — per-peg features only for initial build

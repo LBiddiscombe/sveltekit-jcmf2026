@@ -1,8 +1,9 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { GameState } from './state.svelte';
 import type { AnglerState } from './prep-state.svelte';
 import type { Lake, Venue, TackleSelection } from '$lib/data';
 import { defaultTackle } from './tackle-utils';
+import type { FishData } from './population';
 
 const venue: Venue = {
 	name: 'Test Venue',
@@ -92,6 +93,10 @@ describe('GameState match ending', () => {
 		gs = new GameState();
 	});
 
+	afterEach(() => {
+		vi.restoreAllMocks();
+	});
+
 	it('finishGame transitions to results phase', () => {
 		gs.beginFishing(makePlayer(), venue, lake, 10);
 		expect(gs.phase).toBe('fishing');
@@ -129,8 +134,10 @@ describe('GameState match ending', () => {
 			tierIndex: 0,
 			weightOz: 12,
 			castStrength: 'Medium',
-			preferredBait: 'maggot'
-		};
+	preferredBait: 'maggot',
+	pattern: [],
+	stepMs: 1000
+};
 		loop.reelTimerMs = 5000;
 		loop.reelTimerRemaining = 5000;
 
@@ -157,8 +164,10 @@ describe('GameState match ending', () => {
 			tierIndex: 0,
 			weightOz: 12,
 			castStrength: 'Medium',
-			preferredBait: 'maggot'
-		};
+	preferredBait: 'maggot',
+	pattern: [],
+	stepMs: 1000
+};
 		loop.reelTimerMs = 100;
 		loop.reelTimerRemaining = 100;
 
@@ -209,8 +218,10 @@ describe('GameState match ending', () => {
 			tierIndex: 0,
 			weightOz: 12,
 			castStrength: 'Medium',
-			preferredBait: 'maggot'
-		};
+	preferredBait: 'maggot',
+	pattern: [],
+	stepMs: 1000
+};
 		loop.landingWindowMs = 2000;
 		loop.landingWindowRemaining = 2000;
 
@@ -282,8 +293,10 @@ describe('GameState match ending', () => {
 			tierIndex: 0,
 			weightOz: 12,
 			castStrength: 'Medium',
-			preferredBait: 'maggot'
-		};
+	preferredBait: 'maggot',
+	pattern: [],
+	stepMs: 1000
+};
 
 		armExpiry(gs);
 		gs.tick(100);
@@ -379,5 +392,40 @@ describe('GameState match ending', () => {
 
 		gs.tick(100);
 		expect(gs.playerSnapshot?.phase).toBe('waiting');
+	});
+
+	it('bots can land multiple fish in a simulated match window', () => {
+		vi.spyOn(Math, 'random').mockReturnValue(0);
+
+		const anglers: AnglerState[] = [...makePlayer(), makeBotAngler()];
+		gs.beginFishing(anglers, venue, lake, 5);
+
+		const bot = gs.anglers.find((a) => a.id === 'bot-1');
+		const controller = gs.botControllers.get('bot-1');
+		expect(bot).toBeDefined();
+		expect(controller).toBeDefined();
+		if (!bot || !controller) return;
+
+		const botFish: FishData[] = Array.from({ length: 8 }, (_, index) => ({
+			id: `bot-fish-${index}`,
+			species: 'Roach',
+			strata: bot.tackle.strata,
+			classificationLabel: 'Small',
+			tierIndex: 0,
+			weightOz: 12,
+			castStrength: bot.tackle.castStrength,
+			preferredBait: bot.tackle.bait.name,
+			pattern: [],
+			stepMs: 1000
+		}));
+
+		gs.pegPopulations.set(bot.pegName, botFish);
+		controller.loop.preparePopulation(botFish, (id) => gs.removeFishFromPeg(bot.pegName, id));
+
+		for (let elapsed = 0; elapsed < 120_000; elapsed += 100) {
+			gs.tick(100);
+		}
+
+		expect(bot.catch.length).toBeGreaterThan(1);
 	});
 });
