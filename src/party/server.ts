@@ -6,6 +6,7 @@ const GRACE_PERIOD_MS = 15_000;
 interface PlayerInfo {
 	connectionId: string;
 	name: string;
+	image: string;
 	pegName: string;
 }
 
@@ -87,6 +88,7 @@ export default class GameRoom implements Party.Server {
 			case 'create-room': {
 				if (this.state.hostConnectionId) break;
 				const name = typeof data.name === 'string' ? data.name.trim() : 'Host';
+				const image = typeof data.image === 'string' ? data.image : '';
 				const timeLimit = typeof data.timeLimitMinutes === 'number' ? data.timeLimitMinutes : 10;
 				this.state.hostConnectionId = sender.id;
 				this.state.hostName = name || 'Host';
@@ -100,6 +102,7 @@ export default class GameRoom implements Party.Server {
 					this.state.players.push({
 						connectionId: sender.id,
 						name: this.state.hostName,
+						image,
 						pegName: peg
 					});
 				}
@@ -117,6 +120,7 @@ export default class GameRoom implements Party.Server {
 			case 'join-room': {
 				if (this.state.phase !== 'lobby') break;
 				const name = typeof data.name === 'string' ? data.name.trim() : 'Angler';
+				const image = typeof data.image === 'string' ? data.image : '';
 				if (!name) break;
 				if (this.state.players.length >= PEGS.length) {
 					sender.send(JSON.stringify({ type: 'error', message: 'Room is full' }));
@@ -128,7 +132,7 @@ export default class GameRoom implements Party.Server {
 					sender.send(JSON.stringify({ type: 'error', message: 'No pegs available' }));
 					break;
 				}
-				this.state.players.push({ connectionId: sender.id, name, pegName: peg });
+				this.state.players.push({ connectionId: sender.id, name, image, pegName: peg });
 				this.save();
 				this.broadcastExcept(sender.id, {
 					type: 'player-joined',
@@ -256,7 +260,7 @@ export default class GameRoom implements Party.Server {
 	}
 
 	private safePlayers() {
-		return this.state.players.map((p) => ({ name: p.name, pegName: p.pegName }));
+		return this.state.players.map((p) => ({ name: p.name, image: p.image, pegName: p.pegName }));
 	}
 
 	private broadcastRoomState() {

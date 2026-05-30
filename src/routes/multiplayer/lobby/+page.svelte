@@ -12,6 +12,11 @@
 		query: '?url',
 		import: 'default'
 	});
+	const botImages = import.meta.glob<string>('$lib/assets/images/bots/*.jpeg', {
+		eager: true,
+		query: '?url',
+		import: 'default'
+	});
 
 	function startGame() {
 		multiplayer.startGame();
@@ -34,6 +39,10 @@
 	function pegImage(pegName: string): string {
 		const key = Object.keys(pegImages).find((k) => k.includes(`jcs-match-${pegName}`));
 		return key ? pegImages[key] : '';
+	}
+
+	function playerImg(image: string): string {
+		return image ? (botImages[`/src/lib/assets/images/bots/${image}`] ?? '') : '';
 	}
 </script>
 
@@ -63,17 +72,23 @@
 
 		<div class="flex flex-col gap-2">
 			<h3 class="text-sm font-medium text-dark-teal/60">Players</h3>
-			{#each multiplayer.players as player (player.name)}
+			{#each multiplayer.players as player (player.name + player.pegName)}
 				<div
 					class="flex items-center gap-3 rounded-xl bg-white/70 px-4 py-3 shadow-sm {player.name ===
 					multiplayer.playerName
 						? 'ring-2 ring-accent'
 						: ''}"
 				>
-					<div
-						class="flex h-8 w-8 items-center justify-center rounded-full bg-dark-teal/10 text-sm font-bold text-dark-teal"
-					>
-						{player.name[0].toUpperCase()}
+					<div class="h-8 w-8 shrink-0 overflow-hidden rounded-full bg-dark-teal/10">
+						{#if playerImg(player.image)}
+							<img src={playerImg(player.image)} alt="" class="h-full w-full object-cover" />
+						{:else}
+							<div
+								class="flex h-full w-full items-center justify-center text-sm font-bold text-dark-teal"
+							>
+								{player.name[0].toUpperCase()}
+							</div>
+						{/if}
 					</div>
 					<div class="flex-1">
 						<p class="font-medium text-dark-teal">

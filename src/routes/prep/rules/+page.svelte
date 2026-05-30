@@ -1,9 +1,16 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
+	import { browser } from '$app/environment';
 	import { prepState } from '$lib/game/prep-state.svelte';
 	import { gameState } from '$lib/game/state.svelte';
 	import { prepDrawUrl } from '$lib/game/prep-flow';
 	import { isTutorialCompleted, resetTutorial } from '$lib/game/tutorial';
+	import { bots } from '$lib/data';
+	import Filmstrip from '$lib/components/Filmstrip.svelte';
+	import type { FilmstripItem } from '$lib/components/Filmstrip.svelte';
+
+	const NAME_KEY = 'jcmf-player-name';
+	const AVATAR_KEY = 'jcmf-player-avatar';
 
 	let tutorialCompleted = $state(isTutorialCompleted());
 
@@ -27,7 +34,16 @@
 	const timePresets = [1, 5, 10, 20, 30, 60];
 	let selectedMinutes = $state<number | null>(null);
 
+	let name = $state(browser ? (localStorage.getItem(NAME_KEY) ?? '') : '');
+	let avatar = $state(browser ? (localStorage.getItem(AVATAR_KEY) ?? '') : '');
+
 	const pegImages = import.meta.glob<string>('$lib/assets/images/pegs/*.jpeg', {
+		eager: true,
+		query: '?url',
+		import: 'default'
+	});
+
+	const botImages = import.meta.glob<string>('$lib/assets/images/bots/*.jpeg', {
 		eager: true,
 		query: '?url',
 		import: 'default'
@@ -36,6 +52,26 @@
 	function pegImg(filename: string | undefined) {
 		return filename ? (pegImages[`/src/lib/assets/images/pegs/${filename}`] ?? '') : '';
 	}
+
+	function botImg(filename: string): string {
+		return botImages[`/src/lib/assets/images/bots/${filename}`] ?? '';
+	}
+
+	let filmstripItems = $derived<FilmstripItem[]>(
+		bots.map((b) => ({
+			id: b.image,
+			label: b.name,
+			imageUrl: botImg(b.image)
+		}))
+	);
+
+	$effect(() => {
+		localStorage.setItem(NAME_KEY, name);
+	});
+
+	$effect(() => {
+		localStorage.setItem(AVATAR_KEY, avatar);
+	});
 
 	function selectPeg(name: string) {
 		manualPeg = name;
@@ -50,6 +86,8 @@
 
 	function selectTime(minutes: number) {
 		selectedMinutes = minutes;
+		prepState.playerName = name.trim();
+		prepState.playerAvatar = avatar;
 		prepState.setMatchTimeLimit(minutes);
 		goto(prepDrawUrl());
 	}
@@ -138,22 +176,46 @@
 {:else}
 	<div class="flex min-h-dvh flex-col items-center justify-center gap-6 p-4">
 		<h1 class="text-2xl font-bold text-dark-teal sm:text-3xl md:text-4xl">Rules</h1>
-		<p class="text-lg text-muted">Match duration</p>
 
-		<div class="flex w-full max-w-sm flex-col gap-3">
-			{#each timePresets as minutes (minutes)}
-				<button
-					onclick={() => selectTime(minutes)}
-					class="w-full cursor-pointer rounded-xl border border-olive bg-surface/30 p-4 text-left transition-all hover:bg-surface/60 {selectedMinutes ===
-					minutes
-						? 'scale-105 border-primary ring-2 ring-primary ring-offset-2'
-						: ''}"
-				>
-					<p class="text-center text-lg font-semibold text-dark-teal">
-						{minutes} minute{minutes === 1 ? '' : 's'}
-					</p>
-				</button>
-			{/each}
+		<div class="flex w-full max-w-sm flex-col gap-4">
+			<div class="flex flex-col gap-1">
+				<label for="name" class="text-sm font-medium text-dark-teal">Your Name</label>
+				<input
+					id="name"
+					type="text"
+					maxlength="15"
+					bind:value={name}
+					placeholder="Enter your name"
+					class="rounded-xl border border-dark-teal/20 bg-white px-4 py-3 text-dark-teal outline-none focus:border-accent"
+				/>
+			</div>
+
+			<div class="flex flex-col gap-1">
+				<span class="text-sm font-medium text-dark-teal">Your Avatar</span>
+				<Filmstrip
+					items={filmstripItems}
+					selected={avatar}
+					onselect={(id) => (avatar = id)}
+					size="small"
+				/>
+			</div>
+
+			<div class="flex flex-col gap-1">
+				<span class="text-sm font-medium text-dark-teal">Match Duration</span>
+				<div class="grid grid-cols-3 gap-2">
+					{#each timePresets as minutes (minutes)}
+						<button
+							onclick={() => selectTime(minutes)}
+							class="rounded-xl border border-olive bg-surface/30 px-3 py-3 text-center text-sm font-medium transition-all hover:bg-surface/60 {selectedMinutes ===
+							minutes
+								? 'border-accent bg-accent/10 text-accent'
+								: 'border-dark-teal/20 text-dark-teal hover:border-dark-teal/40'}"
+						>
+							{minutes}m
+						</button>
+					{/each}
+				</div>
+			</div>
 		</div>
 	</div>
 {/if}

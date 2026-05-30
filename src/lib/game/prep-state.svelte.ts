@@ -36,6 +36,8 @@ export class PrepState {
 	venueName = $state('');
 	lakeName = $state('');
 	playerPeg = $state<string | undefined>();
+	playerName = $state('');
+	playerAvatar = $state('');
 	timeLimitMinutes = $state<number | undefined>();
 	matchStartTime = $state<number | undefined>();
 	anglers = $state<AnglerState[]>([]);
@@ -64,6 +66,8 @@ export class PrepState {
 			this.venueName = data.venueName;
 			this.lakeName = data.lakeName;
 			if (typeof data.playerPeg === 'string') this.playerPeg = data.playerPeg;
+			if (typeof data.playerName === 'string') this.playerName = data.playerName;
+			if (typeof data.playerAvatar === 'string') this.playerAvatar = data.playerAvatar;
 			if (typeof data.timeLimitMinutes === 'number') this.timeLimitMinutes = data.timeLimitMinutes;
 			if (typeof data.matchStartTime === 'number') this.matchStartTime = data.matchStartTime;
 			if (Array.isArray(data.anglers)) this.anglers = data.anglers as AnglerState[];
@@ -81,6 +85,8 @@ export class PrepState {
 				venueName: this.venueName,
 				lakeName: this.lakeName,
 				playerPeg: this.playerPeg,
+				playerName: this.playerName,
+				playerAvatar: this.playerAvatar,
 				timeLimitMinutes: this.timeLimitMinutes,
 				matchStartTime: this.matchStartTime,
 				anglers: this.anglers
@@ -106,12 +112,16 @@ export class PrepState {
 
 	private ensurePlayerAngler(): AnglerState {
 		const existing = this.playerAngler;
-		if (existing) return existing;
+		if (existing) {
+			existing.name = this.playerName || existing.name;
+			existing.image = this.playerAvatar;
+			return existing;
+		}
 
 		const player: AnglerState = {
 			id: 'player',
-			name: 'You',
-			image: '',
+			name: this.playerName || 'You',
+			image: this.playerAvatar,
 			isPlayer: true,
 			skill: 0,
 			pegName: '',
@@ -143,6 +153,8 @@ export class PrepState {
 		this.venueName = '';
 		this.lakeName = '';
 		this.playerPeg = undefined;
+		this.playerName = '';
+		this.playerAvatar = '';
 		this.timeLimitMinutes = undefined;
 		this.matchStartTime = undefined;
 		this.anglers = [];
@@ -223,9 +235,13 @@ export class PrepState {
 		const playerPeg = pegs[0];
 		this.playerPeg = playerPeg.name;
 		const player = this.ensurePlayerAngler();
+		player.name = this.playerName || 'You';
+		player.image = this.playerAvatar;
 		player.pegName = playerPeg.name;
 
-		const botPool = [...bots];
+		const botPool = this.playerAvatar
+			? bots.filter((b) => b.image !== this.playerAvatar)
+			: [...bots];
 		const botCount = pegs.length - 1;
 
 		for (let i = 0; i < botCount; i++) {

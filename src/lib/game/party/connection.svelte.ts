@@ -10,6 +10,7 @@ export type MultiplayerPhase =
 
 export interface PlayerInfo {
 	name: string;
+	image: string;
 	pegName: string;
 }
 
@@ -27,6 +28,7 @@ export class MultiplayerConnection {
 	joinCode = $state('');
 	connectionId = $state('');
 	playerName = $state('');
+	playerAvatar = $state('');
 	isHost = $state(false);
 	hostName = $state('');
 	players = $state<PlayerInfo[]>([]);
@@ -52,6 +54,7 @@ export class MultiplayerConnection {
 		this.joinCode = '';
 		this.connectionId = '';
 		this.playerName = '';
+		this.playerAvatar = '';
 		this.isHost = false;
 		this.hostName = '';
 		this.players = [];
@@ -63,8 +66,9 @@ export class MultiplayerConnection {
 		this.roomId = '';
 	}
 
-	createRoom(name: string, timeLimitMinutes: number) {
+	createRoom(name: string, timeLimitMinutes: number, image: string = '') {
 		this.playerName = name;
+		this.playerAvatar = image;
 		this.timeLimitMinutes = timeLimitMinutes;
 		this.isHost = true;
 		this.roomId = this.generateCode();
@@ -72,8 +76,9 @@ export class MultiplayerConnection {
 		this.connect();
 	}
 
-	joinRoom(name: string, code: string) {
+	joinRoom(name: string, code: string, image: string = '') {
 		this.playerName = name;
+		this.playerAvatar = image;
 		this.roomId = code.toUpperCase();
 		this.isHost = false;
 		this.phase = 'connecting';
@@ -100,10 +105,11 @@ export class MultiplayerConnection {
 				this.send({
 					type: 'create-room',
 					name: this.playerName,
+					image: this.playerAvatar,
 					timeLimitMinutes: this.timeLimitMinutes
 				});
 			} else {
-				this.send({ type: 'join-room', name: this.playerName });
+				this.send({ type: 'join-room', name: this.playerName, image: this.playerAvatar });
 			}
 		};
 

@@ -2,6 +2,7 @@
 	import { onMount } from 'svelte';
 	import confetti from 'canvas-confetti';
 	import type { AnglerState } from '$lib/game/prep-state.svelte';
+	import { multiplayer } from '$lib/game/party/connection.svelte';
 
 	interface MultiEntry {
 		name: string;
@@ -35,7 +36,7 @@
 					fishCount: e.count,
 					biggestFish: null as { weightOz: number; species: string } | null,
 					isPlayer: e.name === multiPlayerName,
-					image: ''
+					image: e.name === multiPlayerName ? multiplayer.playerAvatar : ''
 				}))
 			: [...anglers]
 					.sort((a, b) => b.totalWeightOz - a.totalWeightOz)
@@ -131,11 +132,14 @@
 							{/if}
 						</div>
 						<p
-							class="mt-1 max-w-20 truncate text-sm font-bold text-dark-teal {second.isPlayer
+							class="mt-1 max-w-24 truncate text-sm font-bold text-dark-teal {second.isPlayer
 								? 'text-accent'
 								: ''}"
 						>
-							{second.isPlayer ? 'You' : second.name}
+							{second.name}
+							{#if second.isPlayer}
+								<span class="text-xs text-accent/60">(You)</span>
+							{/if}
 						</p>
 					</div>
 					<div
@@ -181,11 +185,14 @@
 							{/if}
 						</div>
 						<p
-							class="mt-1 max-w-20 truncate text-sm font-bold text-dark-teal {first.isPlayer
+							class="mt-1 max-w-24 truncate text-sm font-bold text-dark-teal {first.isPlayer
 								? 'text-accent'
 								: ''}"
 						>
-							{first.isPlayer ? 'You' : first.name}
+							{first.name}
+							{#if first.isPlayer}
+								<span class="text-xs text-accent/60">(You)</span>
+							{/if}
 						</p>
 					</div>
 					<div
@@ -230,11 +237,14 @@
 							{/if}
 						</div>
 						<p
-							class="mt-1 max-w-20 truncate text-sm font-bold text-dark-teal {third.isPlayer
+							class="mt-1 max-w-24 truncate text-sm font-bold text-dark-teal {third.isPlayer
 								? 'text-accent'
 								: ''}"
 						>
-							{third.isPlayer ? 'You' : third.name}
+							{third.name}
+							{#if third.isPlayer}
+								<span class="text-xs text-accent/60">(You)</span>
+							{/if}
 						</p>
 					</div>
 					<div
@@ -287,7 +297,10 @@
 								? 'font-bold text-white'
 								: 'text-white/80'}"
 						>
-							{entry.isPlayer ? 'You' : entry.name}
+							{entry.name}
+							{#if entry.isPlayer}
+								<span class="text-xs text-white/50">(You)</span>
+							{/if}
 						</span>
 						<div class="text-right shrink-0">
 							<span class="text-base font-bold text-white">{formatWeight(entry.weight)}</span>

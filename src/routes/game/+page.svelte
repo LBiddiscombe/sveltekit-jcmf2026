@@ -252,7 +252,7 @@
 				{
 					id: 'player',
 					name: multiplayer.playerName || 'You',
-					image: '',
+					image: multiplayer.playerAvatar,
 					isPlayer: true,
 					skill: 0,
 					pegName: multiplayer.ownPeg ?? '',
@@ -266,6 +266,8 @@
 			angler = prepState.playerAngler;
 			if (!angler) return;
 		} else {
+			angler.name = multiplayer.playerName || 'You';
+			angler.image = multiplayer.playerAvatar;
 			angler.pegName = multiplayer.ownPeg ?? '';
 			angler.catch = [];
 			angler.totalWeightOz = 0;

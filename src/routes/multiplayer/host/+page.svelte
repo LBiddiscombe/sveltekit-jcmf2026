@@ -2,23 +2,53 @@
 	import { goto } from '$app/navigation';
 	import { browser } from '$app/environment';
 	import { multiplayer } from '$lib/game/party/connection.svelte';
+	import { prepState } from '$lib/game/prep-state.svelte';
+	import { bots } from '$lib/data';
+	import Filmstrip from '$lib/components/Filmstrip.svelte';
+	import type { FilmstripItem } from '$lib/components/Filmstrip.svelte';
 	import venueThumb from '$lib/assets/images/venues/jcs.jpeg';
 
-	const STORAGE_KEY = 'jcmf-player-name';
+	const NAME_KEY = 'jcmf-player-name';
+	const AVATAR_KEY = 'jcmf-player-avatar';
 	const TIME_PRESETS = [1, 5, 10, 20, 30, 60];
 
-	let name = $state(browser ? (localStorage.getItem(STORAGE_KEY) ?? '') : '');
+	let name = $state(browser ? (localStorage.getItem(NAME_KEY) ?? '') : '');
+	let avatar = $state(browser ? (localStorage.getItem(AVATAR_KEY) ?? '') : '');
 	let timeLimit = $state(5);
 	let creating = $state(false);
 
+	const botImages = import.meta.glob<string>('$lib/assets/images/bots/*.jpeg', {
+		eager: true,
+		query: '?url',
+		import: 'default'
+	});
+
+	function botImg(filename: string): string {
+		return botImages[`/src/lib/assets/images/bots/${filename}`] ?? '';
+	}
+
+	let filmstripItems = $derived<FilmstripItem[]>(
+		bots.map((b) => ({
+			id: b.image,
+			label: b.name,
+			imageUrl: botImg(b.image)
+		}))
+	);
+
 	$effect(() => {
-		localStorage.setItem(STORAGE_KEY, name);
+		localStorage.setItem(NAME_KEY, name);
+	});
+
+	$effect(() => {
+		localStorage.setItem(AVATAR_KEY, avatar);
 	});
 
 	function createMatch() {
 		if (!name.trim()) return;
 		creating = true;
-		multiplayer.createRoom(name.trim(), timeLimit);
+		prepState.playerName = name.trim();
+		prepState.playerAvatar = avatar;
+		multiplayer.createRoom(name.trim(), timeLimit, avatar);
 	}
 
 	$effect(() => {
@@ -52,6 +82,16 @@
 					bind:value={name}
 					placeholder="Enter your name"
 					class="rounded-xl border border-dark-teal/20 bg-white px-4 py-3 text-dark-teal outline-none focus:border-accent"
+				/>
+			</div>
+
+			<div class="flex flex-col gap-1">
+				<span class="text-sm font-medium text-dark-teal">Your Avatar</span>
+				<Filmstrip
+					items={filmstripItems}
+					selected={avatar}
+					onselect={(id) => (avatar = id)}
+					size="small"
 				/>
 			</div>
 

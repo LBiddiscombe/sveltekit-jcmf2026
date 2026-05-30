@@ -64,6 +64,10 @@ A competitive fishing session with a time limit played by human opponents over t
 **Angler**:
 A person playing the game (human player or bot).
 
+**PlayerAvatar**:
+A visual representation chosen by a human player from the available bot images. In Solo Match, selecting a PlayerAvatar also reserves that bot character so it cannot be drawn as an opponent. In Multiplayer, the avatar is purely cosmetic (no bots exist in multiplayer). Stored in `AnglerState.image`.
+_Avoid_: Bot image, player image
+
 **AnglerBot**:
 An NPC angler controlled by the game, with a skill level (1–10) that influences tackle choices (via skill-weighted species roll at draw and mid-match tackle changes) and strike/reel timing. Bots are defined in reference data (`src/lib/data/bots.ts`) with a name and fixed skill. Bots are available in Match mode only. Bot skill does NOT affect a separate strike accuracy roll — the HookRangeCheck alone determines strike outcome; skill only affects how quickly the bot reacts.
 

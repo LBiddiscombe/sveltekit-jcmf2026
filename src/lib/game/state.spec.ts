@@ -134,10 +134,10 @@ describe('GameState match ending', () => {
 			tierIndex: 0,
 			weightOz: 12,
 			castStrength: 'Medium',
-	preferredBait: 'maggot',
-	pattern: [],
-	stepMs: 1000
-};
+			preferredBait: 'maggot',
+			pattern: [],
+			stepMs: 1000
+		};
 		loop.reelTimerMs = 5000;
 		loop.reelTimerRemaining = 5000;
 
@@ -164,10 +164,10 @@ describe('GameState match ending', () => {
 			tierIndex: 0,
 			weightOz: 12,
 			castStrength: 'Medium',
-	preferredBait: 'maggot',
-	pattern: [],
-	stepMs: 1000
-};
+			preferredBait: 'maggot',
+			pattern: [],
+			stepMs: 1000
+		};
 		loop.reelTimerMs = 100;
 		loop.reelTimerRemaining = 100;
 
@@ -218,10 +218,10 @@ describe('GameState match ending', () => {
 			tierIndex: 0,
 			weightOz: 12,
 			castStrength: 'Medium',
-	preferredBait: 'maggot',
-	pattern: [],
-	stepMs: 1000
-};
+			preferredBait: 'maggot',
+			pattern: [],
+			stepMs: 1000
+		};
 		loop.landingWindowMs = 2000;
 		loop.landingWindowRemaining = 2000;
 
@@ -293,10 +293,10 @@ describe('GameState match ending', () => {
 			tierIndex: 0,
 			weightOz: 12,
 			castStrength: 'Medium',
-	preferredBait: 'maggot',
-	pattern: [],
-	stepMs: 1000
-};
+			preferredBait: 'maggot',
+			pattern: [],
+			stepMs: 1000
+		};
 
 		armExpiry(gs);
 		gs.tick(100);

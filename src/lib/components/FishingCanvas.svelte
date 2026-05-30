@@ -129,7 +129,9 @@
 				};
 			}
 
-			function createFish(options: { weight?: number; y?: number; pattern?: number[]; stepMs?: number } = {}) {
+			function createFish(
+				options: { weight?: number; y?: number; pattern?: number[]; stepMs?: number } = {}
+			) {
 				return {
 					x: p.width * 0.5,
 					y: options.y ?? p.height * 0.2,
