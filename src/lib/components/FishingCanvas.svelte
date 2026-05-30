@@ -13,6 +13,7 @@
 		pattern: number[];
 		stepMs: number;
 		onResult?: (result: 'caught' | 'lost') => void;
+		anglerSilhouetteUrl?: string;
 	}
 
 	let {
@@ -24,7 +25,8 @@
 		castStrength = 'Medium',
 		pattern = [1, 1, 0, 0],
 		stepMs = 1000,
-		onResult = () => {}
+		onResult = () => {},
+		anglerSilhouetteUrl = ''
 	}: Props = $props();
 
 	let container: HTMLDivElement;
@@ -269,7 +271,7 @@
 				p.scale(0.625);
 				p.rotate(((angler.a / 2) * p.PI) / 180);
 				if (anglerImage) {
-					p.image(anglerImage, -64, -128, 128, 256);
+					p.image(anglerImage, -64, -148, 128, 128);
 				}
 				p.pop();
 
@@ -335,7 +337,7 @@
 
 			p.setup = async () => {
 				p.createCanvas(400, 400);
-				anglerImage = await p.loadImage(anglerPngUrl);
+				anglerImage = await p.loadImage(anglerSilhouetteUrl || anglerPngUrl);
 
 				bankY = p.height * 0.8;
 

@@ -36,6 +36,11 @@
 		query: '?url',
 		import: 'default'
 	});
+	const silhouetteImages = import.meta.glob<string>('$lib/assets/images/bots/*-silhouette.png', {
+		eager: true,
+		query: '?url',
+		import: 'default'
+	});
 
 	let isMulti = $derived(page.url.searchParams.has('multi'));
 	let mode = $derived(isMulti ? 'multiplayer' : prepState.mode);
@@ -119,6 +124,13 @@
 	let lineMaxOz = $derived(tackle?.line.maxOz ?? 100);
 	let rodMultiplier = $derived(tackle?.rod.rodMultiplier ?? 1.0);
 	let castStrength = $derived(tackle?.castStrength ?? 'Medium');
+	let playerAngler = $derived(gameState.playerAngler);
+	let anglerSilhouetteUrl = $derived.by(() => {
+		if (!playerAngler?.image) return '';
+		const silhouetteFile = playerAngler.image.replace('.jpeg', '-silhouette.png');
+		const key = `/src/lib/assets/images/bots/${silhouetteFile}`;
+		return silhouetteImages[key] ?? '';
+	});
 
 	let matchTimeDisplay = $derived.by(() => {
 		if (isMulti && multiplayer.startTime) {
@@ -333,6 +345,7 @@
 					{lineMaxOz}
 					{rodMultiplier}
 					{castStrength}
+					{anglerSilhouetteUrl}
 					onResult={handleReelingResult}
 				/>
 				{#if playerPhase === 'bite'}
