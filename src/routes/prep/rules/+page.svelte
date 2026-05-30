@@ -65,6 +65,14 @@
 		}))
 	);
 
+	let pegFilmstripItems = $derived<FilmstripItem[]>(
+		pegs.map((p) => ({
+			id: p.name,
+			label: p.name,
+			imageUrl: pegImg(p.image)
+		}))
+	);
+
 	$effect(() => {
 		localStorage.setItem(NAME_KEY, name);
 	});
@@ -116,40 +124,11 @@
 				</p>
 			</div>
 
-			<div
-				class="flex shrink-0 gap-3 overflow-x-auto px-4 pb-3 sm:overflow-visible sm:justify-center sm:-mx-4 sm:px-0"
-				style="scrollbar-width:none"
-			>
-				{#each pegs as peg (peg.name)}
-					<button
-						onclick={() => selectPeg(peg.name)}
-						class="relative cursor-pointer shrink-0 transition-all duration-200 hover:scale-105 {selectedPeg ===
-						peg.name
-							? 'scale-105'
-							: 'opacity-60 hover:opacity-90'}"
-					>
-						<div
-							class="h-28 w-28 overflow-hidden rounded-xl border-2 transition-all sm:h-36 sm:w-36 {selectedPeg ===
-							peg.name
-								? 'border-accent shadow-lg'
-								: 'border-white/30 shadow-md'}"
-						>
-							{#if pegImg(peg.image)}
-								<img src={pegImg(peg.image)} alt="" class="h-full w-full object-cover" />
-							{:else}
-								<div class="flex h-full w-full items-center justify-center bg-surface/60">
-									<span class="text-lg font-bold text-dark-teal">{peg.name}</span>
-								</div>
-							{/if}
-						</div>
-						<div
-							class="absolute -bottom-1 -right-1 flex h-8 w-8 items-center justify-center rounded-full bg-dark-teal/80 text-sm font-bold text-white"
-						>
-							{peg.name}
-						</div>
-					</button>
-				{/each}
-			</div>
+			<Filmstrip
+				items={pegFilmstripItems}
+				selected={selectedPeg}
+				onselect={(id) => selectPeg(id)}
+			/>
 
 			{#if tutorialCompleted}
 				<div class="mx-auto w-full max-w-sm px-4">
@@ -175,7 +154,7 @@
 	{/if}
 {:else}
 	<div class="flex min-h-dvh flex-col items-center justify-center gap-6 p-4">
-		<h1 class="text-2xl font-bold text-dark-teal sm:text-3xl md:text-4xl">Rules</h1>
+		<!-- <h1 class="text-2xl font-bold text-dark-teal sm:text-3xl md:text-4xl">Rules</h1> -->
 
 		<div class="flex w-full max-w-sm flex-col gap-4">
 			<div class="flex flex-col gap-1">
@@ -192,12 +171,7 @@
 
 			<div class="flex flex-col gap-1">
 				<span class="text-sm font-medium text-dark-teal">Your Avatar</span>
-				<Filmstrip
-					items={filmstripItems}
-					selected={avatar}
-					onselect={(id) => (avatar = id)}
-					size="small"
-				/>
+				<Filmstrip items={filmstripItems} selected={avatar} onselect={(id) => (avatar = id)} />
 			</div>
 
 			<div class="flex flex-col gap-1">

@@ -112,7 +112,7 @@ export class PrepState {
 	}
 
 	private get resolvedPlayerAvatar(): string {
-		return this.playerAvatar || (browser ? localStorage.getItem(AVATAR_KEY) ?? '' : '');
+		return this.playerAvatar || (browser ? (localStorage.getItem(AVATAR_KEY) ?? '') : '');
 	}
 
 	private ensurePlayerAngler(): AnglerState {

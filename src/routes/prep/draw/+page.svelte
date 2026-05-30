@@ -4,6 +4,8 @@
 	import { prepState } from '$lib/game/prep-state.svelte';
 	import { gameState } from '$lib/game/state.svelte';
 	import { onMount } from 'svelte';
+	import Filmstrip from '$lib/components/Filmstrip.svelte';
+	import type { FilmstripItem } from '$lib/components/Filmstrip.svelte';
 
 	let mode = $derived(prepState.mode);
 	let venueName = $derived(prepState.venueName);
@@ -52,6 +54,15 @@
 			}))
 			.sort((a, b) => Number(a.pegName) - Number(b.pegName));
 	});
+
+	let botFilmstripItems = $derived<FilmstripItem[]>(
+		botAnglers.map((b) => ({
+			id: b.pegName,
+			label: b.name,
+			description: `Peg ${b.pegName}`,
+			imageUrl: botImg(b.image)
+		}))
+	);
 </script>
 
 {#if hasError}
@@ -87,28 +98,7 @@
 			</p>
 		</div>
 
-		<div
-			class="flex shrink-0 gap-3 overflow-x-auto px-4 pb-3 sm:overflow-visible sm:justify-center sm:-mx-4 sm:px-0"
-			style="scrollbar-width:none"
-		>
-			{#each botAnglers as bot (bot.pegName)}
-				<div class="shrink-0">
-					<div
-						class="h-28 w-28 overflow-hidden rounded-xl border-2 border-white/30 shadow-md sm:h-36 sm:w-36"
-					>
-						{#if botImg(bot.image)}
-							<img src={botImg(bot.image)} alt="" class="h-full w-full object-cover" />
-						{:else}
-							<div class="flex h-full w-full items-center justify-center bg-surface/60">
-								<span class="text-lg font-bold text-dark-teal">{bot.pegName}</span>
-							</div>
-						{/if}
-					</div>
-					<p class="mt-1 truncate text-center text-sm font-semibold text-dark-teal">{bot.name}</p>
-					<p class="text-center text-sm text-muted">Peg {bot.pegName}</p>
-				</div>
-			{/each}
-		</div>
+		<Filmstrip variant="display" items={botFilmstripItems} selected={null} />
 
 		<div class="mx-auto mt-auto w-full max-w-sm px-4">
 			<button
