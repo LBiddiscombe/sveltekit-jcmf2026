@@ -7,6 +7,7 @@ import type { FishingPhase } from './loop';
 import { defaultTackle, pickBotTackle } from './tackle-utils';
 
 const STORAGE_KEY = 'jcmf-prep';
+const AVATAR_KEY = 'jcmf-player-avatar';
 
 export type GamePhase = 'idle' | 'fishing' | 'results';
 
@@ -110,18 +111,22 @@ export class PrepState {
 		return this.playerAngler?.tackle ?? { ...defaultTackle };
 	}
 
+	private get resolvedPlayerAvatar(): string {
+		return this.playerAvatar || (browser ? localStorage.getItem(AVATAR_KEY) ?? '' : '');
+	}
+
 	private ensurePlayerAngler(): AnglerState {
 		const existing = this.playerAngler;
 		if (existing) {
 			existing.name = this.playerName || existing.name;
-			existing.image = this.playerAvatar;
+			existing.image = this.resolvedPlayerAvatar;
 			return existing;
 		}
 
 		const player: AnglerState = {
 			id: 'player',
 			name: this.playerName || 'You',
-			image: this.playerAvatar,
+			image: this.resolvedPlayerAvatar,
 			isPlayer: true,
 			skill: 0,
 			pegName: '',
