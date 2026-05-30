@@ -5,7 +5,7 @@
 	import { prepState } from '$lib/game/prep-state.svelte';
 	import { gameState } from '$lib/game/state.svelte';
 	import { multiplayer } from '$lib/game/party/connection.svelte';
-	import { venues } from '$lib/data';
+	import { venues, species } from '$lib/data';
 	import type { TackleSelection } from '$lib/data';
 	import { defaultTackle } from '$lib/game/tackle-utils';
 	import { formatWeight, formatShortDuration } from '$lib/utils/format';
@@ -41,6 +41,11 @@
 		query: '?url',
 		import: 'default'
 	});
+	const fishImages = import.meta.glob<string>('$lib/assets/images/fish/*.PNG', {
+		eager: true,
+		query: '?url',
+		import: 'default'
+	});
 
 	let isMulti = $derived(page.url.searchParams.has('multi'));
 	let mode = $derived(isMulti ? 'multiplayer' : prepState.mode);
@@ -58,6 +63,27 @@
 	let recentCatch = $derived([...catchList].reverse().slice(0, 3));
 	let totalWeight = $derived(catchList.reduce((sum: number, f) => sum + f.weightOz, 0));
 	let lastEvent = $derived(gameState.lastEvent);
+	let lastCaughtSpecies = $derived.by(() => {
+		const e = lastEvent;
+		if (e?.type !== 'fishCaught') return null;
+		return species.find((s) => s.name === e.species) ?? null;
+	});
+	let fishImageUrl = $derived.by(() => {
+		if (!lastCaughtSpecies) return '';
+		const key = `/src/lib/assets/images/fish/${lastCaughtSpecies.name.toLowerCase()}.PNG`;
+		return fishImages[key] ?? '';
+	});
+	const TIER_WIDTHS = [80, 160, 240, 240] as const;
+	const MONSTER_HEIGHT = 1.5;
+	let fishDisplay = $derived.by((): { width: number; heightScale: number } | null => {
+		const e = lastEvent;
+		if (e?.type !== 'fishCaught' || !lastCaughtSpecies) return null;
+		const tiers = lastCaughtSpecies.classifications;
+		if (e.weightOz <= tiers[0].maxOz) return { width: TIER_WIDTHS[0], heightScale: 1 };
+		if (e.weightOz <= tiers[1].maxOz) return { width: TIER_WIDTHS[1], heightScale: 1 };
+		if (e.weightOz <= tiers[2].maxOz) return { width: TIER_WIDTHS[2], heightScale: 1 };
+		return { width: TIER_WIDTHS[3], heightScale: MONSTER_HEIGHT };
+	});
 	let debugMode = $state(false);
 	let intervalId: ReturnType<typeof setInterval> | null = null;
 	let now = $state(Date.now());
@@ -357,7 +383,21 @@
 				{/if}
 				{#if playerPhase === 'caught' || playerPhase === 'lost'}
 					<div class="pointer-events-none absolute inset-0 flex items-center justify-center">
-						<div class="rounded-lg bg-black/40 px-4 py-2 text-center">
+						<div class="rounded-lg bg-black/40 px-6 py-4 text-center">
+							{#if playerPhase === 'caught' && fishImageUrl && lastCaughtSpecies && fishDisplay}
+								<div class="mb-2 flex justify-center">
+									<div
+										style="transform: scaleY({fishDisplay.heightScale}); transform-origin: bottom;"
+									>
+										<img
+											src={fishImageUrl}
+											alt={lastCaughtSpecies.name}
+											class="fish-bounce-in"
+											style="max-width: {fishDisplay.width}px"
+										/>
+									</div>
+								</div>
+							{/if}
 							<p class="text-sm font-bold text-white">{statusMessage}</p>
 						</div>
 					</div>
@@ -615,6 +655,28 @@
 		to {
 			opacity: 1;
 			transform: translateY(0);
+		}
+	}
+
+	.fish-bounce-in {
+		animation: fishBounceIn 0.6s cubic-bezier(0.68, -0.55, 0.27, 1.55) forwards;
+	}
+
+	@keyframes fishBounceIn {
+		0% {
+			transform: scale(0);
+			opacity: 0;
+		}
+		60% {
+			transform: scale(1.1);
+			opacity: 1;
+		}
+		80% {
+			transform: scale(0.95);
+		}
+		100% {
+			transform: scale(1);
+			opacity: 1;
 		}
 	}
 </style>
