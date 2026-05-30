@@ -53,6 +53,15 @@
 	let overTensionTime = 0;
 	let minigameState: 'active' | 'caught' | 'lost' | 'idle' = 'idle';
 	let bankY = 0;
+	let splashes: {
+		x: number;
+		y: number;
+		vx: number;
+		vy: number;
+		life: number;
+		decay: number;
+		size: number;
+	}[] = [];
 
 	$effect(() => {
 		if (phase === 'reeling' && fishWeightOz > 0 && !reelingParams.active) {
@@ -186,37 +195,6 @@
 					p.image(pegImage, 0, 0, p.width, p.height);
 				}
 				p.pop();
-				p.push();
-				if (phase === 'bite') {
-					p.translate(p.random(-1.5, 1.5), p.random(-1.5, 1.5));
-				}
-
-				p.noFill();
-				for (let i = 0; i < 6; i++) {
-					const yBase = 2 + i * 3;
-					const a = p.map(i, 0, 5, 35, 5);
-					p.stroke(160, 215, 240, a);
-					p.strokeWeight(2.0 - i * 0.3);
-					p.beginShape();
-					for (let x = 0; x <= p.width; x += 6) {
-						const y =
-							yBase +
-							p.sin(x * 0.025 + p.frameCount * 0.012 + i * 1.5) * 2.0 +
-							p.sin(x * 0.06 - p.frameCount * 0.006 + i * 2.5) * 0.8;
-						p.vertex(x, y);
-					}
-					p.endShape();
-				}
-
-				p.noStroke();
-				for (let i = 0; i < 10; i++) {
-					const x = p.noise(i * 3.1 + p.frameCount * 0.003) * p.width;
-					const y = p.noise(i * 3.1 + 50 + p.frameCount * 0.005) * 30;
-					const s = p.noise(i * 3.7 + p.frameCount * 0.008) * 12 + 3;
-					p.fill(200, 235, 255, 10);
-					p.ellipse(x, y, s, s * 0.2);
-				}
-				p.pop();
 			}
 
 			function drawRodSection(h: number, sw: number, power: number) {
@@ -238,19 +216,61 @@
 				}
 			}
 
-			function drawFish() {
+			function drawSurfaceRipple() {
+				const rx = fish.x;
+				const ry = fish.y;
+
 				p.push();
-				p.translate(fish.x, fish.y);
-				const wobble = p.sin(p.frameCount * 0.15) * 2;
-				const s = p.map(fish.weight, 1, 1000, 6, 24);
-				p.fill(80, 160, 80);
+				p.noFill();
+
+				for (let i = 0; i < 2; i++) {
+					const phase = i * p.PI;
+					const size = 8 + i * 8 + p.sin(p.frameCount * 0.06 + phase) * 2.5;
+					const alpha = p.map(i, 0, 1, 70, 35);
+					p.stroke(200, 235, 255, alpha);
+					p.strokeWeight(1.2 - i * 0.4);
+					p.ellipse(rx, ry, size, size * 0.35);
+				}
+
+				p.fill(210, 240, 255, 40);
 				p.noStroke();
-				p.ellipse(0, 0, s * 1.5 + wobble, s * 0.7);
-				p.fill(60, 130, 60);
-				p.triangle(-s * 0.6 + wobble * 0.5, 0, -s * 0.9, -s * 0.35, -s * 0.9, s * 0.35);
-				p.fill(200, 220, 255, 60);
-				p.ellipse(s * 0.2, -s * 0.12, s * 0.3, s * 0.2);
+				p.ellipse(rx, ry, 4, 1.5);
+
 				p.pop();
+			}
+
+			function updateSplashes() {
+				if (fish.isPulling && p.frameCount % 3 === 0) {
+					for (let i = 0; i < 3; i++) {
+						const angle = p.random(p.TWO_PI);
+						const speed = p.random(0.4, 1);
+						splashes.push({
+							x: fish.x + p.cos(angle) * p.random(1, 4),
+							y: fish.y + p.sin(angle) * p.random(1, 4),
+							vx: p.cos(angle) * speed,
+							vy: p.sin(angle) * speed,
+							life: 1,
+							decay: p.random(0.025, 0.045),
+							size: p.random(1.5, 3)
+						});
+					}
+				}
+
+				p.noStroke();
+				for (let i = splashes.length - 1; i >= 0; i--) {
+					const s = splashes[i];
+					s.x += s.vx;
+					s.y += s.vy;
+					s.vx *= 0.96;
+					s.vy *= 0.96;
+					s.life -= s.decay;
+					if (s.life <= 0) {
+						splashes.splice(i, 1);
+						continue;
+					}
+					p.fill(200, 235, 255, s.life * 150);
+					p.circle(s.x, s.y, s.size * s.life);
+				}
 			}
 
 			function drawGame() {
@@ -279,7 +299,7 @@
 				p.strokeWeight(0.3);
 				p.line(angler.rodEnd.x, angler.rodEnd.y, fish.x, fish.y);
 
-				drawFish();
+				drawSurfaceRipple();
 
 				if (minigameState === 'active') {
 					const gaugeY = p.constrain(fish.y - 20, 8, p.height - 20);
@@ -382,6 +402,7 @@
 					angler.update();
 					fish.update();
 					update();
+					updateSplashes();
 				}
 
 				if (!activeAtSetup) {
