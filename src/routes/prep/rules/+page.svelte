@@ -68,7 +68,7 @@
 	let pegFilmstripItems = $derived<FilmstripItem[]>(
 		pegs.map((p) => ({
 			id: p.name,
-			label: p.name,
+			label: `Peg ${p.name}`,
 			imageUrl: pegImg(p.image)
 		}))
 	);
