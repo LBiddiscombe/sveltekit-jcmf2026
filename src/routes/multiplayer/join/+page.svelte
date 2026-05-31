@@ -91,12 +91,7 @@
 
 			<div class="flex flex-col gap-1">
 				<span class="text-sm font-medium text-dark-teal">Your Avatar</span>
-				<Filmstrip
-					items={filmstripItems}
-					selected={avatar}
-					onselect={(id) => (avatar = id)}
-					size="small"
-				/>
+				<Filmstrip items={filmstripItems} selected={avatar} onselect={(id) => (avatar = id)} />
 			</div>
 
 			<div class="flex flex-col gap-1">

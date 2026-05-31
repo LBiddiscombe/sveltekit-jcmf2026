@@ -3,6 +3,8 @@
 	import { multiplayer } from '$lib/game/party/connection.svelte';
 	import { gameState } from '$lib/game/state.svelte';
 	import { venues } from '$lib/data';
+	import Filmstrip from '$lib/components/Filmstrip.svelte';
+	import type { FilmstripItem } from '$lib/components/Filmstrip.svelte';
 
 	const venue = venues[0];
 	const lake = venue.lakes[0];
@@ -44,6 +46,21 @@
 	function playerImg(image: string): string {
 		return image ? (botImages[`/src/lib/assets/images/bots/${image}`] ?? '') : '';
 	}
+
+	let filmstripPlayers = $derived<FilmstripItem[]>(
+		[...multiplayer.players]
+			.sort((a, b) => {
+				if (a.name === multiplayer.hostName) return -1;
+				if (b.name === multiplayer.hostName) return 1;
+				return 0;
+			})
+			.map((p) => ({
+				id: p.name + p.pegName,
+				label: p.name,
+				imageUrl: playerImg(p.image) || undefined,
+				description: `Peg ${p.pegName}`
+			}))
+	);
 </script>
 
 <div class="flex min-h-dvh flex-col items-center bg-surface px-4 py-8">
@@ -72,35 +89,11 @@
 
 		<div class="flex flex-col gap-2">
 			<h3 class="text-sm font-medium text-dark-teal/60">Players</h3>
-			{#each multiplayer.players as player (player.name + player.pegName)}
-				<div
-					class="flex items-center gap-3 rounded-xl bg-white/70 px-4 py-3 shadow-sm {player.name ===
-					multiplayer.playerName
-						? 'ring-2 ring-accent'
-						: ''}"
-				>
-					<div class="h-8 w-8 shrink-0 overflow-hidden rounded-full bg-dark-teal/10">
-						{#if playerImg(player.image)}
-							<img src={playerImg(player.image)} alt="" class="h-full w-full object-cover" />
-						{:else}
-							<div
-								class="flex h-full w-full items-center justify-center text-sm font-bold text-dark-teal"
-							>
-								{player.name[0].toUpperCase()}
-							</div>
-						{/if}
-					</div>
-					<div class="flex-1">
-						<p class="font-medium text-dark-teal">
-							{player.name}
-							{#if player.name === multiplayer.hostName}
-								<span class="text-xs text-accent">(Host)</span>
-							{/if}
-						</p>
-						<p class="text-xs text-dark-teal/50">Peg {player.pegName}</p>
-					</div>
-				</div>
-			{/each}
+			<Filmstrip
+				items={filmstripPlayers}
+				selected={multiplayer.playerName + multiplayer.ownPeg}
+				variant="display"
+			/>
 		</div>
 
 		<div class="flex flex-col gap-3">

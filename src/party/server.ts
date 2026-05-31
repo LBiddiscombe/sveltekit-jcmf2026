@@ -86,16 +86,16 @@ export default class GameRoom implements Party.Server {
 
 		switch (data.type) {
 			case 'create-room': {
-				if (this.state.hostConnectionId) break;
 				const name = typeof data.name === 'string' ? data.name.trim() : 'Host';
 				const image = typeof data.image === 'string' ? data.image : '';
 				const timeLimit = typeof data.timeLimitMinutes === 'number' ? data.timeLimitMinutes : 10;
+				this.state.phase = 'lobby';
 				this.state.hostConnectionId = sender.id;
 				this.state.hostName = name || 'Host';
 				this.state.timeLimitMinutes = timeLimit;
+				this.state.players = [];
 				this.state.startTime = null;
 				this.state.catchAudit = [];
-				this.state.phase = 'lobby';
 				this.state.readyConnectionIds = [];
 				const peg = this.assignPeg();
 				if (peg) {

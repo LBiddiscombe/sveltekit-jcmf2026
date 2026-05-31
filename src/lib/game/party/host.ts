@@ -1,13 +1,13 @@
 import { browser } from '$app/environment';
+import { PUBLIC_PARTYKIT_HOST } from '$env/static/public';
 
 const PARTY_NAME = 'room';
 const DEV_PORT = 1999;
 
 export function partyUrl(roomId: string): string {
 	if (!browser) return '';
-	const partykitHost = import.meta.env.PUBLIC_PARTYKIT_HOST as string | undefined;
-	if (partykitHost) {
-		return `wss://${partykitHost}/parties/${PARTY_NAME}/${roomId}`;
+	if (PUBLIC_PARTYKIT_HOST) {
+		return `wss://${PUBLIC_PARTYKIT_HOST}/parties/${PARTY_NAME}/${roomId}`;
 	}
 	const host = window.location.hostname;
 	if (window.location.protocol === 'http:') {

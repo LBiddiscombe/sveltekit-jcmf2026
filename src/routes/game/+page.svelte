@@ -565,7 +565,7 @@
 		{#if tackle}
 			<button
 				onclick={handleChangeTackle}
-				class="w-full cursor-pointer rounded-xl border border-olive bg-surface/30 p-3 text-left sm:max-w-sm"
+				class="w-full cursor-pointer rounded-2xl bg-white/70 p-3 text-left shadow-md transition-shadow hover:shadow-lg sm:max-w-sm"
 			>
 				<div class="flex items-center justify-center gap-3">
 					<div class="flex flex-col items-center gap-0.5">

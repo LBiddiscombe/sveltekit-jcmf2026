@@ -5,11 +5,6 @@ import { sveltekit } from '@sveltejs/kit/vite';
 
 export default defineConfig({
 	plugins: [tailwindcss(), sveltekit()],
-	define: {
-		'import.meta.env.PUBLIC_PARTYKIT_HOST': JSON.stringify(
-			'jcmf-multiplayer.lbiddiscombe.partykit.dev'
-		)
-	},
 	test: {
 		expect: { requireAssertions: true },
 		projects: [
