@@ -356,7 +356,14 @@
 			}
 
 			p.setup = async () => {
-				p.createCanvas(400, 400);
+				const renderer = p.createCanvas(400, 400);
+				renderer.elt.addEventListener(
+					'touchstart',
+					(e: TouchEvent) => {
+						e.preventDefault();
+					},
+					{ passive: false }
+				);
 				anglerImage = await p.loadImage(anglerSilhouetteUrl || anglerPngUrl);
 
 				bankY = p.height * 0.8;

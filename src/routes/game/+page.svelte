@@ -113,6 +113,10 @@
 	let debugMode = $state(false);
 	let intervalId: ReturnType<typeof setInterval> | null = null;
 	let now = $state(Date.now());
+	let caughtDismissCooldown = $state(0);
+	let canDismissCaught = $derived(
+		caughtDismissCooldown === 0 || now - caughtDismissCooldown > 1000
+	);
 	let waitingForPlayers = $derived(
 		gameState.phase === 'results' && isMulti && multiplayer.phase !== 'results'
 	);
@@ -161,6 +165,12 @@
 	$effect(() => {
 		if (mode === 'session' && tutorialCompleted) {
 			completeTutorial();
+		}
+	});
+
+	$effect(() => {
+		if (playerPhase === 'caught') {
+			caughtDismissCooldown = Date.now();
 		}
 	});
 
@@ -394,6 +404,18 @@
 
 <svelte:window onkeydown={onKeydown} />
 
+<svelte:head>
+	<style>
+		html,
+		body {
+			-webkit-user-select: none !important;
+			user-select: none !important;
+			-webkit-touch-callout: none !important;
+			touch-action: manipulation !important;
+		}
+	</style>
+</svelte:head>
+
 <div class="min-h-dvh lg:flex lg:flex-row">
 	<div class="flex min-h-dvh flex-1 flex-col items-center gap-4 p-4">
 		<div
@@ -425,7 +447,9 @@
 						class="absolute inset-0 flex cursor-pointer items-center justify-center"
 						role="button"
 						tabindex="0"
-						onclick={handleDismissCaught}
+						onclick={() => {
+							if (canDismissCaught) handleDismissCaught();
+						}}
 						onkeydown={(e) => {
 							if (e.key === 'Enter' || e.key === ' ') handleDismissCaught();
 						}}
