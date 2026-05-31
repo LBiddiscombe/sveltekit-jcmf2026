@@ -326,6 +326,11 @@ export class GameState {
 		return event;
 	}
 
+	dismissCaught(): void {
+		this.playerLoop?.dismissCaught();
+		this.syncPlayerState();
+	}
+
 	reel(): FishingEvent | null {
 		this.syncLoopTackle();
 		const event = this.playerLoop?.reel() ?? null;

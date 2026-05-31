@@ -84,6 +84,7 @@
 		if (e.weightOz <= tiers[2].maxOz) return { width: TIER_WIDTHS[2], heightScale: 1 };
 		return { width: TIER_WIDTHS[3], heightScale: MONSTER_HEIGHT };
 	});
+	let fishImageLoaded = $state(false);
 	let debugMode = $state(false);
 	let intervalId: ReturnType<typeof setInterval> | null = null;
 	let now = $state(Date.now());
@@ -135,6 +136,12 @@
 	$effect(() => {
 		if (mode === 'session' && tutorialCompleted) {
 			completeTutorial();
+		}
+	});
+
+	$effect(() => {
+		if (lastEvent?.type === 'fishCaught') {
+			fishImageLoaded = false;
 		}
 	});
 
@@ -220,6 +227,10 @@
 
 	function handleChangeTackle() {
 		gameState.beginChangeTackle();
+	}
+
+	function handleDismissCaught() {
+		gameState.dismissCaught();
 	}
 
 	function handlePegClick() {
@@ -321,6 +332,7 @@
 		e.preventDefault();
 		const p = gameState.playerSnapshot?.phase;
 		if (p === 'bite') handleStrike();
+		if (p === 'caught') handleDismissCaught();
 	}
 
 	onMount(() => {
@@ -381,23 +393,38 @@
 						aria-label="Strike"
 					></button>
 				{/if}
-				{#if playerPhase === 'caught' || playerPhase === 'lost'}
-					<div class="pointer-events-none absolute inset-0 flex items-center justify-center">
+				{#if playerPhase === 'caught'}
+					<div
+						class="absolute inset-0 flex cursor-pointer items-center justify-center"
+						role="button"
+						tabindex="0"
+						onclick={handleDismissCaught}
+						onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') handleDismissCaught(); }}
+					>
 						<div class="rounded-lg bg-black/40 px-6 py-4 text-center">
-							{#if playerPhase === 'caught' && fishImageUrl && lastCaughtSpecies && fishDisplay}
+							{#if fishImageUrl && lastCaughtSpecies && fishDisplay}
 								<div class="mb-2 flex justify-center">
 									<div
 										style="transform: scaleY({fishDisplay.heightScale}); transform-origin: bottom;"
 									>
-										<img
-											src={fishImageUrl}
-											alt={lastCaughtSpecies.name}
-											class="fish-bounce-in"
-											style="max-width: {fishDisplay.width}px"
-										/>
+									<img
+										src={fishImageUrl}
+										alt={lastCaughtSpecies.name}
+										class:fish-bounce-in={fishImageLoaded}
+										style="max-width: {fishDisplay.width}px; opacity: {fishImageLoaded ? 1 : 0}"
+										onload={() => (fishImageLoaded = true)}
+										loading="eager"
+									/>
 									</div>
 								</div>
 							{/if}
+							<p class="text-sm font-bold text-white">{statusMessage}</p>
+						</div>
+					</div>
+				{/if}
+				{#if playerPhase === 'lost'}
+					<div class="pointer-events-none absolute inset-0 flex items-center justify-center">
+						<div class="rounded-lg bg-black/40 px-6 py-4 text-center">
 							<p class="text-sm font-bold text-white">{statusMessage}</p>
 						</div>
 					</div>

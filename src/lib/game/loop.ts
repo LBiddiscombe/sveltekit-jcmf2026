@@ -43,9 +43,9 @@ export interface PlayerLoopSnapshot {
 	currentFishStepMs: number;
 }
 
-const PLAYER_RECAST_DELAY_CAUGHT = 2500;
 const PLAYER_RECAST_DELAY_LOST = 2500;
 const BOT_RECAST_DELAY = 1;
+const BOT_RECAST_DELAY_CAUGHT = 3000;
 
 export class FishingLoop {
 	phase: FishingPhase = 'idle';
@@ -204,6 +204,12 @@ export class FishingLoop {
 
 	recast(): FishingEvent | null {
 		return this.cast(this.population, this.removeFn);
+	}
+
+	dismissCaught(): void {
+		if (this.phase === 'caught') {
+			this.recast();
+		}
 	}
 
 	tick(elapsedMs: number): FishingEvent | null {
@@ -377,7 +383,7 @@ export class FishingLoop {
 			caughtAtMs: Date.now()
 		});
 		this.phase = 'caught';
-		this.recastCountdown = PLAYER_RECAST_DELAY_CAUGHT;
+		this.recastCountdown = 0;
 		return {
 			type: 'fishCaught',
 			species: fish.species,
@@ -413,7 +419,7 @@ export class FishingLoop {
 			caughtAtMs: Date.now()
 		});
 		this.phase = 'caught';
-		this.recastCountdown = PLAYER_RECAST_DELAY_CAUGHT;
+		this.recastCountdown = 0;
 		return {
 			type: 'fishCaught',
 			species: fish.species,
@@ -443,7 +449,7 @@ export class FishingLoop {
 			caughtAtMs: Date.now()
 		});
 		this.phase = 'caught';
-		this.recastCountdown = BOT_RECAST_DELAY;
+		this.recastCountdown = BOT_RECAST_DELAY_CAUGHT;
 		return {
 			type: 'fishCaught',
 			species: fish.species,
