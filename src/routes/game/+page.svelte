@@ -16,6 +16,7 @@
 	import { isTutorialCompleted, completeTutorial } from '$lib/game/tutorial';
 	import { checkIsPB, recordPB } from '$lib/game/pbs';
 	import confetti from 'canvas-confetti';
+	import ComboGridHud from '$lib/components/ComboGridHud.svelte';
 	import {
 		startWakeLock,
 		stopWakeLock,
@@ -258,6 +259,14 @@
 
 	let isMidGameChange = $derived(playerPhase === 'changing' && gameState.initialTackleChosen);
 
+	function handleQuickChange(cast: string, strata: string) {
+		const current = gameState.playerAngler?.tackle;
+		if (!current) return;
+		gameState.updateTackle({ ...current, castStrength: cast, strata });
+		gameState.resetCast();
+		gameState.cast();
+	}
+
 	let timerDisplayForModal = $derived.by(() => {
 		if (isMulti && multiplayer.startTime) {
 			const elapsed = now - multiplayer.startTime;
@@ -485,6 +494,9 @@
 					</div>
 				{/if}
 			</div>
+			{#if tackle}
+				<ComboGridHud {tackle} onselect={handleQuickChange} />
+			{/if}
 			<div class="absolute top-3 left-3 flex items-start gap-1 rounded-lg bg-black/40 px-2 py-1">
 				<div class="flex-1">
 					<p class="text-sm font-semibold tracking-wide text-white/80 uppercase">{venueName}</p>
