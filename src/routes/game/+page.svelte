@@ -14,6 +14,8 @@
 	import TackleModal from '$lib/components/TackleModal.svelte';
 	import FishingCanvas from '$lib/components/FishingCanvas.svelte';
 	import { isTutorialCompleted, completeTutorial } from '$lib/game/tutorial';
+	import { checkIsPB, recordPB } from '$lib/game/pbs';
+	import confetti from 'canvas-confetti';
 	import {
 		startWakeLock,
 		stopWakeLock,
@@ -84,7 +86,29 @@
 		if (e.weightOz <= tiers[2].maxOz) return { width: TIER_WIDTHS[2], heightScale: 1 };
 		return { width: TIER_WIDTHS[3], heightScale: MONSTER_HEIGHT };
 	});
-	let fishImageLoaded = $state(false);
+	let pbStatus = $derived.by(() => {
+		const e = lastEvent;
+		if (e?.type !== 'fishCaught' || !lastCaughtSpecies) return null;
+		return checkIsPB(e.species, e.weightOz, lastCaughtSpecies.record);
+	});
+
+	$effect(() => {
+		if (pbStatus && lastEvent?.type === 'fishCaught') {
+			recordPB(lastEvent.species, lastEvent.weightOz);
+		}
+	});
+
+	$effect(() => {
+		if (pbStatus) {
+			if (pbStatus === 'record') {
+				confetti({ particleCount: 100, spread: 80, origin: { y: 0.5 } });
+				setTimeout(() => confetti({ particleCount: 80, spread: 100, origin: { y: 0.5 } }), 300);
+				setTimeout(() => confetti({ particleCount: 60, spread: 120, origin: { y: 0.5 } }), 600);
+			} else {
+				confetti({ particleCount: 60, spread: 60, origin: { y: 0.6 } });
+			}
+		}
+	});
 	let debugMode = $state(false);
 	let intervalId: ReturnType<typeof setInterval> | null = null;
 	let now = $state(Date.now());
@@ -136,12 +160,6 @@
 	$effect(() => {
 		if (mode === 'session' && tutorialCompleted) {
 			completeTutorial();
-		}
-	});
-
-	$effect(() => {
-		if (lastEvent?.type === 'fishCaught') {
-			fishImageLoaded = false;
 		}
 	});
 
@@ -399,22 +417,30 @@
 						role="button"
 						tabindex="0"
 						onclick={handleDismissCaught}
-						onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') handleDismissCaught(); }}
+						onkeydown={(e) => {
+							if (e.key === 'Enter' || e.key === ' ') handleDismissCaught();
+						}}
 					>
-						<div class="rounded-lg bg-black/40 px-6 py-4 text-center">
+						<div class="relative rounded-lg bg-black/40 px-6 py-4 text-center">
+							{#if pbStatus}
+								<span
+									class="absolute -top-2.5 -right-2.5 inline-flex items-center rounded-full bg-amber-400 px-2 py-0.5 text-xs font-bold text-amber-900 shadow-md"
+								>
+									{pbStatus === 'record' ? 'RECORD' : 'PB'}
+								</span>
+							{/if}
 							{#if fishImageUrl && lastCaughtSpecies && fishDisplay}
 								<div class="mb-2 flex justify-center">
 									<div
 										style="transform: scaleY({fishDisplay.heightScale}); transform-origin: bottom;"
 									>
-									<img
-										src={fishImageUrl}
-										alt={lastCaughtSpecies.name}
-										class:fish-bounce-in={fishImageLoaded}
-										style="max-width: {fishDisplay.width}px; opacity: {fishImageLoaded ? 1 : 0}"
-										onload={() => (fishImageLoaded = true)}
-										loading="eager"
-									/>
+										<img
+											src={fishImageUrl}
+											alt={lastCaughtSpecies.name}
+											class="fish-bounce-in"
+											style="max-width: {fishDisplay.width}px"
+											loading="eager"
+										/>
 									</div>
 								</div>
 							{/if}

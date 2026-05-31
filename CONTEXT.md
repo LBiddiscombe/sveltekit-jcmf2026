@@ -173,9 +173,17 @@ A cast-time lower-bound filter: fish whose weight falls below the line's `minOz`
 **HookRangeCheck**:
 A strike-time gate: if the fish's weight falls outside the hook's `minOz`–`maxOz` range, the strike fails. Hook minOz values follow a similar steepened progression as lines — size 10 and below increasingly filter toward medium-plus fish, while size 2 effectively targets specimen-grade fish of the larger species.
 
+**PersonalBest (PB)**:
+The heaviest fish ever caught of a given species, stored per-species in localStorage (`jcmf-pbs`). A PB is tracked globally across all venues — not per-venue or per-lake. Triggered when a caught fish's weight exceeds the stored PB weight for that species. First catch of a species is always a PB.
+_Avoid_: Per-session best, per-classification best
+
+**RecordFish**:
+A caught fish whose weight meets or exceeds the species' `record` weight (from reference data in `Species.record`). Shown as a `[RECORD]` badge on the caught overlay in place of the standard `[PB]` badge. A record fish is always also a personal best.
+_Avoid_: World record, species record
+
 ## Not in initial scope
 
-- **Fishing Journal** (session history, match history, fish PBs)
+- **Fishing Journal** (session history, match history)
 - **Settings screen**
 
 These follow-on features are acknowledged in the README but excluded from the first buildable release.
