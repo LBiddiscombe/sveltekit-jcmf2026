@@ -25,7 +25,7 @@
 			waiting for our peg to flash and fighting to get to our number key!
 		</p>
 		<p>This remake is an ode to those times.</p>
-		<p class="text-muted">
+		<p>
 			A simple, but authentic match fishing experience combining patience, skill and the joy of
 			landing a fish. It can be played alone, or as multiplayer.
 		</p>
@@ -36,10 +36,12 @@
 		<p>Remake &copy; {new Date().getFullYear()} Lee Biddiscombe.</p>
 	</div>
 
-	<a
-		href="/menu"
-		class="mt-8 inline-flex rounded bg-primary px-6 py-3 text-white no-underline hover:bg-primary/80"
-	>
-		Back to Menu
-	</a>
+	<div class="mt-8 text-center">
+		<a
+			href="/menu"
+			class="inline-flex rounded bg-primary px-6 py-3 text-white no-underline hover:bg-primary/80"
+		>
+			Back to Menu
+		</a>
+	</div>
 </div>

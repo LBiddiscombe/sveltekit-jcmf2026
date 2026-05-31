@@ -6,7 +6,11 @@ export interface PBEntry {
 	achievedAt: number;
 }
 
-function getPBs(): Record<string, PBEntry> {
+export function clearPBs(): void {
+	localStorage.removeItem(STORAGE_KEY);
+}
+
+export function getPBs(): Record<string, PBEntry> {
 	try {
 		return JSON.parse(localStorage.getItem(STORAGE_KEY) ?? '{}');
 	} catch {

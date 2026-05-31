@@ -75,27 +75,46 @@
 						<p class="text-sm text-dark-teal/60">Compete against friends online</p>
 					</div>
 				</a>
+				<div class="flex w-full gap-4">
+					<a
+						href="/fish-log"
+						class="flex w-1/2 cursor-pointer items-center justify-center gap-2 rounded-2xl bg-white/70 px-5 py-5 text-sm font-semibold text-dark-teal shadow-md no-underline transition-shadow hover:shadow-lg"
+					>
+						<svg
+							viewBox="0 0 24 24"
+							class="h-5 w-5"
+							fill="none"
+							stroke="currentColor"
+							stroke-width="2"
+							stroke-linecap="round"
+							stroke-linejoin="round"
+						>
+							<path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+							<path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
+						</svg>
+						Fish Log
+					</a>
+					<a
+						href="/about"
+						class="flex w-1/2 cursor-pointer items-center justify-center gap-2 rounded-2xl bg-white/70 px-5 py-5 text-sm font-semibold text-dark-teal shadow-md no-underline transition-shadow hover:shadow-lg"
+					>
+						<svg
+							viewBox="0 0 24 24"
+							class="h-5 w-5"
+							fill="none"
+							stroke="currentColor"
+							stroke-width="2"
+							stroke-linecap="round"
+							stroke-linejoin="round"
+						>
+							<circle cx="12" cy="12" r="10" />
+							<line x1="12" y1="16" x2="12" y2="12" />
+							<line x1="12" y1="8" x2="12.01" y2="8" />
+						</svg>
+						About
+					</a>
+				</div>
 			</div>
 		</div>
-
-		<a
-			href="/about"
-			aria-label="About this game"
-			class="absolute -top-2 -right-2 z-50 flex h-12 w-12 cursor-pointer items-center justify-center rounded-full bg-white/90 text-dark-teal/80 shadow-md no-underline transition-colors hover:bg-white hover:text-dark-teal"
-		>
-			<svg
-				viewBox="0 0 24 24"
-				class="h-7 w-7"
-				fill="none"
-				stroke="currentColor"
-				stroke-width="2.5"
-				stroke-linecap="round"
-				stroke-linejoin="round"
-			>
-				<circle cx="12" cy="12" r="10" />
-				<line x1="12" y1="16" x2="12" y2="12" />
-				<line x1="12" y1="8" x2="12.01" y2="8" />
-			</svg>
-		</a>
 	</div>
 </div>

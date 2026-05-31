@@ -154,6 +154,7 @@ Prep selection state is sourced from **PrepState** (mode, venue, lake, peg, time
    - **Lobby** (`/multiplayer/lobby`): shows match code (host), player list with peg assignments (own peg in focus with description, others listed below), Start button (host only). Host clicks Start → timer begins for all → all navigate to game page (tackle modal).
 5. **Game** — the fishing loop and tackle selection (full-screen modal when the player is in `changing` phase). During a Solo Match or Multiplayer game, the game clock runs throughout tackle selection (time decrements even while the modal is open).
 6. **Results** — post-session/match summary. Sessions show a personal catch list (species, weight, count). Solo Matches show a leaderboard (player + bots). Multiplayer shows a leaderboard of human players sourced from server broadcasts.
+7. **FishLog** (`/fish-log`) — a read-only gallery of all species with PB weight and scaled fish image per species. Accessed via a button on the Menu page.
 
 ## Data
 
@@ -181,12 +182,9 @@ _Avoid_: Per-session best, per-classification best
 A caught fish whose weight meets or exceeds the species' `record` weight (from reference data in `Species.record`). Shown as a `[RECORD]` badge on the caught overlay in place of the standard `[PB]` badge. A record fish is always also a personal best.
 _Avoid_: World record, species record
 
-## Not in initial scope
-
-- **Fishing Journal** (session history, match history)
-- **Settings screen**
-
-These follow-on features are acknowledged in the README but excluded from the first buildable release.
+**FishLog**:
+A read-only page (`/fish-log`) listing every species with its fish image scaled by PB tier (small/medium/specimen/monster — same logic as the catch popup). Species with no PB show a ghosted medium-sized image and "Not yet caught". Includes a "Reset All PBs" button with confirmation.
+_Avoid_: Journal, fishing diary, fish book
 
 ## Fish Generation
 
