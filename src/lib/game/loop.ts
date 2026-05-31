@@ -60,6 +60,10 @@ export class FishingLoop {
 	landingWindowMs = 0;
 	landingWindowRemaining = 0;
 
+	get tackleSelection(): TackleSelection {
+		return this.tackle;
+	}
+
 	private speciesMap: Map<string, Species>;
 	private population: FishData[] = [];
 	private removeFn: (id: string) => void = () => {};

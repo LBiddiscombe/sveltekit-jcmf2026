@@ -215,7 +215,7 @@ export class GameState {
 
 			const loop = controller.loop;
 			angler.phase = loop.phase;
-			angler.tackle = loop['tackle' as keyof FishingLoop] as unknown as TackleSelection;
+			angler.tackle = loop.tackleSelection;
 
 			const event = controller.tick(elapsedMs);
 			if (event && event.type === 'fishCaught') {

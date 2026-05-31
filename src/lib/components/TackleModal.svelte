@@ -49,7 +49,7 @@
 
 	const box = new TackleBox();
 	const reelOptions = box.reels.filter((r) => r.name !== 'n/a');
-	const noReel = box.reels.find((r) => r.name === 'n/a')!;
+	const noReel = box.reels.find((r) => r.name === 'n/a') ?? reelOptions[0];
 
 	// svelte-ignore state_referenced_locally
 	let tackle = $state({ ...initialTackle });
