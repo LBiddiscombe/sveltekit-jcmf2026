@@ -137,9 +137,7 @@
 			? { bite: true, reeling: true, intro: true }
 			: { bite: false, reeling: true, intro: false }
 	);
-	let tutorialCompleted = $derived(
-		hintsConsumed.bite && hintsConsumed.reeling
-	);
+	let tutorialCompleted = $derived(hintsConsumed.bite && hintsConsumed.reeling);
 
 	let currentHint = $derived.by(() => {
 		if (mode !== 'session' || tutorialCompleted) return '';
@@ -605,41 +603,6 @@
 							class="h-6 w-6 rounded object-contain"
 						/>
 						<span class="text-xs text-muted">{tackle.bait.name}</span>
-					</div>
-					<div class="flex flex-col items-center gap-0.5">
-						<svg viewBox="0 0 24 24" class="h-6 w-6 text-muted">
-							<circle cx="4" cy="12" r="2" fill="currentColor" />
-							<line
-								x1="6"
-								y1="12"
-								x2={tackle.castStrength === 'Short'
-									? '14'
-									: tackle.castStrength === 'Medium'
-										? '18'
-										: '22'}
-								y2="12"
-								stroke="currentColor"
-								stroke-width="2"
-								stroke-linecap="round"
-							/>
-						</svg>
-						<span class="text-xs text-muted">{tackle.castStrength}</span>
-					</div>
-					<div class="flex flex-col items-center gap-0.5">
-						<svg viewBox="0 0 24 24" class="h-6 w-6 text-muted">
-							{#each ['Top', 'Middle', 'Bottom'] as layer, i (layer)}
-								<rect
-									x="6"
-									y={4 + i * 6}
-									width="12"
-									height="4"
-									rx="1"
-									fill="currentColor"
-									opacity={tackle.strata === layer ? 1 : 0.25}
-								/>
-							{/each}
-						</svg>
-						<span class="text-xs text-muted">{tackle.strata}</span>
 					</div>
 				</div>
 			</button>

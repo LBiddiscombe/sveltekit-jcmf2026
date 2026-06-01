@@ -174,7 +174,7 @@
 			}
 
 			function castFishY(castStr: string): number {
-				const yMap: Record<string, number> = { Short: 0.6, Medium: 0.4, Long: 0.2 };
+				const yMap: Record<string, number> = { Short: 0.5, Medium: 0.3, Long: 0.1 };
 				return (yMap[castStr] ?? 0.4) * p.height;
 			}
 
