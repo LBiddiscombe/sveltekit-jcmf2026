@@ -6,7 +6,7 @@
 		species: string;
 	}
 
-	let { events }: { events: CatchToastEvent[] } = $props();
+	let { events = [] }: { events: CatchToastEvent[] } = $props();
 
 	let processedCount = 0;
 	let currentIndex = $state(-1);
