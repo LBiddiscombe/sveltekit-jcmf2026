@@ -168,8 +168,6 @@ describe('GameState match ending', () => {
 			pattern: [],
 			stepMs: 1000
 		};
-		loop.reelTimerMs = 100;
-		loop.reelTimerRemaining = 100;
 
 		armExpiry(gs);
 		gs.tick(100);
@@ -177,10 +175,7 @@ describe('GameState match ending', () => {
 		expect(gs.timeExpired).toBe(true);
 		expect(gs.phase).toBe('fishing');
 
-		loop.advanceReelTimer(loop.reelTimerRemaining);
-		expect(loop.phase).toBe('landing');
-
-		loop.reel();
+		gs.handleReelingOutcome('caught');
 		expect(loop.phase).toBe('caught');
 
 		gs.tick(100);
@@ -433,5 +428,236 @@ describe('GameState match ending', () => {
 
 		expect(bot.catch.length).toBeGreaterThanOrEqual(2);
 		expect(bot.catch.length).toBeLessThanOrEqual(botFish.length);
+	});
+});
+
+describe('GameState method-level delegation', () => {
+	let gs: GameState;
+
+	beforeEach(() => {
+		gs = new GameState();
+	});
+
+	afterEach(() => {
+		vi.restoreAllMocks();
+	});
+
+	describe('strike', () => {
+		it('returns null when playerLoop is not initialized', () => {
+			expect(gs.strike()).toBeNull();
+		});
+
+		it('delegates to loop.strike and syncs state', () => {
+			gs.beginFishing(makePlayer(), venue, lake, 10);
+			gs.cast();
+			gs.tick(100);
+
+			const loop = gs.playerLoop!;
+			loop.phase = 'bite';
+			loop.currentFish = {
+				id: 'f1',
+				species: 'Roach',
+				strata: 'Bottom',
+				classificationLabel: 'Small',
+				tierIndex: 0,
+				weightOz: 12,
+				castStrength: 'Medium',
+				preferredBait: 'maggot',
+				pattern: [],
+				stepMs: 1000
+			};
+
+			const event = gs.strike();
+			expect(event).toBeNull();
+			expect(gs.playerSnapshot?.phase).toBe('reeling');
+			expect(gs.lastEvent).toBeNull();
+		});
+
+		it('returns hookBroken when fish exceeds hook capacity', () => {
+			gs.beginFishing(makePlayer(), venue, lake, 10);
+			gs.cast();
+			gs.tick(100);
+
+			const loop = gs.playerLoop!;
+			loop.phase = 'bite';
+			loop.currentFish = {
+				id: 'f1',
+				species: 'Roach',
+				strata: 'Bottom',
+				classificationLabel: 'Monster',
+				tierIndex: 3,
+				weightOz: 300,
+				castStrength: 'Medium',
+				preferredBait: 'maggot',
+				pattern: [],
+				stepMs: 1000
+			};
+
+			const event = gs.strike();
+			expect(event).toEqual({ type: 'hookBroken' });
+			expect(gs.lastEvent).toEqual({ type: 'hookBroken' });
+		});
+	});
+
+	describe('handleReelingOutcome', () => {
+		it('returns null when playerLoop is not initialized', () => {
+			expect(gs.handleReelingOutcome('caught')).toBeNull();
+		});
+
+		it('catches fish and updates player state when result is caught', () => {
+			gs.beginFishing(makePlayer(), venue, lake, 10);
+
+			const loop = gs.playerLoop!;
+			loop.phase = 'reeling';
+			loop.currentFish = {
+				id: 'f1',
+				species: 'Roach',
+				strata: 'Bottom',
+				classificationLabel: 'Small',
+				tierIndex: 0,
+				weightOz: 12,
+				castStrength: 'Medium',
+				preferredBait: 'maggot',
+				pattern: [],
+				stepMs: 1000
+			};
+
+			const event = gs.handleReelingOutcome('caught');
+			expect(event?.type).toBe('fishCaught');
+			const player = gs.playerAngler!;
+			expect(player.catch).toHaveLength(1);
+			expect(player.totalWeightOz).toBe(12);
+			expect(gs.catchAudit).toHaveLength(1);
+		});
+
+		it('returns fishGotAway when result is lost and does not update player state', () => {
+			gs.beginFishing(makePlayer(), venue, lake, 10);
+			gs.cast();
+			gs.tick(100);
+
+			const loop = gs.playerLoop!;
+			loop.phase = 'reeling';
+			loop.currentFish = {
+				id: 'f1',
+				species: 'Roach',
+				strata: 'Bottom',
+				classificationLabel: 'Small',
+				tierIndex: 0,
+				weightOz: 12,
+				castStrength: 'Medium',
+				preferredBait: 'maggot',
+				pattern: [],
+				stepMs: 1000
+			};
+
+			const event = gs.handleReelingOutcome('lost');
+			expect(event).toEqual({ type: 'fishGotAway' });
+			expect(gs.lastEvent).toEqual({ type: 'fishGotAway' });
+			const player = gs.playerAngler!;
+			expect(player.catch).toHaveLength(0);
+		});
+
+		it('sets lastEvent on caught outcome', () => {
+			gs.beginFishing(makePlayer(), venue, lake, 10);
+			gs.cast();
+			gs.tick(100);
+
+			const loop = gs.playerLoop!;
+			loop.phase = 'reeling';
+			loop.currentFish = {
+				id: 'f1',
+				species: 'Roach',
+				strata: 'Bottom',
+				classificationLabel: 'Small',
+				tierIndex: 0,
+				weightOz: 12,
+				castStrength: 'Medium',
+				preferredBait: 'maggot',
+				pattern: [],
+				stepMs: 1000
+			};
+
+			gs.handleReelingOutcome('caught');
+			expect(gs.lastEvent?.type).toBe('fishCaught');
+		});
+	});
+
+	describe('dismissCaught', () => {
+		it('is safe when playerLoop is not initialized', () => {
+			expect(() => gs.dismissCaught()).not.toThrow();
+		});
+
+		it('resets to casting after dismissing caught fish', () => {
+			gs.beginFishing(makePlayer(), venue, lake, 10);
+			gs.cast();
+			gs.tick(100);
+
+			const loop = gs.playerLoop!;
+			loop.phase = 'caught';
+
+			gs.dismissCaught();
+			expect(gs.playerSnapshot?.phase).toBe('waiting');
+		});
+	});
+
+	describe('resetCast', () => {
+		it('is safe when playerLoop is not initialized', () => {
+			expect(() => gs.resetCast()).not.toThrow();
+		});
+
+		it('resets player loop to idle', () => {
+			gs.beginFishing(makePlayer(), venue, lake, 10);
+			gs.cast();
+			gs.tick(100);
+
+			const loop = gs.playerLoop!;
+			loop.phase = 'lost';
+
+			gs.resetCast();
+			expect(gs.playerSnapshot?.phase).toBe('idle');
+			expect(gs.playerLoop!.phase).toBe('idle');
+		});
+	});
+
+	describe('beginChangeTackle / finishChangingTackle', () => {
+		it('beginChangeTackle sets loop to changing and syncs state', () => {
+			gs.beginFishing(makePlayer(), venue, lake, 10);
+			gs.beginChangeTackle();
+			expect(gs.playerSnapshot?.phase).toBe('changing');
+			expect(gs.playerLoop!.phase).toBe('changing');
+		});
+
+		it('finishChangingTackle sets initialTackleChosen and transitions to idle', () => {
+			gs.beginFishing(makePlayer(), venue, lake, 10);
+			gs.beginChangeTackle();
+			expect(gs.initialTackleChosen).toBe(false);
+
+			gs.finishChangingTackle();
+			expect(gs.initialTackleChosen).toBe(true);
+			expect(gs.playerSnapshot?.phase).toBe('idle');
+		});
+
+		it('finishChangingTackle is safe when loop is not in changing phase', () => {
+			gs.beginFishing(makePlayer(), venue, lake, 10);
+			gs.playerLoop!.phase = 'waiting';
+
+			gs.finishChangingTackle();
+			expect(gs.initialTackleChosen).toBe(true);
+			expect(gs.playerLoop!.phase).toBe('waiting');
+		});
+	});
+
+	describe('updateTackle', () => {
+		it('updates player tackle and loop tackle', () => {
+			gs.beginFishing(makePlayer(), venue, lake, 10);
+			const newTackle: TackleSelection = {
+				...tackle,
+				bait: { name: 'worm', image: 'worm.png', minOz: 2, maxOz: 256 }
+			};
+
+			gs.updateTackle(newTackle);
+			expect(gs.playerAngler!.tackle.bait.name).toBe('worm');
+			expect(gs.playerLoop!.tackleSelection.bait.name).toBe('worm');
+		});
 	});
 });

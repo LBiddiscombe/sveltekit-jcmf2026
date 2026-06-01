@@ -331,45 +331,6 @@ export class GameState {
 		this.syncPlayerState();
 	}
 
-	reel(): FishingEvent | null {
-		this.syncLoopTackle();
-		const event = this.playerLoop?.reel() ?? null;
-		if (event?.type === 'fishCaught') {
-			const player = this.playerAngler;
-			if (player) {
-				player.catch.push({
-					species: event.species,
-					classificationLabel: event.classificationLabel,
-					weightOz: event.weightOz,
-					caughtAtMs: Date.now()
-				});
-				player.totalWeightOz += event.weightOz;
-				if (!player.biggestFish || event.weightOz > player.biggestFish.weightOz) {
-					player.biggestFish = {
-						species: event.species,
-						classificationLabel: event.classificationLabel,
-						weightOz: event.weightOz,
-						caughtAtMs: Date.now()
-					};
-				}
-				this.catchAudit = [
-					...this.catchAudit,
-					{
-						caughtAtMs: Date.now() - this.sessionStartMs,
-						anglerId: player.id,
-						anglerName: player.name,
-						species: event.species,
-						classificationLabel: event.classificationLabel,
-						weightOz: event.weightOz
-					}
-				];
-			}
-		}
-		this.lastEvent = event;
-		this.syncPlayerState();
-		return event;
-	}
-
 	handleReelingOutcome(result: 'caught' | 'lost'): FishingEvent | null {
 		const event = this.playerLoop?.handleReelingOutcome(result) ?? null;
 		if (event) this.lastEvent = event;

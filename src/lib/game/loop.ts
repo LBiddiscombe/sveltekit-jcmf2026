@@ -356,46 +356,6 @@ export class FishingLoop {
 		return null;
 	}
 
-	reel(): FishingEvent | null {
-		if (!this.currentFish) return null;
-
-		if (this.phase === 'reeling') {
-			this.phase = 'lost';
-			this.biteWindowRemaining = 0;
-			this.biteWindowTotal = 0;
-			this.recastCountdown = PLAYER_RECAST_DELAY_LOST;
-			return { type: 'fishGotAway' };
-		}
-
-		if (this.phase !== 'landing') return null;
-
-		const capacity = this.tackle.line.maxOz;
-		const success = this.currentFish.weightOz <= capacity || this.rng() < 0.3;
-		if (!success) {
-			this.phase = 'lost';
-			this.recastCountdown = PLAYER_RECAST_DELAY_LOST;
-			return { type: 'lineBroke' };
-		}
-
-		const fish = this.currentFish;
-		this.removeFn(fish.id);
-		this.population = this.population.filter((f) => f.id !== fish.id);
-		this.caughtFish.push({
-			species: fish.species,
-			classificationLabel: fish.classificationLabel,
-			weightOz: fish.weightOz,
-			caughtAtMs: Date.now()
-		});
-		this.phase = 'caught';
-		this.recastCountdown = 0;
-		return {
-			type: 'fishCaught',
-			species: fish.species,
-			classificationLabel: fish.classificationLabel,
-			weightOz: fish.weightOz
-		};
-	}
-
 	handleReelingOutcome(result: 'caught' | 'lost'): FishingEvent | null {
 		if (this.phase !== 'reeling' || !this.currentFish) return null;
 
@@ -406,14 +366,6 @@ export class FishingLoop {
 		}
 
 		const fish = this.currentFish;
-		const capacity = this.tackle.line.maxOz;
-		const success = fish.weightOz <= capacity || this.rng() < 0.3;
-		if (!success) {
-			this.phase = 'lost';
-			this.recastCountdown = PLAYER_RECAST_DELAY_LOST;
-			return { type: 'lineBroke' };
-		}
-
 		this.removeFn(fish.id);
 		this.population = this.population.filter((f) => f.id !== fish.id);
 		this.caughtFish.push({
