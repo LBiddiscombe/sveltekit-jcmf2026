@@ -65,12 +65,12 @@
 				>
 					{#if item.image}
 						{#if itemScales?.[item.name]}
-							{@const scale = itemScales[item.name]}
+							{@const itemScale = itemScales[item.name]}
 							<div class="flex h-16 w-16 items-center justify-center">
 								<img
 									src={images[`${imageBasePath}/${item.image}`] ?? ''}
 									alt={item.name}
-									style="width: calc(4rem * {scale}); height: calc(4rem * {scale})"
+									style="width: calc(4rem * {itemScale}); height: calc(4rem * {itemScale})"
 									class="rounded object-contain"
 								/>
 							</div>

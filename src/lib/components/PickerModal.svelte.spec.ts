@@ -10,9 +10,9 @@ const sampleItems = [
 ];
 
 const sampleImages: Record<string, string> = {
-	'/img/rods/rod-float.png': '/img/rods/rod-float.png',
-	'/img/rods/rod-leger.png': '/img/rods/rod-leger.png',
-	'/img/rods/rod-pole.png': '/img/rods/rod-pole.png'
+	'/img/rods/rod-float.png': '',
+	'/img/rods/rod-leger.png': '',
+	'/img/rods/rod-pole.png': ''
 };
 
 describe('PickerModal.svelte', () => {

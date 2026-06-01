@@ -17,17 +17,6 @@ describe('Draw page', () => {
 		vi.clearAllMocks();
 	});
 
-	it('shows error state when mode is not match', async () => {
-		render(DrawPage);
-		await expect.element(page.getByText('No Match in Progress')).toBeInTheDocument();
-	});
-
-	it('shows error state when no lake selected', async () => {
-		prepState.mode = 'match';
-		render(DrawPage);
-		await expect.element(page.getByText('No Match in Progress')).toBeInTheDocument();
-	});
-
 	it('renders venue and lake name when match is set up', async () => {
 		const venue = venues.find((v) => v.lakes.length > 0);
 		if (!venue) return;

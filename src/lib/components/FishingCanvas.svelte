@@ -438,6 +438,7 @@
 			};
 		};
 
+		p5.disableFriendlyErrors = true;
 		p5Inst = new p5(sketch, container);
 
 		return () => {
