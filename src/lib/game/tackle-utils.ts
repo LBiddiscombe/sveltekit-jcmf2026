@@ -3,13 +3,13 @@ import type { TackleSelection, Peg, Lake } from '$lib/data';
 import { passesTolerances, fishMatchScore, weightedSelectIndex } from './population';
 
 export const defaultTackle: TackleSelection = {
-	rod: { name: 'Float', image: 'rod-float.png', deter: 0.1, rodMultiplier: 1.0 },
-	reel: { name: 'Fixed Spool', image: 'reel-fixed-spool.png', deter: 0.2 },
-	line: { name: '4 lb', image: 'line.png', size: 64, minOz: 3, maxOz: 160, deter: 0.15 },
-	hook: { name: '16', image: 'hook.png', size: 16, minOz: 10, maxOz: 200, deter: 0.15 },
+	rod: { name: 'Pole', image: 'rod-pole.png', deter: 0, rodMultiplier: 0.33 },
+	reel: { name: 'n/a', image: '', deter: 0 },
+	line: { name: '2 lb', image: 'line.png', size: 32, minOz: 1, maxOz: 96, deter: 0 },
+	hook: { name: '22', image: 'hook.png', size: 22, minOz: 1, maxOz: 64, deter: 0 },
 	bait: baits[0],
-	strata: 'Bottom',
-	castStrength: 'Medium'
+	strata: 'Top',
+	castStrength: 'Short'
 };
 
 export function pickBotTackle(skill: number, peg: Peg, lake: Lake): TackleSelection {

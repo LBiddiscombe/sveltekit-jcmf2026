@@ -153,7 +153,7 @@ Prep selection state is sourced from **PrepState** (mode, venue, lake, peg, time
    - **Join** (`/multiplayer/join`): player enters name + match code → connects to match
    - **Lobby** (`/multiplayer/lobby`): shows match code (host), player list with peg assignments (own peg in focus with description, others listed below), Start button (host only). Host clicks Start → timer begins for all → all navigate to game page (tackle modal).
 5. **Game** — the fishing loop and tackle selection (full-screen modal when the player is in `changing` phase). During a Solo Match or Multiplayer game, the game clock runs throughout tackle selection (time decrements even while the modal is open).
-6. **Results** — post-session/match summary. Sessions show a personal catch list (species, weight, count). Solo Matches show a leaderboard (player + bots). Multiplayer shows a leaderboard of human players sourced from server broadcasts.
+6. **Results** — post-game summary. **Session** shows a personal species breakdown (count, total weight, biggest fish per species). **Competitive** modes (Solo Match and Multiplayer) show a ranked leaderboard (podium + rest list) — no personal breakdown, since your performance is already visible in the leaderboard ranks.
 7. **FishLog** (`/fish-log`) — a read-only gallery of all species with PB weight and scaled fish image per species. Accessed via a button on the Menu page.
 
 ## Data

@@ -6,10 +6,12 @@
 	import { multiplayer } from '$lib/game/party/connection.svelte';
 	import DebugPanel from '$lib/components/DebugPanel.svelte';
 	import Leaderboard from './Leaderboard.svelte';
+	import CatchBreakdown from '$lib/components/CatchBreakdown.svelte';
 	import { formatWeight } from '$lib/utils/format';
 
 	let isMulti = $derived(page.url.searchParams.has('multi'));
 	let mode = $derived(isMulti ? 'multiplayer' : prepState.mode);
+	let isCompetitive = $derived(isMulti || mode === 'match');
 	let playerAngler = $derived(gameState.playerAngler);
 	let anglers = $derived(gameState.anglers);
 	let debugMode = $state(false);
@@ -29,6 +31,10 @@
 		}
 		return [...totals.values()].sort((a, b) => b.totalOz - a.totalOz);
 	});
+
+	let leaderboardEmpty = $derived(
+		isMulti ? multiLeaderboard.length === 0 : anglers.every((a) => a.catch.length === 0)
+	);
 
 	let speciesGroups = $derived.by(() => {
 		const map = new SvelteMap<
@@ -55,8 +61,8 @@
 
 	let totalFish = $derived(playerAngler?.catch.length ?? 0);
 	let totalWeightOz = $derived(playerAngler?.totalWeightOz ?? 0);
-
-	let btnHref = $derived('/menu');
+	let fishList = $derived(playerAngler?.catch ?? []);
+	let playerBiggestFish = $derived(playerAngler?.biggestFish ?? null);
 
 	const pegImages = import.meta.glob<string>('$lib/assets/images/pegs/*.jpeg', {
 		eager: true,
@@ -79,15 +85,12 @@
 </script>
 
 <div class="min-h-dvh lg:flex lg:flex-row">
-	<div class="flex min-h-dvh flex-1 flex-col items-center justify-center gap-6 p-4">
-		<h1 class="text-2xl font-bold text-dark-teal sm:text-3xl md:text-4xl">
-			{isMulti ? 'Match Results' : mode === 'match' ? 'Match Results' : 'Session Results'}
-		</h1>
-
-		{#if isMulti || mode === 'match'}
-			{#if isMulti && multiLeaderboard.length === 0}
-				<p class="text-base text-muted">No fish were caught</p>
-			{:else if !isMulti && mode === 'match' && anglers.every((a) => a.catch.length === 0)}
+	{#if isCompetitive}
+		<div class="flex min-h-dvh flex-1 flex-col items-center justify-center gap-6 p-4">
+			<h1 class="text-2xl font-bold text-dark-teal sm:text-3xl md:text-4xl">
+				Match Results
+			</h1>
+			{#if leaderboardEmpty}
 				<p class="text-base text-muted">No fish were caught</p>
 			{:else}
 				<Leaderboard
@@ -100,71 +103,21 @@
 					{formatWeight}
 				/>
 			{/if}
-			{#if isMulti}
-				<div class="mt-4 w-full max-w-md">
-					<h2 class="mb-2 text-xl font-bold text-dark-teal">Your Catch</h2>
-					{#if totalFish === 0}
-						<p class="text-base text-muted">No fish were caught</p>
-					{:else}
-						<div class="space-y-2">
-							{#each [...speciesGroups] as [species, group] (species)}
-								<div class="rounded border border-olive bg-surface/30 p-2 text-sm text-dark-teal">
-									<div class="flex items-baseline justify-between gap-2">
-										<span>{species}</span>
-										<span class="text-nowrap"
-											>{group.count} @ {formatWeight(group.totalWeight)}</span
-										>
-									</div>
-									<div class="mt-0.5 text-sm text-muted">
-										Best: {formatWeight(group.biggestWeight)}
-										{group.biggestLabel}
-									</div>
-								</div>
-							{/each}
-							<div
-								class="flex justify-between rounded border border-olive bg-surface/30 p-2 font-bold text-dark-teal text-sm"
-							>
-								<span>Total</span>
-								<span>{totalFish} fish, {formatWeight(totalWeightOz)}</span>
-							</div>
-						</div>
-					{/if}
-				</div>
-			{/if}
-		{:else}
-			<p class="text-xl text-muted">Your catch — species, weight, count</p>
-			{#if totalFish === 0}
-				<p class="text-base text-muted">No fish were caught</p>
-			{:else}
-				<div class="w-full max-w-xs space-y-2">
-					{#each [...speciesGroups] as [species, group] (species)}
-						<div class="rounded border border-olive bg-surface/30 p-2 text-sm text-dark-teal">
-							<div class="flex items-baseline justify-between gap-2">
-								<span>{species}</span>
-								<span class="text-nowrap">{group.count} @ {formatWeight(group.totalWeight)}</span>
-							</div>
-							<div class="mt-0.5 text-sm text-muted">
-								Best: {formatWeight(group.biggestWeight)}
-								{group.biggestLabel}
-							</div>
-						</div>
-					{/each}
-					<div
-						class="flex justify-between rounded border border-olive bg-surface/30 p-2 font-bold text-dark-teal text-sm"
-					>
-						<span>Total</span>
-						<span>{totalFish} fish, {formatWeight(totalWeightOz)}</span>
-					</div>
-				</div>
-			{/if}
-		{/if}
-		<a
-			{...{ href: btnHref }}
-			class="mt-4 inline-flex min-h-[44px] items-center justify-center rounded bg-primary px-6 py-3 text-center text-white no-underline hover:bg-primary/80"
-		>
-			Main Menu
-		</a>
-	</div>
+			<a
+				{...{ href: '/menu' }}
+				class="inline-flex min-h-[44px] items-center justify-center rounded bg-primary px-6 py-3 text-center text-white no-underline hover:bg-primary/80"
+			>
+				Main Menu
+			</a>
+		</div>
+	{:else}
+		<div class="flex min-h-dvh flex-1 flex-col">
+			<h1 class="flex-none px-4 pt-8 text-center text-2xl font-bold text-dark-teal sm:text-3xl md:text-4xl">
+				Session Results
+			</h1>
+			<CatchBreakdown {speciesGroups} {totalFish} {totalWeightOz} biggestFish={playerBiggestFish} />
+		</div>
+	{/if}
 
 	{#if debugMode}
 		<div class="hidden lg:block">

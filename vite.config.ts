@@ -19,11 +19,11 @@ function suppressNoisyBuildWarnings(): import('vite').Plugin {
 				...logger,
 				warn(msg: unknown, options?: unknown) {
 					if (skip(msg)) return;
-					logger.warn(msg, options);
+					logger.warn(msg as string, options as import('vite').LogOptions);
 				},
 				error(msg: unknown, options?: unknown) {
 					if (skip(msg)) return;
-					logger.error(msg, options);
+					logger.error(msg as string, options as import('vite').LogErrorOptions);
 				}
 			});
 			config.customLogger = wrap(existing);
