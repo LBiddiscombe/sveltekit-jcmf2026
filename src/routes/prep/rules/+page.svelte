@@ -4,7 +4,7 @@
 	import { prepState } from '$lib/game/prep-state.svelte';
 	import { gameState } from '$lib/game/state.svelte';
 	import { prepDrawUrl } from '$lib/game/prep-flow';
-	import { isTutorialCompleted, resetTutorial } from '$lib/game/tutorial';
+	import { isTutorialCompleted, resetTutorial, completeTutorial } from '$lib/game/tutorial';
 	import { bots } from '$lib/data';
 	import Filmstrip from '$lib/components/Filmstrip.svelte';
 	import type { FilmstripItem } from '$lib/components/Filmstrip.svelte';
@@ -12,11 +12,14 @@
 	const NAME_KEY = 'jcmf-player-name';
 	const AVATAR_KEY = 'jcmf-player-avatar';
 
-	let tutorialCompleted = $state(isTutorialCompleted());
+	let showHints = $state(!isTutorialCompleted());
 
-	function handleResetHints() {
-		resetTutorial();
-		tutorialCompleted = false;
+	function handleShowHintsChange() {
+		if (showHints) {
+			resetTutorial();
+		} else {
+			completeTutorial();
+		}
 	}
 
 	let mode = $derived(prepState.mode);
@@ -130,18 +133,11 @@
 				onselect={(id) => selectPeg(id)}
 			/>
 
-			{#if tutorialCompleted}
-				<div class="mx-auto w-full max-w-sm px-4">
-					<button
-						onclick={handleResetHints}
-						class="w-full cursor-pointer text-center text-xs text-muted underline hover:text-dark-teal"
-					>
-						Show hints again
-					</button>
-				</div>
-			{/if}
-
 			<div class="mx-auto mt-auto w-full max-w-sm px-4">
+				<label class="mb-3 flex cursor-pointer items-center justify-center gap-2 text-base text-muted hover:text-dark-teal">
+					<input type="checkbox" bind:checked={showHints} onchange={handleShowHintsChange} class="h-3.5 w-3.5 cursor-pointer accent-primary" />
+					Show hints
+				</label>
 				<button
 					onclick={goToTackle}
 					class="inline-flex w-full shrink-0 cursor-pointer items-center justify-center gap-2 rounded-xl bg-primary py-3 text-base font-semibold text-white shadow-lg transition-all hover:bg-primary/90 active:scale-[0.98]"
