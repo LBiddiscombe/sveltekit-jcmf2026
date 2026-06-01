@@ -234,7 +234,7 @@ export class GameState {
 
 		if (this.timeExpired && this.playerLoop) {
 			const phase = this.playerLoop.phase;
-			if (phase !== 'reeling' && phase !== 'landing') {
+			if (phase !== 'reeling') {
 				this.playerLoop.resetCast();
 				this.syncPlayerState();
 			}
@@ -246,7 +246,7 @@ export class GameState {
 
 		if (this.timeExpired && this.playerLoop) {
 			const phase = this.playerLoop.phase;
-			if (phase !== 'reeling' && phase !== 'landing') {
+			if (phase !== 'reeling') {
 				this.playerLoop.resetCast();
 				this.syncPlayerState();
 			}

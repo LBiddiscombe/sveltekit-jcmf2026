@@ -15,7 +15,6 @@ export type FishingPhase =
 	| 'bite'
 	| 'striking'
 	| 'reeling'
-	| 'landing'
 	| 'caught'
 	| 'lost'
 	| 'finished';
@@ -27,8 +26,7 @@ export type FishingEvent =
 	| { type: 'fishLost' }
 	| { type: 'hookBroken' }
 	| { type: 'fishGotAway' }
-	| { type: 'lineBroke' }
-	| { type: 'tooMuchSlackLine' };
+	| { type: 'lineBroke' };
 
 export interface PlayerLoopSnapshot {
 	phase: FishingPhase;
@@ -57,8 +55,6 @@ export class FishingLoop {
 	biteWindowTotal = 0;
 	reelTimerMs = 0;
 	reelTimerRemaining = 0;
-	landingWindowMs = 0;
-	landingWindowRemaining = 0;
 
 	get tackleSelection(): TackleSelection {
 		return this.tackle;
@@ -99,8 +95,6 @@ export class FishingLoop {
 		this.biteWindowTotal = 0;
 		this.reelTimerMs = 0;
 		this.reelTimerRemaining = 0;
-		this.landingWindowMs = 0;
-		this.landingWindowRemaining = 0;
 		this.recastCountdown = 0;
 		this.blankPatienceMs = 0;
 	}
@@ -145,11 +139,6 @@ export class FishingLoop {
 	private calcReelDuration(fish: FishData): number {
 		const ratio = Math.min(1, fish.weightOz / this.tackle.line.maxOz);
 		return Math.floor(3000 + ratio * 7000);
-	}
-
-	private calcLandingWindow(fish: FishData): number {
-		const ratio = Math.min(1, fish.weightOz / this.tackle.line.maxOz);
-		return Math.floor(2000 - ratio * 1000);
 	}
 
 	private selectFish(population: FishData[]): FishData | null {
@@ -275,16 +264,6 @@ export class FishingLoop {
 			return null;
 		}
 
-		if (this.phase === 'landing') {
-			this.landingWindowRemaining -= elapsedMs;
-			if (this.landingWindowRemaining <= 0) {
-				this.phase = 'lost';
-				this.recastCountdown = PLAYER_RECAST_DELAY_LOST;
-				return { type: 'tooMuchSlackLine' };
-			}
-			return null;
-		}
-
 		if (this.phase === 'caught' || this.phase === 'lost') {
 			if (this.recastCountdown > 0) {
 				this.recastCountdown -= elapsedMs;
@@ -298,16 +277,6 @@ export class FishingLoop {
 		return null;
 	}
 
-	advanceReelTimer(elapsedMs: number): void {
-		if (this.phase !== 'reeling') return;
-		this.reelTimerRemaining -= elapsedMs;
-		if (this.reelTimerRemaining <= 0 && this.currentFish) {
-			this.phase = 'landing';
-			this.landingWindowMs = this.calcLandingWindow(this.currentFish);
-			this.landingWindowRemaining = this.landingWindowMs;
-		}
-	}
-
 	resetCast(): void {
 		this.phase = 'idle';
 		this.currentFish = null;
@@ -317,8 +286,6 @@ export class FishingLoop {
 		this.biteWindowTotal = 0;
 		this.reelTimerMs = 0;
 		this.reelTimerRemaining = 0;
-		this.landingWindowMs = 0;
-		this.landingWindowRemaining = 0;
 		this.recastCountdown = 0;
 		this.blankPatienceMs = 0;
 	}
@@ -351,8 +318,6 @@ export class FishingLoop {
 		this.phase = 'reeling';
 		this.reelTimerMs = this.calcReelDuration(fish);
 		this.reelTimerRemaining = this.reelTimerMs;
-		this.landingWindowMs = 0;
-		this.landingWindowRemaining = 0;
 		return null;
 	}
 
@@ -423,8 +388,6 @@ export class FishingLoop {
 		this.biteWindowTotal = 0;
 		this.reelTimerMs = 0;
 		this.reelTimerRemaining = 0;
-		this.landingWindowMs = 0;
-		this.landingWindowRemaining = 0;
 		this.blankPatienceMs = 0;
 	}
 }

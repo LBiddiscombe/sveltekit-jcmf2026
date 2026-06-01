@@ -134,11 +134,11 @@
 
 	let hintsConsumed = $state(
 		isTutorialCompleted()
-			? { bite: true, reeling: true, landing: true, intro: true }
-			: { bite: false, reeling: true, landing: true, intro: false }
+			? { bite: true, reeling: true, intro: true }
+			: { bite: false, reeling: true, intro: false }
 	);
 	let tutorialCompleted = $derived(
-		hintsConsumed.bite && hintsConsumed.reeling && hintsConsumed.landing
+		hintsConsumed.bite && hintsConsumed.reeling
 	);
 
 	let currentHint = $derived.by(() => {
@@ -217,7 +217,6 @@
 		if (e?.type === 'fishLost') return 'Missed it!';
 		if (e?.type === 'fishGotAway') return 'Fish got away!';
 		if (e?.type === 'lineBroke') return 'Line broke!';
-		if (e?.type === 'tooMuchSlackLine') return 'Too much slack line!';
 
 		if (playerPhase === 'waiting')
 			return `Line in the water (${formatShortDuration(waitSeconds)})...`;
@@ -249,7 +248,6 @@
 	function handleReelingResult(result: 'caught' | 'lost') {
 		if (mode === 'session') {
 			hintsConsumed.reeling = true;
-			hintsConsumed.landing = true;
 		}
 		gameState.handleReelingOutcome(result);
 	}

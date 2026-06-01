@@ -256,19 +256,6 @@ describe('FishingLoop', () => {
 			expect(redistributed).toBe(true);
 			expect(loop.currentFish).toBeNull();
 		});
-
-		it('tooMuchSlackLine when landing window expires', () => {
-			const loop = new FishingLoop(tackle, 5, speciesList, () => 0.1);
-			loop.cast(population, noopRemove);
-			loop.tick(loop.remainingMs);
-			loop.strike();
-			loop.advanceReelTimer(loop.reelTimerRemaining);
-			expect(loop.phase).toBe('landing');
-
-			const event = loop.tick(loop.landingWindowRemaining + 1);
-			expect(event).toEqual({ type: 'tooMuchSlackLine' });
-			expect(loop.phase).toBe('lost');
-		});
 	});
 
 	describe('recast', () => {

@@ -182,7 +182,7 @@ describe('GameState match ending', () => {
 		expect(gs.phase).toBe('results');
 	});
 
-	it('resets player to idle when time expires and not in reeling/landing', () => {
+	it('resets player to idle when time expires and not in reeling', () => {
 		gs.beginFishing(makePlayer(), venue, lake, 10);
 		gs.cast();
 		gs.tick(100);
@@ -198,13 +198,13 @@ describe('GameState match ending', () => {
 		expect(gs.playerSnapshot?.phase).toBe('idle');
 	});
 
-	it('does not reset player cast when in landing state after time expires', () => {
+	it('does not reset player cast when in reeling state after time expires', () => {
 		gs.beginFishing(makePlayer(), venue, lake, 10);
 		gs.cast();
 		gs.tick(100);
 
 		const loop = gs.playerLoop!;
-		loop.phase = 'landing';
+		loop.phase = 'reeling';
 		loop.currentFish = {
 			id: 'f1',
 			species: 'Roach',
@@ -217,14 +217,12 @@ describe('GameState match ending', () => {
 			pattern: [],
 			stepMs: 1000
 		};
-		loop.landingWindowMs = 2000;
-		loop.landingWindowRemaining = 2000;
 
 		armExpiry(gs);
 		gs.tick(100);
 
 		expect(gs.timeExpired).toBe(true);
-		expect(loop.phase).toBe('landing');
+		expect(loop.phase).toBe('reeling');
 		expect(gs.phase).toBe('fishing');
 	});
 
