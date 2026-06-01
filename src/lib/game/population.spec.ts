@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import {
+	passesTolerances,
 	populatePeg,
 	reassignDynamicProperties,
 	fishMatchScore,
@@ -124,6 +125,197 @@ describe('fishMatchScore', () => {
 		const score = fishMatchScore(species, features);
 		expect(score).toBeGreaterThan(0);
 		expect(score).toBeLessThan(1);
+	});
+});
+
+describe('passesTolerances', () => {
+	const baseFeatures: EnvironmentalFeatures = {
+		flow: 0.5,
+		clarity: 0.5,
+		substrate: 0.5,
+		vegetation: 0.5,
+		shelter: 0.5
+	};
+
+	it('returns true when no tolerances are defined', () => {
+		const species: Species = {
+			name: 'Roach',
+			cautionMs: 3000,
+			record: 68,
+			strata: ['Bottom'],
+			description: '',
+			preferences: { flow: 0.5, clarity: 0.5, substrate: 0.5, vegetation: 0.5, shelter: 0.5 },
+			tolerances: {},
+			pattern: [],
+			classifications: []
+		};
+		expect(passesTolerances(species, baseFeatures)).toBe(true);
+	});
+
+	it('returns true when all tolerances pass', () => {
+		const species: Species = {
+			name: 'Roach',
+			cautionMs: 3000,
+			record: 68,
+			strata: ['Bottom'],
+			description: '',
+			preferences: { flow: 0.5, clarity: 0.5, substrate: 0.5, vegetation: 0.5, shelter: 0.5 },
+			tolerances: {
+				flow: { min: 0.3, max: 0.7 },
+				clarity: { min: 0.3, max: 0.7 },
+				substrate: { min: 0.3, max: 0.7 },
+				vegetation: { min: 0.3, max: 0.7 },
+				shelter: { min: 0.3, max: 0.7 }
+			},
+			pattern: [],
+			classifications: []
+		};
+		expect(passesTolerances(species, baseFeatures)).toBe(true);
+	});
+
+	it('returns false when flow is below tolerance min', () => {
+		const species: Species = {
+			name: 'Roach',
+			cautionMs: 3000,
+			record: 68,
+			strata: ['Bottom'],
+			description: '',
+			preferences: { flow: 0.5, clarity: 0.5, substrate: 0.5, vegetation: 0.5, shelter: 0.5 },
+			tolerances: { flow: { min: 0.5, max: 1.0 } },
+			pattern: [],
+			classifications: []
+		};
+		expect(passesTolerances(species, { ...baseFeatures, flow: 0.3 })).toBe(false);
+	});
+
+	it('returns false when flow is above tolerance max', () => {
+		const species: Species = {
+			name: 'Roach',
+			cautionMs: 3000,
+			record: 68,
+			strata: ['Bottom'],
+			description: '',
+			preferences: { flow: 0.5, clarity: 0.5, substrate: 0.5, vegetation: 0.5, shelter: 0.5 },
+			tolerances: { flow: { min: 0.0, max: 0.4 } },
+			pattern: [],
+			classifications: []
+		};
+		expect(passesTolerances(species, { ...baseFeatures, flow: 0.5 })).toBe(false);
+	});
+
+	it('returns false when clarity is below tolerance min', () => {
+		const species: Species = {
+			name: 'Roach',
+			cautionMs: 3000,
+			record: 68,
+			strata: ['Bottom'],
+			description: '',
+			preferences: { flow: 0.5, clarity: 0.5, substrate: 0.5, vegetation: 0.5, shelter: 0.5 },
+			tolerances: { clarity: { min: 0.6, max: 1.0 } },
+			pattern: [],
+			classifications: []
+		};
+		expect(passesTolerances(species, { ...baseFeatures, clarity: 0.5 })).toBe(false);
+	});
+
+	it('returns false when substrate is above tolerance max', () => {
+		const species: Species = {
+			name: 'Roach',
+			cautionMs: 3000,
+			record: 68,
+			strata: ['Bottom'],
+			description: '',
+			preferences: { flow: 0.5, clarity: 0.5, substrate: 0.5, vegetation: 0.5, shelter: 0.5 },
+			tolerances: { substrate: { min: 0.0, max: 0.4 } },
+			pattern: [],
+			classifications: []
+		};
+		expect(passesTolerances(species, { ...baseFeatures, substrate: 0.5 })).toBe(false);
+	});
+
+	it('returns false when vegetation is below tolerance min', () => {
+		const species: Species = {
+			name: 'Roach',
+			cautionMs: 3000,
+			record: 68,
+			strata: ['Bottom'],
+			description: '',
+			preferences: { flow: 0.5, clarity: 0.5, substrate: 0.5, vegetation: 0.5, shelter: 0.5 },
+			tolerances: { vegetation: { min: 0.6, max: 1.0 } },
+			pattern: [],
+			classifications: []
+		};
+		expect(passesTolerances(species, { ...baseFeatures, vegetation: 0.5 })).toBe(false);
+	});
+
+	it('returns false when shelter is above tolerance max', () => {
+		const species: Species = {
+			name: 'Roach',
+			cautionMs: 3000,
+			record: 68,
+			strata: ['Bottom'],
+			description: '',
+			preferences: { flow: 0.5, clarity: 0.5, substrate: 0.5, vegetation: 0.5, shelter: 0.5 },
+			tolerances: { shelter: { min: 0.0, max: 0.4 } },
+			pattern: [],
+			classifications: []
+		};
+		expect(passesTolerances(species, { ...baseFeatures, shelter: 0.5 })).toBe(false);
+	});
+
+	it('returns true when feature equals tolerance boundary (min edge)', () => {
+		const species: Species = {
+			name: 'Roach',
+			cautionMs: 3000,
+			record: 68,
+			strata: ['Bottom'],
+			description: '',
+			preferences: { flow: 0.5, clarity: 0.5, substrate: 0.5, vegetation: 0.5, shelter: 0.5 },
+			tolerances: { flow: { min: 0.5, max: 1.0 } },
+			pattern: [],
+			classifications: []
+		};
+		expect(passesTolerances(species, baseFeatures)).toBe(true);
+	});
+
+	it('returns true when feature equals tolerance boundary (max edge)', () => {
+		const species: Species = {
+			name: 'Roach',
+			cautionMs: 3000,
+			record: 68,
+			strata: ['Bottom'],
+			description: '',
+			preferences: { flow: 0.5, clarity: 0.5, substrate: 0.5, vegetation: 0.5, shelter: 0.5 },
+			tolerances: { flow: { min: 0.0, max: 0.5 } },
+			pattern: [],
+			classifications: []
+		};
+		expect(passesTolerances(species, baseFeatures)).toBe(true);
+	});
+
+	it('handles undefined tolerance dimensions as not dealbreakers', () => {
+		const species: Species = {
+			name: 'Roach',
+			cautionMs: 3000,
+			record: 68,
+			strata: ['Bottom'],
+			description: '',
+			preferences: { flow: 0.5, clarity: 0.5, substrate: 0.5, vegetation: 0.5, shelter: 0.5 },
+			tolerances: {
+				flow: { min: 0.4, max: 0.6 },
+				clarity: { min: 0.4, max: 0.6 }
+			},
+			pattern: [],
+			classifications: []
+		};
+		const features: EnvironmentalFeatures = {
+			flow: 0.5,
+			clarity: 0.5,
+			substrate: 0.1,
+			vegetation: 0.1,
+			shelter: 0.1
+		};
+		expect(passesTolerances(species, features)).toBe(true);
 	});
 });
 

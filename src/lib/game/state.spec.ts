@@ -422,10 +422,16 @@ describe('GameState match ending', () => {
 		gs.pegPopulations.set(bot.pegName, botFish);
 		controller.loop.preparePopulation(botFish, (id) => gs.removeFishFromPeg(bot.pegName, id));
 
-		for (let elapsed = 0; elapsed < 120_000; elapsed += 100) {
+		const maxElapsed = 60_000;
+		let earlyExit = false;
+		for (let elapsed = 0; elapsed < maxElapsed && !earlyExit; elapsed += 100) {
 			gs.tick(100);
+			if (bot.catch.length > 5) {
+				earlyExit = true;
+			}
 		}
 
-		expect(bot.catch.length).toBeGreaterThan(1);
+		expect(bot.catch.length).toBeGreaterThanOrEqual(2);
+		expect(bot.catch.length).toBeLessThanOrEqual(botFish.length);
 	});
 });

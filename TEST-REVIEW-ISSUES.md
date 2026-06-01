@@ -144,7 +144,7 @@ Tests that test deprecated/defensive paths instead of runtime paths:
 
 ### 6. Missing `passesTolerances()` Tests
 
-**Status:** 🔴 Not started
+**Status:** 🟢 Resolved — tests added in `population.spec.ts`
 **Severity:** Low-Medium**
 
 **File:** `src/lib/game/population.ts` lines 3–19
@@ -158,7 +158,7 @@ The `passesTolerances` function is a hard gate (excludes whole species from a pe
 
 ### 7. Missing `BotTackleChange` Reset Scenario
 
-**Status:** 🔴 Not started
+**Status:** 🟢 Resolved — tests added in `bot-controller.spec.ts`
 **Severity:** Low**
 
 **File:** `src/lib/game/bot-controller.spec.ts`
@@ -206,7 +206,7 @@ PrepState is the second most complex logic module after GameState, with zero tes
 
 ### 10. Missing `pbs.ts` Tests
 
-**Status:** 🔴 Not started
+**Status:** 🟢 Resolved — tests added in `pbs.spec.ts`
 **Severity:** Low-Medium**
 
 **File:** `src/lib/game/pbs.ts` (37 lines)
@@ -223,7 +223,7 @@ Personal bests are user-facing state with localStorage. No tests for:
 
 ### 11. Missing `format.ts` Tests
 
-**Status:** 🔴 Not started
+**Status:** 🟢 Resolved — tests added in `format.spec.ts`
 **Severity:** Low**
 
 **File:** `src/lib/utils/format.ts` (16 lines)
@@ -234,7 +234,7 @@ Personal bests are user-facing state with localStorage. No tests for:
 
 ### 12. GameState Integration Test Reliability
 
-**Status:** 🔴 Not started
+**Status:** 🟢 Resolved — simulation window reduced, early exit, tighter assertions
 **Severity:** Low**
 
 **File:** `src/lib/game/state.spec.ts` lines 397–430
@@ -257,10 +257,10 @@ Personal bests are user-facing state with localStorage. No tests for:
 | 3 | Zero route tests | High | Gap | 1–2 days | 🔴 |
 | 4 | Loop tests test wrong paths | Medium | Quality | 0.5 day | 🔴 |
 | 5 | Duplicate reel/handleReelingOutcome | Medium | Quality | 0.5 day | 🔴 |
-| 6 | Missing passesTolerances tests | Low-Med | Gap | 0.25 day | 🔴 |
-| 7 | Missing BotTackleChange reset test | Low | Gap | 0.25 day | 🔴 |
+| 6 | Missing passesTolerances tests | Low-Med | Gap | 0.25 day | 🟢 |
+| 7 | Missing BotTackleChange reset test | Low | Gap | 0.25 day | 🟢 |
 | 8 | Missing GameState method tests | Medium | Gap | 0.5 day | 🔴 |
 | 9 | Missing PrepState tests | Med-High | Gap | 1 day | 🔴 |
-| 10 | Missing pbs.ts tests | Low-Med | Gap | 0.25 day | 🔴 |
-| 11 | Missing format.ts tests | Low | Gap | 0.25 day | 🔴 |
-| 12 | Integration test reliability | Low | Quality | 0.25 day | 🔴 |
+| 10 | Missing pbs.ts tests | Low-Med | Gap | 0.25 day | 🟢 |
+| 11 | Missing format.ts tests | Low | Gap | 0.25 day | 🟢 |
+| 12 | Integration test reliability | Low | Quality | 0.25 day | 🟢 |

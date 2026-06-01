@@ -247,6 +247,56 @@ describe('BotController', () => {
 		});
 	});
 
+	describe('tick - blank cycle reset after non-blank interactions', () => {
+		it('resets blankCycleCount after landing a fish', () => {
+			const loop = new FishingLoop(tackle, 10, speciesList, () => 0);
+			const multiFish: FishData[] = [
+				{ ...smallRoach, id: 'fish-1' },
+				{ ...smallRoach, id: 'fish-2' }
+			];
+			loop.preparePopulation(multiFish, noopRemove);
+			const controller = new BotController(loop, 10, () => 0);
+
+			loop.cast(multiFish, noopRemove);
+			loop.tick(loop.remainingMs);
+			expect(loop.phase).toBe('bite');
+
+			// Simulate prior blank cycles
+			controller['blankCycleCount'] = 2;
+
+			controller.tick(1); // auto-strike → reeling
+			controller.tick(1); // auto-reel → caught (recastCountdown=3000)
+
+			// After recast, waiting with a fish → tickWaiting else branch → reset
+			controller.tick(3000);
+			expect(controller['blankCycleCount']).toBe(0);
+		});
+
+		it('resets blankCycleCount after losing a fish (hook break)', () => {
+			const smallHook: TackleSelection = {
+				...tackle,
+				hook: { name: '22', image: 'hook.png', size: 22, minOz: 1, maxOz: 5, deter: 0.15 }
+			};
+			const loop = new FishingLoop(smallHook, 10, speciesList, () => 0);
+			loop.preparePopulation(population, noopRemove);
+			const controller = new BotController(loop, 10, () => 0);
+
+			loop.cast(population, noopRemove);
+			loop.tick(loop.remainingMs);
+			expect(loop.phase).toBe('bite');
+
+			controller['blankCycleCount'] = 2;
+
+			controller.tick(1); // auto-strike → hookBroken → lost
+			expect(loop.phase).toBe('lost');
+
+			// After recast, waiting with a fish (fish not removed from population)
+			// → tickWaiting with currentFish → blankCycleCount reset
+			controller.tick(4000);
+			expect(controller['blankCycleCount']).toBe(0);
+		});
+	});
+
 	describe('full bot flow (rng=0, instant delays)', () => {
 		it('cast → wait → bite → auto-strike → reeling → auto-reel → caught', () => {
 			const loop = new FishingLoop(tackle, 10, speciesList, () => 0);
