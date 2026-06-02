@@ -166,7 +166,7 @@
 						this.x += (p.noise(this.xoff) - 0.5) * p.map(this.weight, 1, 1000, 1, 20);
 						this.x = p.constrain(this.x, 20, p.width - 20);
 						this.y -= this.pull * 0.5;
-						this.stamina -= this.pull * p.deltaTime * 0.00001;
+						this.stamina -= this.pull * p.deltaTime * 0.00005;
 						this.stamina = Math.max(this.stamina, 0.1);
 						this.xoff += 0.01;
 					}
