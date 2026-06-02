@@ -369,6 +369,26 @@ export class GameState {
 		return event;
 	}
 
+	debugForceFish(fishId: string): boolean {
+		const angler = this.playerAngler;
+		if (!this.playerLoop || !angler) return false;
+		if (this.playerLoop.phase !== 'waiting') return false;
+
+		const pop = this.getPegPopulation(this.playerPeg);
+		const fish = pop.find((f) => f.id === fishId);
+		if (!fish) return false;
+
+		if (fish.weightOz < angler.tackle.hook.minOz) return false;
+		if (fish.weightOz < angler.tackle.line.minOz) return false;
+
+		this.playerLoop.currentFish = fish;
+		this.playerLoop.remainingMs = 2000;
+		this.playerLoop.waitElapsedMs = 0;
+		this.playerLoop.blankPatienceMs = 0;
+		this.syncPlayerState();
+		return true;
+	}
+
 	returnToCast(): void {
 		this.playerLoop?.returnToCast();
 		this.syncPlayerState();

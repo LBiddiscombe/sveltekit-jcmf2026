@@ -12,17 +12,28 @@
 	let pegFish = $derived(gameState.getPegPopulation(pegName));
 
 	let expanded: Record<string, boolean> = $state({});
+	let message = $state('');
 
 	function toggle(key: string) {
 		expanded[key] = !expanded[key];
 	}
 
 	function tackleSummary(t: TackleSelection): string {
-		return `${t.rod.name} / ${t.reel.name} / ${t.line.name} / ${t.hook.name}`;
+		return `${t.rod.name} / ${t.reel.name} / ${t.hook.name}`;
+	}
+
+	function forceFish(fishId: string) {
+		if (gameState.playerLoop?.phase !== 'waiting') return;
+		const ok = gameState.debugForceFish(fishId);
+		message = ok ? 'Fish set — bite in 2s' : 'Fish rejected (hook/line too small)';
+		setTimeout(() => (message = ''), 3000);
 	}
 </script>
 
 <div class="h-dvh w-96 overflow-y-auto border-l border-olive bg-surface/20 p-4 text-xs">
+	{#if message}
+		<div class="mb-2 rounded bg-amber-900/40 px-2 py-1 text-amber-200">{message}</div>
+	{/if}
 	<!-- Section 1: Fish distribution -->
 	<button
 		onclick={() => toggle('fish')}
@@ -59,13 +70,21 @@
 									</button>
 									{#if expanded[`strata-${dist}-${strata}`]}
 										{#each strataFish as fish (fish.id)}
-											<div class="rounded px-4 py-0.5 text-muted even:bg-surface/10">
+											{@const isCurrent = gameState.playerLoop?.currentFish?.id === fish.id}
+											<button
+												onclick={() => forceFish(fish.id)}
+												disabled={gameState.playerLoop?.phase !== 'waiting'}
+												class={[
+													'w-full cursor-pointer rounded px-4 py-0.5 text-left text-muted transition-colors even:bg-surface/10 disabled:cursor-default disabled:opacity-40',
+													isCurrent && 'bg-amber-900/30'
+												].join(' ')}
+											>
 												{#if fish.classificationLabel}{fish.classificationLabel}
 												{/if}
 												{fish.species}
 												{formatWeight(fish.weightOz)}
 												({fish.preferredBait})
-											</div>
+											</button>
 										{/each}
 									{/if}
 								</div>

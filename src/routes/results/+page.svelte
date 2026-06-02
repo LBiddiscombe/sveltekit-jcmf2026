@@ -87,9 +87,7 @@
 <div class="min-h-dvh lg:flex lg:flex-row">
 	{#if isCompetitive}
 		<div class="flex min-h-dvh flex-1 flex-col items-center justify-center gap-6 p-4">
-			<h1 class="text-2xl font-bold text-dark-teal sm:text-3xl md:text-4xl">
-				Match Results
-			</h1>
+			<h1 class="text-2xl font-bold text-dark-teal sm:text-3xl md:text-4xl">Match Results</h1>
 			{#if leaderboardEmpty}
 				<p class="text-base text-muted">No fish were caught</p>
 			{:else}
@@ -112,7 +110,9 @@
 		</div>
 	{:else}
 		<div class="flex min-h-dvh flex-1 flex-col">
-			<h1 class="flex-none px-4 pt-8 text-center text-2xl font-bold text-dark-teal sm:text-3xl md:text-4xl">
+			<h1
+				class="flex-none px-4 pt-8 text-center text-2xl font-bold text-dark-teal sm:text-3xl md:text-4xl"
+			>
 				Session Results
 			</h1>
 			<CatchBreakdown {speciesGroups} {totalFish} {totalWeightOz} biggestFish={playerBiggestFish} />

@@ -45,7 +45,7 @@ export default defineConfig({
 	test: {
 		expect: { requireAssertions: true },
 		projects: [
-				{
+			{
 				extends: './vite.config.ts',
 				test: {
 					name: 'client',

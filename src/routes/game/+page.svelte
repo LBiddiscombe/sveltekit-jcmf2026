@@ -111,12 +111,11 @@
 		}
 	});
 	let debugMode = $state(false);
+	let debugEnabled = $derived(
+		typeof localStorage !== 'undefined' && !!localStorage.getItem('jcmf-debug')
+	);
 	let intervalId: ReturnType<typeof setInterval> | null = null;
 	let now = $state(Date.now());
-	let caughtDismissCooldown = $state(0);
-	let canDismissCaught = $derived(
-		caughtDismissCooldown === 0 || now - caughtDismissCooldown > 1000
-	);
 	let waitingForPlayers = $derived(
 		gameState.phase === 'results' && isMulti && multiplayer.phase !== 'results'
 	);
@@ -163,12 +162,6 @@
 	$effect(() => {
 		if (mode === 'session' && tutorialCompleted) {
 			completeTutorial();
-		}
-	});
-
-	$effect(() => {
-		if (playerPhase === 'caught') {
-			caughtDismissCooldown = Date.now();
 		}
 	});
 
@@ -443,9 +436,7 @@
 						class="absolute inset-0 flex cursor-pointer items-center justify-center"
 						role="button"
 						tabindex="0"
-						onclick={() => {
-							if (canDismissCaught) handleDismissCaught();
-						}}
+						onclick={handleDismissCaught}
 						onkeydown={(e) => {
 							if (e.key === 'Enter' || e.key === ' ') handleDismissCaught();
 						}}
@@ -657,12 +648,14 @@
 </div>
 
 <!-- Fixed debug toggle, top-right on desktop -->
-<button
-	onclick={toggleDebug}
-	class="fixed top-4 right-4 z-50 hidden cursor-pointer rounded-lg bg-black/30 px-3 py-1.5 text-xs font-medium text-white/60 transition-colors hover:bg-black/50 hover:text-white/80 lg:block"
->
-	{debugMode ? 'resume' : 'debug'}
-</button>
+{#if debugEnabled}
+	<button
+		onclick={toggleDebug}
+		class="fixed top-4 right-4 z-50 hidden cursor-pointer rounded-lg bg-black/30 px-3 py-1.5 text-xs font-medium text-white/60 transition-colors hover:bg-black/50 hover:text-white/80 lg:block"
+	>
+		{debugMode ? 'resume' : 'debug'}
+	</button>
+{/if}
 
 {#if playerPhase === 'changing'}
 	<TackleModal

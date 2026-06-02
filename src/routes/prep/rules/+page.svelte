@@ -134,8 +134,15 @@
 			/>
 
 			<div class="mx-auto mt-auto w-full max-w-sm px-4">
-				<label class="mb-3 flex cursor-pointer items-center justify-center gap-2 text-base text-muted hover:text-dark-teal">
-					<input type="checkbox" bind:checked={showHints} onchange={handleShowHintsChange} class="h-3.5 w-3.5 cursor-pointer accent-primary" />
+				<label
+					class="mb-3 flex cursor-pointer items-center justify-center gap-2 text-base text-muted hover:text-dark-teal"
+				>
+					<input
+						type="checkbox"
+						bind:checked={showHints}
+						onchange={handleShowHintsChange}
+						class="h-3.5 w-3.5 cursor-pointer accent-primary"
+					/>
 					Show hints
 				</label>
 				<button

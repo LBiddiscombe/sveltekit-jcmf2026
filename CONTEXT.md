@@ -47,6 +47,14 @@ The equipment an angler uses to fish — rod, reel, line, and hook. Each piece h
 **Deterrence**:
 A numeric property on each tackle component. Higher values increase the maximum possible bite wait time (fish are more cautious around heavy tackle) but enable reeling larger fish. Each component's deterrence contributes independently to the total sum used in the BiteTime formula. Scaled by ×50,000 — a total deterrence of 1.4 adds up to 70s to the wait ceiling.
 
+**DebugMode**:
+A developer-only mode gated by the `jcmf-debug` localStorage key. When active, a "debug" button appears on the Game page (desktop only) that pauses the game loop and opens the DebugPanel sidebar. The button is invisible in production unless the localStorage key is set.
+_Avoid_: Dev mode, cheat mode, testing mode
+
+**DebugForceFish**:
+A DebugPanel action that overrides the current fish during the `waiting` phase. Clicking a fish entry sets it as `FishingLoop.currentFish` and shortens the remaining bite time to 2,000ms. Only the hook's `minOz` and line's `minOz` are checked (downsized gate) — all other filters (strata, cast strength, bait, hook max, line max) are bypassed, allowing testing of mismatch scenarios like a monster fish on light line.
+_Avoid_: Force bite, manual catch
+
 **RodMultiplier**:
 A per-rod numeric property controlling mechanical advantage in the **ReelingMinigame**. Higher values reduce tension for a given pull force (easier reeling). Leger: 1.5 (easiest), Float: 1.0 (balanced), Pole: 0.5 (hardest). The tension formula is `(pull × fishPull × stamina × weight) / (tackleStrength × rodMultiplier)`.
 
