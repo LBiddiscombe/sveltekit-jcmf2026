@@ -35,7 +35,8 @@
 	);
 
 	const timePresets = [1, 5, 10, 20, 30, 60];
-	let selectedMinutes = $state<number | null>(null);
+	let selectedMinutes = $state<number>(5);
+	prepState.setMatchTimeLimit(5);
 
 	let name = $state(browser ? (localStorage.getItem(NAME_KEY) ?? '') : '');
 	let avatar = $state(browser ? (localStorage.getItem(AVATAR_KEY) ?? '') : '');
@@ -97,9 +98,13 @@
 
 	function selectTime(minutes: number) {
 		selectedMinutes = minutes;
+		prepState.setMatchTimeLimit(minutes);
+	}
+
+	function drawPegs() {
+		if (!name.trim()) return;
 		prepState.playerName = name.trim();
 		prepState.playerAvatar = avatar;
-		prepState.setMatchTimeLimit(minutes);
 		goto(prepDrawUrl());
 	}
 </script>
@@ -159,7 +164,7 @@
 	<div class="flex min-h-dvh flex-col items-center justify-center gap-6 p-4">
 		<!-- <h1 class="text-2xl font-bold text-dark-teal sm:text-3xl md:text-4xl">Rules</h1> -->
 
-		<div class="flex w-full max-w-sm flex-col gap-4">
+		<div class="flex w-full max-w-sm flex-col gap-4 rounded-2xl bg-white/70 px-5 py-5 shadow-md">
 			<div class="flex flex-col gap-1">
 				<label for="name" class="text-sm font-medium text-dark-teal">Your Name</label>
 				<input
@@ -179,20 +184,28 @@
 
 			<div class="flex flex-col gap-1">
 				<span class="text-sm font-medium text-dark-teal">Match Duration</span>
-				<div class="grid grid-cols-3 gap-2">
+				<div class="grid grid-cols-3 gap-2" role="radiogroup">
 					{#each timePresets as minutes (minutes)}
 						<button
 							onclick={() => selectTime(minutes)}
-							class="rounded-xl border border-olive bg-surface/30 px-3 py-3 text-center text-sm font-medium transition-all hover:bg-surface/60 {selectedMinutes ===
+							class="rounded-xl border px-3 py-2 text-center text-sm font-medium transition-colors {selectedMinutes ===
 							minutes
 								? 'border-accent bg-accent/10 text-accent'
-								: 'border-dark-teal/20 text-dark-teal hover:border-dark-teal/40'}"
+								: 'border-dark-teal/20 bg-white text-dark-teal hover:border-dark-teal/40'}"
 						>
 							{minutes}m
 						</button>
 					{/each}
 				</div>
 			</div>
+
+			<button
+				onclick={drawPegs}
+				disabled={!name.trim()}
+				class="w-full cursor-pointer rounded-xl bg-accent px-5 py-3 text-center font-bold text-white shadow-md transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+			>
+				Draw Pegs
+			</button>
 		</div>
 	</div>
 {/if}

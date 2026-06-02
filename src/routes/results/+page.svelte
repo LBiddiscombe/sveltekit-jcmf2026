@@ -61,7 +61,6 @@
 
 	let totalFish = $derived(playerAngler?.catch.length ?? 0);
 	let totalWeightOz = $derived(playerAngler?.totalWeightOz ?? 0);
-	let fishList = $derived(playerAngler?.catch ?? []);
 	let playerBiggestFish = $derived(playerAngler?.biggestFish ?? null);
 
 	const pegImages = import.meta.glob<string>('$lib/assets/images/pegs/*.jpeg', {
@@ -87,8 +86,8 @@
 <div class="min-h-dvh lg:flex lg:flex-row">
 	{#if isCompetitive}
 		<div class="flex min-h-dvh flex-1 flex-col items-center justify-center gap-6 p-4">
-			<h1 class="text-2xl font-bold text-dark-teal sm:text-3xl md:text-4xl">Match Results</h1>
 			{#if leaderboardEmpty}
+				<h1 class="text-2xl font-bold text-dark-teal sm:text-3xl md:text-4xl">Match Results</h1>
 				<p class="text-base text-muted">No fish were caught</p>
 			{:else}
 				<Leaderboard
@@ -103,7 +102,7 @@
 			{/if}
 			<a
 				{...{ href: '/menu' }}
-				class="inline-flex min-h-[44px] items-center justify-center rounded bg-primary px-6 py-3 text-center text-white no-underline hover:bg-primary/80"
+				class="inline-flex min-h-11 items-center justify-center rounded bg-primary px-6 py-3 text-center text-white no-underline hover:bg-primary/80"
 			>
 				Main Menu
 			</a>
