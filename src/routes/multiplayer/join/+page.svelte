@@ -117,7 +117,7 @@
 
 		<a
 			href="/multiplayer"
-			class="text-center text-sm text-muted underline underline-offset-2 hover:text-dark-teal"
+			class="inline-flex rounded bg-primary px-6 py-3 text-white no-underline hover:bg-primary/80"
 		>
 			Back
 		</a>

@@ -14,7 +14,7 @@
 		<div class="flex w-full flex-col gap-4">
 			<a
 				href="/multiplayer/host"
-				class="flex w-full cursor-pointer items-center gap-4 rounded-2xl bg-white/70 px-5 py-5 text-left shadow-md transition-shadow hover:shadow-lg no-underline"
+				class="flex w-full cursor-pointer items-center gap-4 rounded-2xl bg-white/70 px-5 py-5 text-left shadow-md transition-shadow hover:shadow-lg no-underline min-h-28"
 			>
 				<img src={venueThumb} alt="" class="h-14 w-14 shrink-0 rounded-xl object-cover" />
 				<div class="min-w-0">
@@ -24,7 +24,7 @@
 			</a>
 			<a
 				href="/multiplayer/join"
-				class="flex w-full cursor-pointer items-center gap-4 rounded-2xl bg-white/70 px-5 py-5 text-left shadow-md transition-shadow hover:shadow-lg no-underline"
+				class="flex w-full cursor-pointer items-center gap-4 rounded-2xl bg-white/70 px-5 py-5 text-left shadow-md transition-shadow hover:shadow-lg no-underline min-h-28"
 			>
 				<img src={reelThumb} alt="" class="h-14 w-14 shrink-0 rounded-xl object-cover" />
 				<div class="min-w-0">
@@ -36,7 +36,7 @@
 
 		<a
 			href="/menu"
-			class="mt-4 text-center text-base text-muted underline underline-offset-2 hover:text-dark-teal"
+			class="inline-flex rounded bg-primary px-6 py-3 text-white no-underline hover:bg-primary/80"
 		>
 			Back to Menu
 		</a>

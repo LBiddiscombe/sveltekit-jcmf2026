@@ -36,7 +36,7 @@
 
 	const timePresets = [1, 5, 10, 20, 30, 60];
 	let selectedMinutes = $state<number>(5);
-	prepState.setMatchTimeLimit(5);
+	if (prepState.mode === 'match') prepState.setMatchTimeLimit(5);
 
 	let name = $state(browser ? (localStorage.getItem(NAME_KEY) ?? '') : '');
 	let avatar = $state(browser ? (localStorage.getItem(AVATAR_KEY) ?? '') : '');
@@ -207,5 +207,12 @@
 				Draw Pegs
 			</button>
 		</div>
+
+		<button
+			onclick={() => goto('/menu')}
+			class="cursor-pointer rounded bg-primary px-6 py-3 text-white hover:bg-primary/80"
+		>
+			Back to Menu
+		</button>
 	</div>
 {/if}

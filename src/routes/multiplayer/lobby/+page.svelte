@@ -65,30 +65,38 @@
 
 <div class="flex min-h-dvh flex-col items-center bg-surface px-4 py-8">
 	<div class="flex w-full max-w-sm flex-col gap-6">
-		<h1 class="text-center text-2xl font-bold text-dark-teal">Lobby</h1>
-
-		<div class="rounded-2xl bg-white/70 px-5 py-4 text-center shadow-md">
-			<p class="text-xs text-dark-teal/60">Match Code</p>
-			<p class="text-3xl font-bold tracking-[0.3em] text-accent">{multiplayer.joinCode}</p>
-		</div>
-
 		{#if multiplayer.ownPeg}
 			{@const peg = pegLookup.get(multiplayer.ownPeg)}
-			<div class="overflow-hidden rounded-2xl shadow-md">
+			<div class="relative overflow-hidden rounded-2xl shadow-md">
 				<img
 					src={pegImage(multiplayer.ownPeg)}
 					alt="Peg {multiplayer.ownPeg}"
-					class="h-40 w-full object-cover"
+					class="aspect-square w-full object-cover"
 				/>
-				<div class="bg-white/70 px-5 py-4">
-					<h2 class="text-lg font-bold text-dark-teal">Your Peg — {multiplayer.ownPeg}</h2>
-					<p class="mt-1 text-sm text-dark-teal/70">{peg?.description}</p>
+				<div class="absolute top-3 left-3 rounded-lg bg-black/40 px-3 py-2">
+					<p class="text-center text-sm text-white/60">Match Code</p>
+					<p class="text-center text-2xl font-bold tracking-[0.3em] text-white">
+						{multiplayer.joinCode}
+					</p>
+				</div>
+				<div class="absolute top-3 right-3 rounded-lg bg-black/40 px-3 py-1.5">
+					<p class="text-sm font-bold tabular-nums text-white/90">
+						{multiplayer.timeLimitMinutes}m
+					</p>
+				</div>
+				<div class="absolute inset-x-0 bottom-0 rounded-lg bg-black/40 px-4 py-3">
+					<p class="text-base font-bold text-white">Your Peg — {multiplayer.ownPeg}</p>
+					<p class="mt-0.5 text-base text-white/80">{peg?.description}</p>
 				</div>
 			</div>
 		{/if}
 
 		<div class="flex flex-col gap-2">
-			<h3 class="text-sm font-medium text-dark-teal/60">Players</h3>
+			<p class="text-center text-xs text-dark-teal/40">
+				{multiplayer.players.length < 8
+					? `Waiting for players — ${8 - multiplayer.players.length} pegs available`
+					: 'All pegs filled'}
+			</p>
 			<Filmstrip
 				items={filmstripPlayers}
 				selected={multiplayer.playerName + multiplayer.ownPeg}
@@ -104,11 +112,6 @@
 				>
 					Start Match
 				</button>
-				<p class="text-center text-xs text-dark-teal/40">
-					{multiplayer.players.length < 8
-						? `Waiting for players — ${8 - multiplayer.players.length} pegs open`
-						: 'All pegs filled'}
-				</p>
 			{:else}
 				<div class="rounded-xl bg-white/70 px-5 py-4 text-center shadow-md">
 					<p class="text-sm text-dark-teal/50">Waiting for host to start the match...</p>
