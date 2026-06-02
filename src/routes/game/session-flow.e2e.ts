@@ -30,10 +30,10 @@ test.describe('Session flow', () => {
 
 		// Game page — venue/lake/peg info
 		await expect(page.getByText(/Peg/).first()).toBeVisible();
-		await expect(page.getByText('Finish Session')).toBeVisible();
+		await expect(page.getByText('Pack Up and Go Home')).toBeVisible();
 
-		// Finish session
-		await page.getByText('Finish Session').click();
+		// Pack Up and Go Home
+		await page.getByText('Pack Up and Go Home').click();
 
 		// Results page (after client-nav from game)
 		await expect(page.getByText('Session Results')).toBeVisible({ timeout: 15000 });

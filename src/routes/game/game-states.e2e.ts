@@ -44,7 +44,7 @@ test.describe('App route states', () => {
 	test('game page handles direct navigation gracefully without prep state', async ({ page }) => {
 		await page.goto('/game');
 		// Page should not crash — shows fallback UI
-		await expect(page.getByText('Finish Session')).toBeVisible();
+		await expect(page.getByText('Pack Up and Go Home')).toBeVisible();
 		// No peg, venue, or lake data means peg/venue text is absent
 		const pegTexts = await page.getByText(/Peg/).all();
 		expect(pegTexts.length).toBeLessThanOrEqual(1);

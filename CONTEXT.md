@@ -66,6 +66,9 @@ _Avoid_: Practice, free play
 A competitive fishing session with a time limit and bots filling every other peg. Winner is determined by total catch weight. The timer starts when the game page mounts — tackle selection (the `changing` phase) counts against match time. Bots receive a skill-based tackle setup delay (3–10s range, same formula as BotStrikeDelay). Flows through Prep (player sets time, peg draw) → Start Match (timer begins) → Game (tackle modal, timer ticks throughout) → Results.
 _Avoid_: Multiplayer, Party
 
+**WeighInEarly**:
+A Solo Match action that submits the player's current catch early while bots continue fishing at 10× accelerated speed. The player sees a "Weighed In Early" overlay with "Waiting for other anglers to finish..." while the match timer and bot simulation run at 10× speed. Once the timer expires, all bots are cut off and the game transitions to Results. The "Weigh in Early" button is disabled during the `reeling` phase — the player must finish or lose their current fish before weighing in early. No effect on bot skill or behaviour (they simply finish faster).
+
 **Multiplayer**:
 A competitive fishing session with a time limit played by human opponents over the network, using PartyKit for realtime coordination. No bots. Up to 8 players (matching the number of pegs). A player hosts a room and shares a join code; others join by entering the code. The host picks the time limit before room creation. Players are auto-assigned to free pegs on join; each player sees their own peg in focus with full description in the lobby, while other joined players appear below. The host starts the game from the lobby (which doubles as the draw screen). Flows through Host Setup (time limit) / Join (enter code) → Lobby (code displayed, players join, assign pegs) → Game (synchronised via PartyKit) → Results (shared leaderboard).
 

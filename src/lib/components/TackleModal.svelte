@@ -176,7 +176,7 @@
 		{#if isTimed && timerDisplay}
 			<div class="mx-auto flex items-center gap-2 rounded-xl bg-danger/10 px-4 py-2 text-danger">
 				<span class="text-sm font-semibold">Match time remaining:</span>
-				<span class="text-lg font-bold">{timerDisplay}</span>
+				<span class="text-lg font-bold tabular-nums">{timerDisplay}</span>
 			</div>
 		{/if}
 

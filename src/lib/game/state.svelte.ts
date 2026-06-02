@@ -31,6 +31,7 @@ export class GameState {
 	phase = $state<GamePhase>('idle');
 	timeRemainingSeconds = $state(0);
 	timeExpired = $state(false);
+	weighInEarlyActive = $state(false);
 	anglers = $state<AnglerState[]>([]);
 	pegPopulations = new SvelteMap<string, FishData[]>();
 	playerLoop: FishingLoop | null = null;
@@ -195,8 +196,10 @@ export class GameState {
 	}
 
 	tick(elapsedMs: number): FishingEvent | null {
+		const ms = this.weighInEarlyActive ? elapsedMs * 30 : elapsedMs;
+
 		if (this.phase === 'fishing' && this.timeRemainingSeconds > 0) {
-			this.timeRemainingSeconds = Math.max(0, this.timeRemainingSeconds - elapsedMs / 1000);
+			this.timeRemainingSeconds = Math.max(0, this.timeRemainingSeconds - ms / 1000);
 
 			if (this.timeRemainingSeconds <= 0) {
 				this.cutOffBots();
@@ -204,7 +207,7 @@ export class GameState {
 			}
 		}
 
-		if (this.timeExpired && this.playerSnapshot?.phase === 'idle') {
+		if (this.timeExpired && !this.weighInEarlyActive && this.playerSnapshot?.phase === 'idle') {
 			this.finishGame();
 			return null;
 		}
@@ -217,7 +220,7 @@ export class GameState {
 			angler.phase = loop.phase;
 			angler.tackle = loop.tackleSelection;
 
-			const event = controller.tick(elapsedMs);
+			const event = controller.tick(ms);
 			if (event && event.type === 'fishCaught') {
 				this.syncBotAngler(angler, loop);
 				this.botCatchFeed = [
@@ -232,44 +235,63 @@ export class GameState {
 			}
 		}
 
-		if (this.timeExpired && this.playerLoop) {
-			const phase = this.playerLoop.phase;
-			if (phase !== 'reeling') {
+		if (this.weighInEarlyActive) {
+			if (this.playerLoop && this.playerLoop.phase !== 'reeling') {
 				this.playerLoop.resetCast();
 				this.syncPlayerState();
 			}
-		}
-
-		const event = this.playerLoop?.tick(elapsedMs) ?? null;
-		if (event) this.lastEvent = event;
-		this.syncPlayerState();
-
-		if (this.timeExpired && this.playerLoop) {
-			const phase = this.playerLoop.phase;
-			if (phase !== 'reeling') {
-				this.playerLoop.resetCast();
-				this.syncPlayerState();
+		} else {
+			if (this.timeExpired && this.playerLoop) {
+				const phase = this.playerLoop.phase;
+				if (phase !== 'reeling') {
+					this.playerLoop.resetCast();
+					this.syncPlayerState();
+				}
 			}
-		}
 
-		if (!event && this.playerSnapshot?.phase === 'waiting') {
-			this.lastEvent = null;
-		}
-
-		if (this.playerSnapshot?.phase === 'idle' && !this.timeExpired) {
-			const pop = this.getPegPopulation(this.playerPeg);
-			const castEvent =
-				this.playerLoop?.cast(pop, (id) => this.removeFishFromPeg(this.playerPeg, id)) ?? null;
-			this.lastEvent = castEvent;
+			const event = this.playerLoop?.tick(elapsedMs) ?? null;
+			if (event) this.lastEvent = event;
 			this.syncPlayerState();
-			return castEvent;
+
+			if (this.timeExpired && this.playerLoop) {
+				const phase = this.playerLoop.phase;
+				if (phase !== 'reeling') {
+					this.playerLoop.resetCast();
+					this.syncPlayerState();
+				}
+			}
+
+			if (!event && this.playerSnapshot?.phase === 'waiting') {
+				this.lastEvent = null;
+			}
+
+			if (this.playerSnapshot?.phase === 'idle' && !this.timeExpired) {
+				const pop = this.getPegPopulation(this.playerPeg);
+				const castEvent =
+					this.playerLoop?.cast(pop, (id) => this.removeFishFromPeg(this.playerPeg, id)) ?? null;
+				this.lastEvent = castEvent;
+				this.syncPlayerState();
+				return castEvent;
+			}
+
+			if (this.timeExpired && this.playerSnapshot?.phase === 'idle') {
+				this.finishGame();
+			}
 		}
 
-		if (this.timeExpired && this.playerSnapshot?.phase === 'idle') {
+		if (this.weighInEarlyActive && this.timeExpired) {
 			this.finishGame();
 		}
 
-		return event;
+		return null;
+	}
+
+	weighInEarly() {
+		this.weighInEarlyActive = true;
+		if (this.playerLoop) {
+			this.playerLoop.resetCast();
+		}
+		this.syncPlayerState();
 	}
 
 	finishGame() {
@@ -402,6 +424,7 @@ export class GameState {
 		this.phase = 'idle';
 		this.timeRemainingSeconds = 0;
 		this.timeExpired = false;
+		this.weighInEarlyActive = false;
 		this.anglers = [];
 		this.pegPopulations = new SvelteMap();
 		this.playerLoop = null;

@@ -119,6 +119,8 @@
 	let waitingForPlayers = $derived(
 		gameState.phase === 'results' && isMulti && multiplayer.phase !== 'results'
 	);
+	let isWeighingIn = $derived(gameState.weighInEarlyActive && !gameState.timeExpired);
+	let overlayHeading = $derived(isWeighingIn ? 'Weighed In Early' : "Time's Up!");
 
 	let multiplayerCatches = $derived(
 		multiplayer.catchEvents
@@ -444,9 +446,9 @@
 						<div class="relative rounded-lg bg-black/40 px-6 py-4 text-center">
 							{#if pbStatus}
 								<span
-									class="absolute -top-2.5 -right-2.5 inline-flex items-center rounded-full bg-amber-400 px-2 py-0.5 text-xs font-bold text-amber-900 shadow-md"
+									class="absolute -top-3 -right-3 flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-b from-amber-300 to-amber-500 text-[9px] font-bold leading-none text-amber-900 shadow-lg ring-2 ring-inset ring-amber-200/50"
 								>
-									{pbStatus === 'record' ? 'RECORD' : 'PB'}
+									{pbStatus === 'record' ? 'REC' : 'PB'}
 								</span>
 							{/if}
 							{#if fishImageUrl && lastCaughtSpecies && fishDisplay}
@@ -482,11 +484,11 @@
 						</div>
 					</div>
 				{/if}
-				{#if waitingForPlayers}
+				{#if waitingForPlayers || isWeighingIn}
 					<div
 						class="absolute inset-0 z-10 flex flex-col items-center justify-center gap-3 rounded-xl bg-black/60"
 					>
-						<p class="text-xl font-bold text-white">Time's Up!</p>
+						<p class="text-xl font-bold text-white">{overlayHeading}</p>
 						<p class="text-sm text-white/80">Waiting for other anglers to finish...</p>
 						<div class="flex gap-1">
 							<span
@@ -522,7 +524,7 @@
 			</div>
 			{#if (mode === 'match' || mode === 'multiplayer') && matchTimeDisplay}
 				<div class="absolute top-3 right-3 rounded-lg bg-black/40 px-3 py-1.5">
-					<p class="text-sm font-bold text-white/90">{matchTimeDisplay}</p>
+					<p class="text-sm font-bold tabular-nums text-white/90">{matchTimeDisplay}</p>
 				</div>
 			{/if}
 			{#if mode === 'match' || mode === 'multiplayer'}
@@ -545,7 +547,7 @@
 								? 'bg-blue-500'
 								: 'bg-muted'}"
 			></span>
-			<span class="text-sm font-medium text-dark-teal">{statusMessage}</span>
+			<span class="text-sm font-medium tabular-nums text-dark-teal">{statusMessage}</span>
 		</div>
 
 		<!-- Tackle display (clickable) -->
@@ -630,13 +632,42 @@
 
 		<!-- Finish button -->
 		<div class="mt-auto flex justify-center pb-2">
-			<a
-				href={isMulti ? '/results?multi=1' : '/results'}
-				onclick={() => gameState.finishGame()}
-				class="inline-flex min-h-[44px] items-center justify-center rounded bg-secondary px-6 py-3 text-center text-white no-underline hover:bg-secondary/80"
+			<button
+				type="button"
+				onclick={() => {
+					if (mode === 'match') {
+						if (playerPhase === 'reeling') return;
+						if (gameState.timeExpired) {
+							gameState.finishGame();
+						} else {
+							gameState.weighInEarly();
+						}
+					} else if (mode === 'multiplayer') {
+						const isHost = multiplayer.hostName === multiplayer.playerName;
+						if (
+							isHost &&
+							!confirm('As the host, leaving will end the match for everyone. Quit anyway?')
+						)
+							return;
+						if (!isHost && !confirm('Leaving will forfeit your catch. Quit anyway?')) return;
+						multiplayer.leave();
+						gameState.reset();
+						goto('/menu');
+					} else {
+						gameState.finishGame();
+						goto('/results');
+					}
+				}}
+				class="inline-flex min-h-[44px] cursor-pointer items-center justify-center rounded bg-secondary px-6 py-3 text-center text-white transition-colors
+					{mode === 'match' && playerPhase === 'reeling' ? 'opacity-50' : 'hover:bg-secondary/80'}"
+				disabled={mode === 'match' && playerPhase === 'reeling'}
 			>
-				{mode === 'multiplayer' ? 'Leave Match' : mode === 'match' ? 'End Match' : 'Finish Session'}
-			</a>
+				{mode === 'multiplayer'
+					? 'Quit and Leave Match'
+					: mode === 'match'
+						? 'Weigh in Early'
+						: 'Pack Up and Go Home'}
+			</button>
 		</div>
 	</div>
 

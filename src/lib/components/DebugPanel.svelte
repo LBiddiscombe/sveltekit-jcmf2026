@@ -113,7 +113,7 @@
 				<div class="space-y-1">
 					{#each myCatches as entry (entry.caughtAtMs + entry.species)}
 						<div class="flex justify-between rounded bg-surface/20 px-2 py-1 text-dark-teal">
-							<span>{formatShortDuration(entry.caughtAtMs / 1000)}</span>
+							<span class="tabular-nums">{formatShortDuration(entry.caughtAtMs / 1000)}</span>
 							<span>{entry.classificationLabel} {entry.species}</span>
 							<span class="text-muted">{formatWeight(entry.weightOz)}</span>
 						</div>
@@ -158,7 +158,7 @@
 						<div class="mt-1 space-y-0.5">
 							{#each botCatches as entry (entry.caughtAtMs + entry.species)}
 								<div class="flex justify-between text-dark-teal">
-									<span>{formatShortDuration(entry.caughtAtMs / 1000)}</span>
+									<span class="tabular-nums">{formatShortDuration(entry.caughtAtMs / 1000)}</span>
 									<span>{entry.classificationLabel} {entry.species}</span>
 									<span class="text-muted">{formatWeight(entry.weightOz)}</span>
 								</div>

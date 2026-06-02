@@ -38,12 +38,12 @@ test.describe('Match flow', () => {
 		// Dismiss initial TackleModal
 		await page.getByRole('button', { name: 'Start Fishing' }).click();
 
-		// Game page — timed mode shows "End Match"
+		// Game page — timed mode shows "Weigh in Early"
 		await expect(page.getByText(/Peg/).first()).toBeVisible();
-		await expect(page.getByText('End Match')).toBeVisible();
+		await expect(page.getByText('Weigh in Early')).toBeVisible();
 
-		// End the match
-		await page.getByText('End Match').click();
+		// Weigh in early
+		await page.getByText('Weigh in Early').click();
 
 		// Results page (after client-nav from game)
 		await expect(page.getByText('Match Results')).toBeVisible({ timeout: 15000 });

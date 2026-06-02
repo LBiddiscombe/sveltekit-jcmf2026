@@ -38,7 +38,7 @@
 			onclick={() => {
 				open = !open;
 			}}
-			class="flex cursor-pointer items-center gap-2 rounded-full bg-black/60 px-3 py-2 text-white shadow-lg backdrop-blur-sm transition-colors hover:bg-black/80
+			class="flex cursor-pointer flex-col items-center gap-1 rounded-full bg-black/60 px-3 py-2 text-white shadow-lg backdrop-blur-sm transition-colors hover:bg-black/80
         {open ? 'ring-2 ring-primary' : ''}"
 			aria-label="Quick tackle change"
 		>
@@ -61,7 +61,6 @@
 				</svg>
 				<span class="text-[10px] leading-tight text-white/80">{tackle.castStrength}</span>
 			</div>
-			<div class="h-8 w-px bg-white/20"></div>
 			<div class="flex flex-col items-center gap-0.5">
 				<svg viewBox="0 0 24 24" class="h-5 w-5 shrink-0">
 					{#each ['Top', 'Middle', 'Bottom'] as layer, i (layer)}

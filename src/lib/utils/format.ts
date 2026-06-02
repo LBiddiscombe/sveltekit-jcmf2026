@@ -7,10 +7,8 @@ export function formatWeight(oz: number): string {
 }
 
 export function formatShortDuration(totalSec: number): string {
-	if (totalSec <= 0) return '0s';
+	if (totalSec <= 0) return '00m 00s';
 	const m = Math.floor(totalSec / 60);
 	const s = Math.floor(totalSec % 60);
-	if (m === 0) return `${s}s`;
-	if (s === 0) return `${m}m`;
-	return `${m}m ${s}s`;
+	return `${String(m).padStart(2, '0')}m ${String(s).padStart(2, '0')}s`;
 }

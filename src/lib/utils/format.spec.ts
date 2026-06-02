@@ -22,27 +22,21 @@ describe('formatWeight', () => {
 });
 
 describe('formatShortDuration', () => {
-	it('returns 0s for zero or negative', () => {
-		expect(formatShortDuration(0)).toBe('0s');
-		expect(formatShortDuration(-5)).toBe('0s');
+	it('returns 00m 00s for zero or negative', () => {
+		expect(formatShortDuration(0)).toBe('00m 00s');
+		expect(formatShortDuration(-5)).toBe('00m 00s');
 	});
 
-	it('returns seconds only for durations under 1 minute', () => {
-		expect(formatShortDuration(1)).toBe('1s');
-		expect(formatShortDuration(30)).toBe('30s');
-		expect(formatShortDuration(59)).toBe('59s');
-	});
-
-	it('returns minutes only for exact minutes', () => {
-		expect(formatShortDuration(60)).toBe('1m');
-		expect(formatShortDuration(120)).toBe('2m');
-		expect(formatShortDuration(600)).toBe('10m');
-	});
-
-	it('returns minutes and seconds for mixed durations', () => {
-		expect(formatShortDuration(61)).toBe('1m 1s');
-		expect(formatShortDuration(90)).toBe('1m 30s');
-		expect(formatShortDuration(150)).toBe('2m 30s');
-		expect(formatShortDuration(3665)).toBe('61m 5s');
+	it('returns zero-padded MMm SSs', () => {
+		expect(formatShortDuration(1)).toBe('00m 01s');
+		expect(formatShortDuration(30)).toBe('00m 30s');
+		expect(formatShortDuration(59)).toBe('00m 59s');
+		expect(formatShortDuration(60)).toBe('01m 00s');
+		expect(formatShortDuration(120)).toBe('02m 00s');
+		expect(formatShortDuration(600)).toBe('10m 00s');
+		expect(formatShortDuration(61)).toBe('01m 01s');
+		expect(formatShortDuration(90)).toBe('01m 30s');
+		expect(formatShortDuration(150)).toBe('02m 30s');
+		expect(formatShortDuration(3665)).toBe('61m 05s');
 	});
 });
