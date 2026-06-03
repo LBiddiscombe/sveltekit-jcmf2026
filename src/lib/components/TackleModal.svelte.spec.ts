@@ -73,7 +73,7 @@ describe('TackleModal.svelte', () => {
 
 	it('displays rod name from initial tackle', async () => {
 		render(TackleModal, defaultProps());
-		await expect.element(page.getByText('Float')).toBeInTheDocument();
+		await expect.element(page.getByText('Float').first()).toBeInTheDocument();
 	});
 
 	it('shows No Reel when rod is Pole', async () => {
@@ -111,7 +111,7 @@ describe('TackleModal.svelte', () => {
 
 	it('opens rod picker when rod button clicked', async () => {
 		render(TackleModal, defaultProps());
-		await page.getByText('Float').click();
+		await page.getByAltText('Float').click();
 		await expect.element(page.getByText('Select Rod')).toBeInTheDocument();
 	});
 

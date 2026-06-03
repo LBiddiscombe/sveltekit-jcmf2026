@@ -51,8 +51,26 @@
 	const reelOptions = box.reels.filter((r) => r.name !== 'n/a');
 	const noReel = box.reels.find((r) => r.name === 'n/a') ?? reelOptions[0];
 
-	// svelte-ignore state_referenced_locally
 	let tackle = $state({ ...initialTackle });
+	let activePresetName = $state<string | null>(null);
+	let modified = $state(false);
+
+	let filmstripEl: HTMLDivElement | undefined = $state();
+	let initialScrollDone = $state(false);
+
+	$effect(() => {
+		if (activePresetName && filmstripEl) {
+			const tile = filmstripEl.querySelector(`[data-preset-id="${activePresetName}"]`);
+			if (tile) {
+				tile.scrollIntoView({
+					block: 'nearest',
+					inline: 'center',
+					behavior: initialScrollDone ? 'smooth' : 'auto'
+				});
+				initialScrollDone = true;
+			}
+		}
+	});
 
 	const layers = ['Top', 'Middle', 'Bottom'];
 	const castOptions = [
@@ -173,6 +191,14 @@
 		tackle.bait = sel.bait;
 		tackle.strata = sel.strata;
 		tackle.castStrength = sel.castStrength;
+		activePresetName = preset.name;
+		modified = false;
+	}
+
+	function presetSpecs(preset: TacklePreset): string {
+		const parts = [preset.rod, preset.line, `#${preset.hook}`];
+		if (preset.targetSpecies) parts.unshift(preset.targetSpecies);
+		return parts.join(' · ');
 	}
 
 	function handleConfirm() {
@@ -195,7 +221,7 @@
 
 		<div class="grid gap-6 md:grid-cols-2">
 			<!-- Peg panel -->
-			<div class="flex flex-col gap-3">
+			<div class="flex min-w-0 flex-col gap-3">
 				<div
 					class="relative aspect-square overflow-hidden rounded-xl bg-surface/20 hidden md:block"
 				>
@@ -217,27 +243,53 @@
 				{#if selectedPegData?.description}
 					<p class="text-base leading-relaxed text-dark-teal/90">{selectedPegData.description}</p>
 				{/if}
-				<div class="flex flex-col gap-1">
-					<label
-						for="tackle-preset"
-						class="text-xs font-semibold text-dark-teal uppercase tracking-wide"
-						>Tackle Presets</label
+				<div>
+					<div class="flex items-center gap-2 mb-2">
+						<span class="text-xs font-semibold text-dark-teal uppercase tracking-wide"
+							>Tackle Presets</span
+						>
+						{#if activePresetName}
+							<div class="rounded-full bg-surface/40 px-2.5 py-0.5">
+								<span class="text-xs font-medium text-dark-teal"
+									>{activePresetName}{modified ? '*' : ''}</span
+								>
+							</div>
+						{/if}
+					</div>
+					<div
+						bind:this={filmstripEl}
+						class="flex max-w-full gap-2 overflow-x-auto pb-1"
+						style="scrollbar-width:none"
 					>
-					<select
-						id="tackle-preset"
-						onchange={(e) => {
-							const name = (e.target as HTMLSelectElement).value;
-							const preset = presets.find((p) => p.name === name);
-							if (preset) applyPreset(preset);
-							(e.target as HTMLSelectElement).value = '';
-						}}
-						class="w-full cursor-pointer rounded-lg border-2 border-olive bg-surface/30 px-3 py-2 text-sm text-dark-teal outline-none transition-colors focus:border-primary"
-					>
-						<option value="">Select preset...</option>
 						{#each presets as preset (preset.name)}
-							<option value={preset.name}>{preset.name}</option>
+							<button
+								data-preset-id={preset.name}
+								onclick={() => applyPreset(preset)}
+								class="flex-shrink-0 cursor-pointer rounded-xl border-2 p-2.5 text-left transition-all duration-200 hover:bg-surface/40
+									{activePresetName === preset.name
+									? 'border-primary bg-primary/10'
+									: 'border-olive bg-surface/30 hover:border-primary/50'}"
+								style="width: 130px"
+							>
+								<p class="text-sm font-bold text-dark-teal leading-tight">{preset.name}</p>
+								<p class="mt-0.5 text-[11px] text-muted leading-tight">{presetSpecs(preset)}</p>
+								<div class="mt-1 flex flex-wrap gap-0.5">
+									<span
+										class="inline-block rounded bg-surface/40 px-1.5 py-0.5 text-[10px] font-medium text-dark-teal"
+										>{preset.rod}</span
+									>
+									<span
+										class="inline-block rounded bg-surface/40 px-1.5 py-0.5 text-[10px] font-medium text-dark-teal"
+										>{preset.line}</span
+									>
+									<span
+										class="inline-block rounded bg-surface/40 px-1.5 py-0.5 text-[10px] font-medium text-dark-teal"
+										>#{preset.hook}</span
+									>
+								</div>
+							</button>
 						{/each}
-					</select>
+					</div>
 				</div>
 			</div>
 
