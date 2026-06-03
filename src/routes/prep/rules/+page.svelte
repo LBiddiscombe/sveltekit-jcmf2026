@@ -111,36 +111,36 @@
 
 {#if mode === 'session'}
 	{#if selectedPegData}
-		<div class="flex min-h-dvh flex-col pb-6 pt-6">
-			<div class="mx-auto flex w-full max-w-sm shrink-0 flex-col items-center gap-3 px-4 pb-3">
-				<div class="relative overflow-hidden rounded-xl">
-					{#if pegImg(selectedPegData.image)}
-						<img src={pegImg(selectedPegData.image)} alt="" class="h-full w-full object-contain" />
-					{:else}
-						<div class="flex h-full w-full items-center justify-center bg-surface/20">
-							<span class="text-6xl font-bold text-muted">{selectedPegData.name}</span>
+		<div class="flex min-h-dvh flex-col items-center gap-6 pb-6 pt-6">
+			<div class="flex w-full max-w-sm flex-col gap-4 rounded-2xl bg-white/70 px-5 py-5 shadow-md">
+				<div class="flex flex-col items-center gap-3">
+					<div class="relative w-full overflow-hidden rounded-xl">
+						{#if pegImg(selectedPegData.image)}
+							<img src={pegImg(selectedPegData.image)} alt="" class="w-full object-contain" />
+						{:else}
+							<div class="flex h-48 w-full items-center justify-center bg-surface/20">
+								<span class="text-6xl font-bold text-muted">{selectedPegData.name}</span>
+							</div>
+						{/if}
+						<div class="absolute top-3 left-3 rounded-lg bg-black/40 px-2 py-1">
+							<p class="text-sm font-semibold tracking-wide text-white/80 uppercase">{venueName}</p>
+							<p class="text-xs text-white/60">{lakeName}</p>
+							<p class="text-lg font-bold text-white">Peg {selectedPegData.name}</p>
 						</div>
-					{/if}
-					<div class="absolute top-3 left-3 rounded-lg bg-black/40 px-2 py-1">
-						<p class="text-sm font-semibold tracking-wide text-white/80 uppercase">{venueName}</p>
-						<p class="text-xs text-white/60">{lakeName}</p>
-						<p class="text-lg font-bold text-white">Peg {selectedPegData.name}</p>
+						<div class="absolute inset-x-0 bottom-0 rounded-lg bg-black/40 px-4 py-3">
+							<p class="text-base text-white/80">{selectedPegData.description}</p>
+						</div>
 					</div>
 				</div>
-				<p class="min-h-[6.5rem] text-center text-xs leading-relaxed text-dark-teal/80">
-					{selectedPegData.description}
-				</p>
-			</div>
 
-			<Filmstrip
-				items={pegFilmstripItems}
-				selected={selectedPeg}
-				onselect={(id) => selectPeg(id)}
-			/>
+				<Filmstrip
+					items={pegFilmstripItems}
+					selected={selectedPeg}
+					onselect={(id) => selectPeg(id)}
+				/>
 
-			<div class="mx-auto mt-auto w-full max-w-sm px-4">
 				<label
-					class="mb-3 flex cursor-pointer items-center justify-center gap-2 text-base text-muted hover:text-dark-teal"
+					class="flex cursor-pointer items-center justify-center gap-2 text-base text-muted hover:text-dark-teal"
 				>
 					<input
 						type="checkbox"
@@ -152,10 +152,18 @@
 				</label>
 				<button
 					onclick={goToTackle}
-					class="inline-flex w-full shrink-0 cursor-pointer items-center justify-center gap-2 rounded-xl bg-primary py-3 text-base font-semibold text-white shadow-lg transition-all hover:bg-primary/90 active:scale-[0.98]"
+					class="w-full cursor-pointer rounded-xl bg-accent px-5 py-3 text-center font-bold text-white shadow-md transition-opacity hover:opacity-90"
 				>
-					Fish Peg {selectedPegData.name}
-					<span class="text-lg">&rarr;</span>
+					Fish Peg {selectedPegData.name} &rarr;
+				</button>
+			</div>
+
+			<div class="text-center">
+				<button
+					onclick={() => goto('/menu')}
+					class="cursor-pointer rounded bg-primary px-6 py-3 text-white hover:bg-primary/80"
+				>
+					Back to Menu
 				</button>
 			</div>
 		</div>
