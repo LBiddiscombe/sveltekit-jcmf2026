@@ -3,6 +3,7 @@
 	import { onMount } from 'svelte';
 	import { page } from '$app/state';
 	import { prepState } from '$lib/game/prep-state.svelte';
+	import type { CaughtFish } from '$lib/game/prep-state.svelte';
 	import { gameState } from '$lib/game/state.svelte';
 	import { multiplayer } from '$lib/game/party/connection.svelte';
 	import { venues, species } from '$lib/data';
@@ -17,6 +18,7 @@
 	import { checkIsPB, recordPB } from '$lib/game/pbs';
 	import confetti from 'canvas-confetti';
 	import ComboGridHud from '$lib/components/ComboGridHud.svelte';
+	import CatchCard from './CatchCard.svelte';
 	import {
 		startWakeLock,
 		stopWakeLock,
@@ -77,7 +79,6 @@
 		}
 	});
 	let catchList = $derived(gameState.playerAngler?.catch ?? []);
-	let recentCatch = $derived([...catchList].reverse().slice(0, 3));
 	let totalWeight = $derived(catchList.reduce((sum: number, f) => sum + f.weightOz, 0));
 	let lastEvent = $derived(gameState.lastEvent);
 	let lastCaughtSpecies = $derived.by(() => {
@@ -124,6 +125,12 @@
 			}
 		}
 	});
+	let biggestFish = $derived(
+		catchList.reduce<CaughtFish | null>(
+			(best, f) => (!best || f.weightOz > best.weightOz ? f : best),
+			null
+		)
+	);
 	let debugMode = $state(false);
 	let debugEnabled = $derived(
 		typeof localStorage !== 'undefined' && !!localStorage.getItem('jcmf-debug')
@@ -625,25 +632,7 @@
 		{/if}
 
 		<!-- Catch panel -->
-		<div class="w-full max-w-sm rounded-xl border border-olive bg-surface/30 p-3">
-			<h3 class="mb-1 text-sm font-semibold text-dark-teal">
-				{catchList.length > 0
-					? `Catch (${catchList.length}) — ${formatWeight(totalWeight)}`
-					: 'No fish caught'}
-			</h3>
-			{#if catchList.length > 0}
-				<div class="space-y-1">
-					{#each recentCatch as fish (fish.species + fish.weightOz + fish.caughtAtMs)}
-						<div
-							class="flex justify-between rounded bg-surface/20 px-3 py-1.5 text-sm text-dark-teal"
-						>
-							<span>{fish.classificationLabel || ''} {fish.species}</span>
-							<span class="text-muted">{formatWeight(fish.weightOz)}</span>
-						</div>
-					{/each}
-				</div>
-			{/if}
-		</div>
+		<CatchCard {catchList} {totalWeight} {biggestFish} />
 
 		<!-- Finish button -->
 		<div class="mt-auto flex justify-center pb-2">
