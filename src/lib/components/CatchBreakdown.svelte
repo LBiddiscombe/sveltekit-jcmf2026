@@ -75,15 +75,11 @@
 						/>
 					</div>
 				{/if}
-				<p class="text-xl font-bold text-gray-900">{biggestFish.species}</p>
+				<p class="text-xl font-bold text-gray-900">
+					{biggestFish.classificationLabel || ''}
+					{biggestFish.species}
+				</p>
 				<p class="text-2xl font-black text-accent">{formatWeight(biggestFish.weightOz)}</p>
-				{#if biggestFish.classificationLabel}
-					<span
-						class="inline-block mt-1 rounded-full bg-accent/30 px-3 py-0.5 text-xs font-semibold text-gray-700"
-					>
-						{biggestFish.classificationLabel}
-					</span>
-				{/if}
 			</div>
 		{/if}
 	</div>
@@ -114,12 +110,12 @@
 								</div>
 							{/if}
 							<div class="min-w-0 flex-1">
-								<p class="truncate text-sm font-bold text-gray-900">{speciesName}</p>
-								<p class="text-xs text-gray-600">
+								<p class="truncate text-lg font-bold text-gray-900">{speciesName}</p>
+								<p class="text-base text-gray-600">
 									{group.count} fish &middot; {formatWeight(group.totalWeight)}
 								</p>
 							</div>
-							<span class="shrink-0 text-right text-xs text-gray-600">
+							<span class="shrink-0 text-right text-base text-gray-600">
 								Best: {formatWeight(group.biggestWeight)}
 							</span>
 						</div>

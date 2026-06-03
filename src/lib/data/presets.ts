@@ -1,4 +1,4 @@
-import type { TacklePreset, TackleSelection, Species } from './types';
+import type { Rod, TacklePreset, TackleSelection, Species } from './types';
 import { TackleBox } from './tackle';
 import { baits } from './baits';
 
@@ -219,24 +219,21 @@ export function resolvePreset(preset: TacklePreset): TackleSelection {
 
 export function tacticalOverride(
 	species: Species | null,
-	rodName: string
+	rod: Rod
 ): { strata: string; castStrength: string } {
 	let strata: string;
 
-	if (rodName === 'Leger') {
-		strata = 'Bottom';
+	if (rod.allowedStrata.length === 1) {
+		strata = rod.allowedStrata[0];
 	} else if (species) {
-		const valid = species.strata;
+		const valid = species.strata.filter((s) => rod.allowedStrata.includes(s));
 		strata = valid[Math.floor(Math.random() * valid.length)];
 	} else {
-		const allStrata = ['Top', 'Middle', 'Bottom'];
-		strata = allStrata[Math.floor(Math.random() * allStrata.length)];
+		strata = rod.allowedStrata[Math.floor(Math.random() * rod.allowedStrata.length)];
 	}
 
 	const castStrength =
-		rodName === 'Pole'
-			? 'Short'
-			: (['Short', 'Medium', 'Long'] as const)[Math.floor(Math.random() * 3)];
+		rod.allowedCastStrengths[Math.floor(Math.random() * rod.allowedCastStrengths.length)];
 
 	return { strata, castStrength };
 }

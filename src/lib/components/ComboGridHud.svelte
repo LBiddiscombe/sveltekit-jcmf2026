@@ -12,13 +12,12 @@
 	const castOptions = ['Long', 'Medium', 'Short'] as const;
 	const strataOptions = ['Top', 'Middle', 'Bottom'] as const;
 
-	let isLeger = $derived(tackle.rod.name === 'Leger');
-	let isPole = $derived(tackle.rod.name === 'Pole');
-
 	let open = $state(false);
 
 	function isDisabled(cast: string, strata: string) {
-		return (isPole && cast !== 'Short') || (isLeger && strata !== 'Bottom');
+		return (
+			!tackle.rod.allowedCastStrengths.includes(cast) || !tackle.rod.allowedStrata.includes(strata)
+		);
 	}
 
 	function isActive(cast: string, strata: string) {
@@ -88,7 +87,7 @@
 				tabindex="-1"
 			>
 				{#each castOptions as cast, ci (cast)}
-					{@const isRowDisabled = isPole && cast !== 'Short'}
+					{@const isRowDisabled = !tackle.rod.allowedCastStrengths.includes(cast)}
 					<div
 						class="flex items-center gap-2 {ci > 0 ? 'border-t border-white/10' : ''} {ci > 0
 							? 'pt-2'

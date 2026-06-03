@@ -104,12 +104,22 @@ export interface Bait {
 
 /**
  * Fishing rod type
+ *
+ * Rods define their own constraints on what tackle and tactics can be paired with them.
+ * - `allowedCastStrengths`: which cast distances this rod can fish (e.g. Pole cannot cast Long)
+ * - `allowedStrata`: which water layers this rod can fish (e.g. Leger is Bottom-only)
+ * - `maxLineLb`: maximum line breaking strain this rod supports (e.g. Pole max 6lb)
+ * - `requiresReel`: whether the rod needs a real reel (Pole uses "n/a")
  */
 export interface Rod {
 	name: string;
 	image: string;
 	deter: number;
 	rodMultiplier: number;
+	allowedCastStrengths: string[];
+	allowedStrata: string[];
+	maxLineLb: number;
+	requiresReel: boolean;
 }
 
 /**

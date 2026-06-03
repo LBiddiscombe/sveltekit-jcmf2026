@@ -54,16 +54,29 @@
 	// svelte-ignore state_referenced_locally
 	let tackle = $state({ ...initialTackle });
 
-	let isPole = $derived(tackle.rod.name === 'Pole');
-	let isLeger = $derived(tackle.rod.name === 'Leger');
-
 	const layers = ['Top', 'Middle', 'Bottom'];
-	const strataOptions = layers.map((name) => ({ name, image: '' }));
 	const castOptions = [
 		{ name: 'Short', image: '' },
 		{ name: 'Medium', image: '' },
 		{ name: 'Long', image: '' }
 	];
+
+	let disabledCastNames = $derived(
+		castOptions.filter((o) => !tackle.rod.allowedCastStrengths.includes(o.name)).map((o) => o.name)
+	);
+
+	let disabledLineNames = $derived(
+		box.lines
+			.filter((l) => {
+				const lb = parseInt(l.name);
+				return !isNaN(lb) && lb > tackle.rod.maxLineLb;
+			})
+			.map((l) => l.name)
+	);
+
+	let disabledStrataNames = $derived(layers.filter((l) => !tackle.rod.allowedStrata.includes(l)));
+
+	let canChangeStrata = $derived(tackle.rod.allowedStrata.length > 1);
 
 	const hookSizes = box.hooks.map((h) => h.size);
 	const hookMinSize = Math.min(...hookSizes);
@@ -245,7 +258,7 @@
 					</button>
 
 					<!-- Reel -->
-					{#if isPole}
+					{#if !tackle.rod.requiresReel}
 						<div
 							class="flex flex-col items-center gap-1 md:gap-2 rounded-lg border-2 border-olive bg-surface/10 p-2 md:p-4 opacity-50"
 						>
@@ -322,9 +335,9 @@
 
 					<!-- Strata -->
 					<button
-						onclick={() => !isLeger && openModal('strata')}
-						disabled={isLeger}
-						class="flex cursor-pointer flex-col items-center gap-1 md:gap-2 rounded-lg border-2 p-2 md:p-4 transition-colors {isLeger
+						onclick={() => canChangeStrata && openModal('strata')}
+						disabled={!canChangeStrata}
+						class="flex cursor-pointer flex-col items-center gap-1 md:gap-2 rounded-lg border-2 p-2 md:p-4 transition-colors {!canChangeStrata
 							? 'border-olive bg-surface/10 opacity-50'
 							: 'border-olive bg-surface/30 hover:bg-surface/60'}"
 					>
@@ -404,6 +417,7 @@
 		images={tackleImages}
 		imageBasePath="/src/lib/assets/images/tackle"
 		selectedName={tackle.line.name}
+		disabledNames={disabledLineNames}
 		onselect={(item) => selectLine(item as Line)}
 		onclose={closeModal}
 	/>
@@ -437,10 +451,11 @@
 {#if activeModal === 'strata'}
 	<PickerModal
 		title="Select Strata"
-		items={strataOptions}
+		items={layers.map((l) => ({ name: l, image: '' }))}
 		images={{}}
 		imageBasePath=""
 		selectedName={tackle.strata}
+		disabledNames={disabledStrataNames}
 		itemIcons={Object.fromEntries(layers.map((l) => [l, strataIcon(l)]))}
 		onselect={(item) => selectStrata(item)}
 		onclose={closeModal}
@@ -454,6 +469,7 @@
 		images={{}}
 		imageBasePath=""
 		selectedName={tackle.castStrength}
+		disabledNames={disabledCastNames}
 		itemIcons={Object.fromEntries(castOptions.map((o) => [o.name, castIcon(o.name)]))}
 		onselect={(item) => selectCastStrength(item)}
 		onclose={closeModal}

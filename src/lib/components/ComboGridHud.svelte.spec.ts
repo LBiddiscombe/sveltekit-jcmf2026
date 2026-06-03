@@ -6,7 +6,16 @@ import type { TackleSelection } from '$lib/data';
 
 function makeTackle(overrides: Partial<TackleSelection> = {}): TackleSelection {
 	return {
-		rod: { name: 'Float', image: 'rod-float.png', deter: 0.1, rodMultiplier: 0.67 },
+		rod: {
+			name: 'Float',
+			image: 'rod-float.png',
+			deter: 0.1,
+			rodMultiplier: 0.67,
+			allowedCastStrengths: ['Short', 'Medium', 'Long'],
+			allowedStrata: ['Top', 'Middle', 'Bottom'],
+			maxLineLb: 15,
+			requiresReel: true
+		},
 		reel: { name: 'Fixed Spool', image: 'reel-fixed-spool.png', deter: 0.2 },
 		line: { name: '4 lb', image: 'line.png', size: 64, minOz: 4, maxOz: 160, deter: 0.15 },
 		hook: { name: '16', image: 'hook.png', size: 16, minOz: 4, maxOz: 210, deter: 0.15 },
@@ -41,10 +50,19 @@ describe('ComboGridHud.svelte', () => {
 		expect(buttons.length).toBe(9);
 	});
 
-	it('disables non-Short casts when rod is Pole', async () => {
+	it('disables Long casts when rod is Pole', async () => {
 		render(ComboGridHud, {
 			tackle: makeTackle({
-				rod: { name: 'Pole', image: 'rod-pole.png', deter: 0, rodMultiplier: 0.33 }
+				rod: {
+					name: 'Pole',
+					image: 'rod-pole.png',
+					deter: 0,
+					rodMultiplier: 0.33,
+					allowedCastStrengths: ['Short', 'Medium'],
+					allowedStrata: ['Top', 'Middle', 'Bottom'],
+					maxLineLb: 6,
+					requiresReel: false
+				}
 			}),
 			onselect: vi.fn()
 		});
@@ -53,13 +71,22 @@ describe('ComboGridHud.svelte', () => {
 			.getByLabelText('Select cast strength and strata')
 			.element()
 			.querySelectorAll('button:disabled');
-		expect(disabled.length).toBe(6);
+		expect(disabled.length).toBe(3);
 	});
 
 	it('disables non-Bottom stratas when rod is Leger', async () => {
 		render(ComboGridHud, {
 			tackle: makeTackle({
-				rod: { name: 'Leger', image: 'rod-leger.png', deter: 0.2, rodMultiplier: 1 }
+				rod: {
+					name: 'Leger',
+					image: 'rod-leger.png',
+					deter: 0.2,
+					rodMultiplier: 1,
+					allowedCastStrengths: ['Short', 'Medium', 'Long'],
+					allowedStrata: ['Bottom'],
+					maxLineLb: 15,
+					requiresReel: true
+				}
 			}),
 			onselect: vi.fn()
 		});

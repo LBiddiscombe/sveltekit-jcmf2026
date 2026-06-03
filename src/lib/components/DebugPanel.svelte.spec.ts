@@ -15,7 +15,16 @@ const defaultPlayer: AnglerState = {
 	pegName: 'A1',
 	phase: 'waiting',
 	tackle: {
-		rod: { name: 'Float', image: 'rod-float.png', deter: 0.1, rodMultiplier: 0.67 },
+		rod: {
+			name: 'Float',
+			image: 'rod-float.png',
+			deter: 0.1,
+			rodMultiplier: 0.67,
+			allowedCastStrengths: ['Short', 'Medium', 'Long'],
+			allowedStrata: ['Top', 'Middle', 'Bottom'],
+			maxLineLb: 15,
+			requiresReel: true
+		},
 		reel: { name: 'Fixed Spool', image: 'reel-fixed-spool.png', deter: 0.2 },
 		line: { name: '4 lb', image: 'line.png', size: 64, minOz: 4, maxOz: 160, deter: 0.15 },
 		hook: { name: '16', image: 'hook.png', size: 16, minOz: 4, maxOz: 210, deter: 0.15 },

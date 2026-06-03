@@ -55,8 +55,18 @@ _Avoid_: Dev mode, cheat mode, testing mode
 A DebugPanel action that overrides the current fish during the `waiting` phase. Clicking a fish entry sets it as `FishingLoop.currentFish` and shortens the remaining bite time to 2,000ms. Only the hook's `minOz` and line's `minOz` are checked (downsized gate) — all other filters (strata, cast strength, bait, hook max, line max) are bypassed, allowing testing of mismatch scenarios like a monster fish on light line.
 _Avoid_: Force bite, manual catch
 
+**Rod**:
+A rod type (Leger, Float, Pole) with a set of constraints defining what tackle and tactics can be paired with it:
+
+- `allowedCastStrengths`: which cast distances the rod can fish (Pole cannot cast Long)
+- `allowedStrata`: which water layers the rod can fish (Leger is Bottom-only)
+- `maxLineLb`: maximum line breaking strain the rod supports (Pole max 6lb)
+- `requiresReel`: whether the rod uses a real reel (Pole uses `'n/a'`)
+
+These constraints drive the UI (picker filtering, button disabling) in the tackle modal and quick-change HUD — restrictions are enforced at the UI layer, not in the game loop.
+
 **RodMultiplier**:
-A per-rod numeric property controlling mechanical advantage in the **ReelingMinigame**. Higher values reduce tension for a given pull force (easier reeling). Leger: 1.5 (easiest), Float: 1.0 (balanced), Pole: 0.5 (hardest). The tension formula is `(pull × fishPull × stamina × weight) / (tackleStrength × rodMultiplier)`.
+A per-rod numeric property controlling mechanical advantage in the **ReelingMinigame**. Higher values reduce tension for a given pull force (easier reeling). Pole: 0.33 (hardest), Float: 0.67 (balanced), Leger: 1.0 (easiest). The tension formula is `(pull × fishPull × stamina × weight) / (tackleStrength × rodMultiplier)`.
 
 **Session**:
 A solo fishing outing — unlimited time, no bots, no competition. Pure fishing. Flows through Prep (player picks a peg manually, no time/bot options) → Game → Results.
@@ -122,7 +132,7 @@ The match-only phase where anglers are randomly assigned to pegs. The player's p
 The current rod, reel, line, hook, bait, strata, and cast strength chosen by an angler. Each component has an independent deterrence value affecting fish behaviour.
 
 **TacklePreset**:
-A predefined tackle configuration (rod, reel, line, hook, bait, strata, cast strength), optionally targeting a specific species (via `targetSpecies`). Used at draw time to assign bots their starting tackle. Species-specific presets are selected via a skill-weighted random roll against the peg's likely species composition. General-purpose presets (Tiddler Basher, Light, Medium, Heavy, Predator) serve as fallback. The preset's strata and cast strength are overridden at runtime by **tactical override** logic (Leger → Bottom, Pole → Short, otherwise random valid options) to add variety between bots using the same preset.
+A predefined tackle configuration (rod, reel, line, hook, bait, strata, cast strength), optionally targeting a specific species (via `targetSpecies`). Used at draw time to assign bots their starting tackle. Species-specific presets are selected via a skill-weighted random roll against the peg's likely species composition. General-purpose presets (Tiddler Basher, Light, Medium, Heavy, Predator) serve as fallback. The preset's strata and cast strength are overridden at runtime by **tactical override** logic — reads the rod's `allowedStrata` and `allowedCastStrengths` to pick valid random values (or the only option if constrained), adding variety between bots using the same preset.
 
 **CaughtFish**:
 A fish that has been landed by an angler, recording its species and weight in ounces.

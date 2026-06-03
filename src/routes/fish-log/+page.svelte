@@ -16,6 +16,30 @@
 
 	let pbs = $state(getPBs());
 
+	let speciesCaught = $derived(Object.keys(pbs).length);
+	let totalSpecies = $derived(species.length);
+
+	let specimensCaught = $derived.by(() => {
+		let count = 0;
+		for (const s of species) {
+			const pb = pbs[s.name];
+			if (!pb) continue;
+			if (pb.weightOz > s.classifications[1].maxOz) count++;
+		}
+		return count;
+	});
+
+	let monstersCaught = $derived.by(() => {
+		let count = 0;
+		for (const s of species) {
+			const pb = pbs[s.name];
+			if (!pb) continue;
+			const specimenMax = s.classifications[2].maxOz;
+			if (pb.weightOz > specimenMax) count++;
+		}
+		return count;
+	});
+
 	function getTier(speciesData: Species, weightOz: number): { width: number; heightScale: number } {
 		const tiers = speciesData.classifications;
 		if (weightOz <= tiers[0].maxOz) return { width: TIER_WIDTHS[0], heightScale: 1 };
@@ -58,6 +82,47 @@
 		>
 			Reset All PBs
 		</button>
+	</div>
+
+	<div class="mb-6 grid grid-cols-3 gap-3">
+		<div class="flex flex-col items-center gap-2 rounded-xl border border-olive bg-white/70 p-4">
+			<span class="text-3xl">🐟</span>
+			<span class="text-4xl font-black text-dark-teal">{speciesCaught}</span>
+			<span class="-mt-1 text-xs text-muted">of {totalSpecies}</span>
+			<div class="mt-1 h-2 w-full overflow-hidden rounded-full bg-primary/20">
+				<div
+					class="h-full rounded-full bg-primary transition-all"
+					style="width: {(speciesCaught / totalSpecies) * 100}%"
+				></div>
+			</div>
+			<span class="text-xs font-bold uppercase tracking-wide text-dark-teal">Species</span>
+		</div>
+
+		<div class="flex flex-col items-center gap-2 rounded-xl border border-olive bg-white/70 p-4">
+			<span class="text-3xl">⭐</span>
+			<span class="text-4xl font-black text-dark-teal">{specimensCaught}</span>
+			<span class="-mt-1 text-xs text-muted">of {totalSpecies}</span>
+			<div class="mt-1 h-2 w-full overflow-hidden rounded-full bg-accent/20">
+				<div
+					class="h-full rounded-full bg-accent transition-all"
+					style="width: {(specimensCaught / totalSpecies) * 100}%"
+				></div>
+			</div>
+			<span class="text-xs font-bold uppercase tracking-wide text-dark-teal">Specimens</span>
+		</div>
+
+		<div class="flex flex-col items-center gap-2 rounded-xl border border-olive bg-white/70 p-4">
+			<span class="text-3xl">👑</span>
+			<span class="text-4xl font-black text-dark-teal">{monstersCaught}</span>
+			<span class="-mt-1 text-xs text-muted">of {totalSpecies}</span>
+			<div class="mt-1 h-2 w-full overflow-hidden rounded-full bg-danger/20">
+				<div
+					class="h-full rounded-full bg-danger transition-all"
+					style="width: {(monstersCaught / totalSpecies) * 100}%"
+				></div>
+			</div>
+			<span class="text-xs font-bold uppercase tracking-wide text-dark-teal">Monsters</span>
+		</div>
 	</div>
 
 	<div class="grid grid-cols-1 gap-4 sm:grid-cols-2">

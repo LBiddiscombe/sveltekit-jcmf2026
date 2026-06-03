@@ -2,9 +2,36 @@ import type { Rod, Reel, Line, Hook } from './types';
 
 export class TackleBox {
 	rods: Rod[] = [
-		{ name: 'Leger', image: 'rod-leger.png', deter: 0.2, rodMultiplier: 1 },
-		{ name: 'Float', image: 'rod-float.png', deter: 0.1, rodMultiplier: 0.67 },
-		{ name: 'Pole', image: 'rod-pole.png', deter: 0, rodMultiplier: 0.33 }
+		{
+			name: 'Leger',
+			image: 'rod-leger.png',
+			deter: 0.2,
+			rodMultiplier: 1,
+			allowedCastStrengths: ['Short', 'Medium', 'Long'],
+			allowedStrata: ['Bottom'],
+			maxLineLb: 15,
+			requiresReel: true
+		},
+		{
+			name: 'Float',
+			image: 'rod-float.png',
+			deter: 0.1,
+			rodMultiplier: 0.67,
+			allowedCastStrengths: ['Short', 'Medium', 'Long'],
+			allowedStrata: ['Top', 'Middle', 'Bottom'],
+			maxLineLb: 15,
+			requiresReel: true
+		},
+		{
+			name: 'Pole',
+			image: 'rod-pole.png',
+			deter: 0,
+			rodMultiplier: 0.33,
+			allowedCastStrengths: ['Short', 'Medium'],
+			allowedStrata: ['Top', 'Middle', 'Bottom'],
+			maxLineLb: 6,
+			requiresReel: false
+		}
 	];
 
 	reels: Reel[] = [

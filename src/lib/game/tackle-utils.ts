@@ -1,12 +1,15 @@
 import { baits, species, presets, resolvePreset, tacticalOverride } from '$lib/data';
 import type { TackleSelection, Peg, Lake } from '$lib/data';
+import { TackleBox } from '$lib/data/tackle';
 import { passesTolerances, fishMatchScore, weightedSelectIndex } from './population';
 
+const defaultBox = new TackleBox();
+
 export const defaultTackle: TackleSelection = {
-	rod: { name: 'Pole', image: 'rod-pole.png', deter: 0, rodMultiplier: 0.33 },
-	reel: { name: 'n/a', image: '', deter: 0 },
-	line: { name: '2 lb', image: 'line.png', size: 32, minOz: 1, maxOz: 96, deter: 0 },
-	hook: { name: '22', image: 'hook.png', size: 22, minOz: 1, maxOz: 64, deter: 0 },
+	rod: defaultBox.rods.find((r) => r.name === 'Pole')!,
+	reel: defaultBox.reels.find((r) => r.name === 'n/a')!,
+	line: defaultBox.lines.find((l) => l.name === '2 lb')!,
+	hook: defaultBox.hooks.find((h) => h.name === '22')!,
 	bait: baits[0],
 	strata: 'Top',
 	castStrength: 'Short'
@@ -30,7 +33,7 @@ export function pickBotTackle(skill: number, peg: Peg, lake: Lake): TackleSelect
 			if (preset) {
 				const tackle = resolvePreset(preset);
 				const sp = species.find((s) => s.name === targetName) ?? null;
-				const { strata, castStrength } = tacticalOverride(sp, tackle.rod.name);
+				const { strata, castStrength } = tacticalOverride(sp, tackle.rod);
 				return { ...tackle, strata, castStrength };
 			}
 		}
@@ -39,6 +42,6 @@ export function pickBotTackle(skill: number, peg: Peg, lake: Lake): TackleSelect
 	const generalPresets = presets.filter((p) => !p.targetSpecies);
 	const preset = generalPresets[Math.floor(Math.random() * generalPresets.length)];
 	const tackle = resolvePreset(preset);
-	const { strata, castStrength } = tacticalOverride(null, tackle.rod.name);
+	const { strata, castStrength } = tacticalOverride(null, tackle.rod);
 	return { ...tackle, strata, castStrength };
 }

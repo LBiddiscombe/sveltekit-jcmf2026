@@ -8,7 +8,8 @@
 		onselect,
 		onclose,
 		itemIcons,
-		itemScales
+		itemScales,
+		disabledNames
 	}: {
 		title: string;
 		items: { name: string; image: string }[];
@@ -19,6 +20,7 @@
 		onclose: () => void;
 		itemIcons?: Record<string, string>;
 		itemScales?: Record<string, number>;
+		disabledNames?: string[];
 	} = $props();
 
 	function handleBackdrop(e: MouseEvent) {
@@ -56,12 +58,16 @@
 
 		<div class="grid grid-cols-3 gap-3">
 			{#each items as item (item.name)}
+				{@const isDisabled = disabledNames?.includes(item.name) ?? false}
 				<button
-					onclick={() => onselect(item)}
-					class="flex cursor-pointer flex-col items-center gap-2 rounded-lg border-2 p-3 text-center transition-all
-						{item.name === selectedName
-						? 'scale-105 border-primary ring-2 ring-primary ring-offset-2'
-						: 'border-olive bg-surface/30 hover:bg-surface/60'}"
+					onclick={() => !isDisabled && onselect(item)}
+					disabled={isDisabled}
+					class="flex flex-col items-center gap-2 rounded-lg border-2 p-3 text-center transition-all
+						{isDisabled
+						? 'border-olive/30 bg-surface/10 opacity-30 cursor-default'
+						: item.name === selectedName
+							? 'scale-105 border-primary ring-2 ring-primary ring-offset-2 cursor-pointer'
+							: 'border-olive bg-surface/30 hover:bg-surface/60 cursor-pointer'}"
 				>
 					{#if item.image}
 						{#if itemScales?.[item.name]}
