@@ -62,6 +62,20 @@
 			: (prepState.lake?.pegs.find((p) => p.name === pegName) ?? null)
 	);
 	let playerPhase = $derived(gameState.playerSnapshot?.phase ?? null);
+	let caughtDismissable = $state(false);
+	let caughtTimer: ReturnType<typeof setTimeout> | undefined;
+
+	$effect(() => {
+		if (playerPhase === 'caught') {
+			caughtDismissable = false;
+			caughtTimer = setTimeout(() => {
+				caughtDismissable = true;
+			}, 1000);
+			return () => {
+				clearTimeout(caughtTimer);
+			};
+		}
+	});
 	let catchList = $derived(gameState.playerAngler?.catch ?? []);
 	let recentCatch = $derived([...catchList].reverse().slice(0, 3));
 	let totalWeight = $derived(catchList.reduce((sum: number, f) => sum + f.weightOz, 0));
@@ -238,7 +252,7 @@
 		gameState.strike();
 	}
 
-	function handleReelingResult(result: 'caught' | 'lost') {
+	function handleReelingResult(result: 'caught' | 'lineBroke' | 'fishGotAway') {
 		if (mode === 'session') {
 			hintsConsumed.reeling = true;
 		}
@@ -250,6 +264,7 @@
 	}
 
 	function handleDismissCaught() {
+		if (!caughtDismissable) return;
 		gameState.dismissCaught();
 	}
 

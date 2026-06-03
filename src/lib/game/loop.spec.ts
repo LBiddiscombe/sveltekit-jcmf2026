@@ -328,7 +328,8 @@ describe('FishingLoop', () => {
 		it('returns null when not in reeling phase', () => {
 			const loop = new FishingLoop(tackle, 5, speciesList, () => 0.3);
 			expect(loop.handleReelingOutcome('caught')).toBeNull();
-			expect(loop.handleReelingOutcome('lost')).toBeNull();
+			expect(loop.handleReelingOutcome('lineBroke')).toBeNull();
+			expect(loop.handleReelingOutcome('fishGotAway')).toBeNull();
 		});
 
 		it('returns null when no current fish', () => {
@@ -337,14 +338,26 @@ describe('FishingLoop', () => {
 			expect(loop.handleReelingOutcome('caught')).toBeNull();
 		});
 
-		it('returns fishGotAway and sets phase to lost when result is lost', () => {
+		it('returns lineBroke and sets phase to lost when result is lineBroke', () => {
 			const loop = new FishingLoop(tackle, 5, speciesList, () => 0.3);
 			loop.cast(population, noopRemove);
 			loop.tick(loop.remainingMs);
 			loop.strike();
 			expect(loop.phase).toBe('reeling');
 
-			const event = loop.handleReelingOutcome('lost');
+			const event = loop.handleReelingOutcome('lineBroke');
+			expect(event).toEqual({ type: 'lineBroke' });
+			expect(loop.phase).toBe('lost');
+		});
+
+		it('returns fishGotAway and sets phase to lost when result is fishGotAway', () => {
+			const loop = new FishingLoop(tackle, 5, speciesList, () => 0.3);
+			loop.cast(population, noopRemove);
+			loop.tick(loop.remainingMs);
+			loop.strike();
+			expect(loop.phase).toBe('reeling');
+
+			const event = loop.handleReelingOutcome('fishGotAway');
 			expect(event).toEqual({ type: 'fishGotAway' });
 			expect(loop.phase).toBe('lost');
 		});

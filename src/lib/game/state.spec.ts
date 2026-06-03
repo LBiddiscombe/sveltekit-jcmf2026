@@ -537,7 +537,7 @@ describe('GameState method-level delegation', () => {
 			expect(gs.catchAudit).toHaveLength(1);
 		});
 
-		it('returns fishGotAway when result is lost and does not update player state', () => {
+		it('returns lineBroke when result is lineBroke and does not update player state', () => {
 			gs.beginFishing(makePlayer(), venue, lake, 10);
 			gs.cast();
 			gs.tick(100);
@@ -557,7 +557,34 @@ describe('GameState method-level delegation', () => {
 				stepMs: 1000
 			};
 
-			const event = gs.handleReelingOutcome('lost');
+			const event = gs.handleReelingOutcome('lineBroke');
+			expect(event).toEqual({ type: 'lineBroke' });
+			expect(gs.lastEvent).toEqual({ type: 'lineBroke' });
+			const player = gs.playerAngler!;
+			expect(player.catch).toHaveLength(0);
+		});
+
+		it('returns fishGotAway when result is fishGotAway and does not update player state', () => {
+			gs.beginFishing(makePlayer(), venue, lake, 10);
+			gs.cast();
+			gs.tick(100);
+
+			const loop = gs.playerLoop!;
+			loop.phase = 'reeling';
+			loop.currentFish = {
+				id: 'f1',
+				species: 'Roach',
+				strata: 'Bottom',
+				classificationLabel: 'Small',
+				tierIndex: 0,
+				weightOz: 12,
+				castStrength: 'Medium',
+				preferredBait: 'maggot',
+				pattern: [],
+				stepMs: 1000
+			};
+
+			const event = gs.handleReelingOutcome('fishGotAway');
 			expect(event).toEqual({ type: 'fishGotAway' });
 			expect(gs.lastEvent).toEqual({ type: 'fishGotAway' });
 			const player = gs.playerAngler!;

@@ -12,7 +12,7 @@
 		castStrength: string;
 		pattern: number[];
 		stepMs: number;
-		onResult?: (result: 'caught' | 'lost') => void;
+		onResult?: (result: 'caught' | 'lineBroke' | 'fishGotAway') => void;
 		anglerSilhouetteUrl?: string;
 	}
 
@@ -48,10 +48,11 @@
 		active: false
 	});
 
-	let minigameResolve: ((result: 'caught' | 'lost') => void) | null = null;
+	let minigameResolve: ((result: 'caught' | 'lineBroke' | 'fishGotAway') => void) | null = null;
 
 	let overTensionTime = 0;
-	let minigameState: 'active' | 'caught' | 'lost' | 'idle' = 'idle';
+	let idleTimeMs = 0;
+	let minigameState: 'active' | 'caught' | 'lineBroke' | 'fishGotAway' | 'idle' = 'idle';
 	let bankY = 0;
 	let splashes: {
 		x: number;
@@ -75,8 +76,9 @@
 				active: true
 			};
 			overTensionTime = 0;
+			idleTimeMs = 0;
 			minigameState = 'active';
-			minigameResolve = (result: 'caught' | 'lost') => {
+			minigameResolve = (result: 'caught' | 'lineBroke' | 'fishGotAway') => {
 				minigameResolve = null;
 				reelingParams = {
 					weight: 0,
@@ -333,15 +335,28 @@
 			}
 
 			function update() {
-				if (p.mouseIsPressed || p.keyIsDown(' ')) {
+				const isReeling = p.mouseIsPressed || p.keyIsDown(' ');
+
+				if (isReeling) {
 					fish.y += p.map(angler.tension, 0, 1, 2, 0.1, true);
 					if (p.mouseX <= p.width && p.mouseX >= 0 && p.mouseY <= p.height && p.mouseY >= 0) {
 						fish.x = p.lerp(fish.x, p.mouseX, p.deltaTime / 5000);
 					}
+					idleTimeMs = 0;
+				} else {
+					idleTimeMs += p.deltaTime;
 				}
 
 				if (fish.y >= bankY) {
 					minigameState = 'caught';
+				}
+
+				if (fish.y < -p.height / 2) {
+					minigameState = 'fishGotAway';
+				}
+
+				if (idleTimeMs >= 10_000) {
+					minigameState = 'fishGotAway';
 				}
 
 				if (angler.tension >= 1.0) {
@@ -351,7 +366,7 @@
 				}
 
 				if (overTensionTime >= 500) {
-					minigameState = 'lost';
+					minigameState = 'lineBroke';
 				}
 			}
 
@@ -379,6 +394,7 @@
 					p.loop();
 					minigameState = 'active';
 					overTensionTime = 0;
+					idleTimeMs = 0;
 					angler = createAngler({
 						rodMultiplier: reelingParams.rodMultiplier,
 						lineMaxOz: reelingParams.lineMaxOz
@@ -425,7 +441,7 @@
 						resetToIdleView();
 						const result = minigameState;
 						minigameState = 'idle';
-						resolve(result as 'caught' | 'lost');
+						resolve(result as 'caught' | 'lineBroke' | 'fishGotAway');
 					}
 				}
 			};

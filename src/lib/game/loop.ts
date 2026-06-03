@@ -321,10 +321,16 @@ export class FishingLoop {
 		return null;
 	}
 
-	handleReelingOutcome(result: 'caught' | 'lost'): FishingEvent | null {
+	handleReelingOutcome(result: 'caught' | 'lineBroke' | 'fishGotAway'): FishingEvent | null {
 		if (this.phase !== 'reeling' || !this.currentFish) return null;
 
-		if (result === 'lost') {
+		if (result === 'lineBroke') {
+			this.phase = 'lost';
+			this.recastCountdown = PLAYER_RECAST_DELAY_LOST;
+			return { type: 'lineBroke' };
+		}
+
+		if (result === 'fishGotAway') {
 			this.phase = 'lost';
 			this.recastCountdown = PLAYER_RECAST_DELAY_LOST;
 			return { type: 'fishGotAway' };

@@ -353,7 +353,7 @@ export class GameState {
 		this.syncPlayerState();
 	}
 
-	handleReelingOutcome(result: 'caught' | 'lost'): FishingEvent | null {
+	handleReelingOutcome(result: 'caught' | 'lineBroke' | 'fishGotAway'): FishingEvent | null {
 		const event = this.playerLoop?.handleReelingOutcome(result) ?? null;
 		if (event) this.lastEvent = event;
 		if (event?.type === 'fishCaught') {
