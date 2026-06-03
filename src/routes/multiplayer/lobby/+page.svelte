@@ -108,7 +108,7 @@
 			{#if multiplayer.isHost}
 				<button
 					onclick={startGame}
-					class="w-full cursor-pointer rounded-xl bg-accent px-5 py-4 text-center font-bold text-white shadow-md transition-opacity hover:opacity-90"
+					class="w-full cursor-pointer rounded-xl bg-accent px-5 py-4 text-center font-bold text-white shadow-md transition-opacity hover:opacity-90 focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none"
 				>
 					Start Match
 				</button>

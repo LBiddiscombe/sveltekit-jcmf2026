@@ -56,12 +56,12 @@
 <div class="flex flex-1 flex-col">
 	<div class="flex flex-col items-center gap-4 px-4 pb-4 pt-4">
 		{#if totalFish > 0}
-			<p class="text-xl text-gray-900">{totalFish} fish, {formatWeight(totalWeightOz)}</p>
+			<p class="text-xl text-dark-teal">{totalFish} fish, {formatWeight(totalWeightOz)}</p>
 		{/if}
 
 		{#if totalFish > 0 && biggestFish && bestTier}
 			<div class="w-full max-w-sm rounded-lg bg-accent/20 p-4 text-center">
-				<p class="text-xs uppercase tracking-wider text-gray-500">Best Fish</p>
+				<p class="text-xs uppercase tracking-wider text-muted">Best Fish</p>
 				{#if bestImgUrl}
 					<div
 						class="flex justify-center"
@@ -75,7 +75,7 @@
 						/>
 					</div>
 				{/if}
-				<p class="text-xl font-bold text-gray-900">
+				<p class="text-xl font-bold text-dark-teal">
 					{biggestFish.classificationLabel || ''}
 					{biggestFish.species}
 				</p>
@@ -87,7 +87,7 @@
 	<div class="flex-1 overflow-y-auto px-4">
 		<div class="flex flex-col items-center pb-4">
 			{#if totalFish === 0}
-				<p class="text-base text-gray-600">No fish were caught</p>
+				<p class="text-base text-muted">No fish were caught</p>
 			{:else}
 				<div class="w-full max-w-sm space-y-2">
 					{#each rows as [speciesName, group] (speciesName)}
@@ -104,18 +104,18 @@
 								</div>
 							{:else}
 								<div
-									class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-olive/30 text-base font-bold text-gray-700"
+									class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-olive/30 text-base font-bold text-dark-teal"
 								>
 									{speciesName[0]}
 								</div>
 							{/if}
 							<div class="min-w-0 flex-1">
-								<p class="truncate text-lg font-bold text-gray-900">{speciesName}</p>
-								<p class="text-base text-gray-600">
+								<p class="truncate text-lg font-bold text-dark-teal">{speciesName}</p>
+								<p class="text-base text-dark-teal/70">
 									{group.count} fish &middot; {formatWeight(group.totalWeight)}
 								</p>
 							</div>
-							<span class="shrink-0 text-right text-base text-gray-600">
+							<span class="shrink-0 text-right text-base text-dark-teal/70">
 								Best: {formatWeight(group.biggestWeight)}
 							</span>
 						</div>
@@ -128,7 +128,7 @@
 	<div class="flex justify-center px-4 pb-6 pt-2">
 		<a
 			href="/menu"
-			class="inline-flex min-h-11items-center justify-center rounded bg-primary px-6 py-3 text-center text-white no-underline hover:bg-primary/80"
+			class="inline-flex min-h-11 items-center justify-center rounded bg-primary px-6 py-3 text-center text-white no-underline hover:bg-primary/80"
 		>
 			Main Menu
 		</a>

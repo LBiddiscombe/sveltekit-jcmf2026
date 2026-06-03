@@ -109,7 +109,7 @@
 			<button
 				onclick={joinMatch}
 				disabled={!name.trim() || !code.trim() || joining}
-				class="w-full cursor-pointer rounded-xl bg-accent px-5 py-3 text-center font-bold text-white shadow-md transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+				class="w-full cursor-pointer rounded-xl bg-accent px-5 py-3 text-center font-bold text-white shadow-md transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none"
 			>
 				{joining ? 'Joining...' : 'Join Match'}
 			</button>

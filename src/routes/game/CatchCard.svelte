@@ -37,7 +37,8 @@
 			<span class="text-base">🏆</span>
 			<div class="min-w-0 flex-1">
 				<p class="truncate text-sm font-semibold text-amber-300">
-					{biggestFish.classificationLabel} {biggestFish.species}
+					{biggestFish.classificationLabel}
+					{biggestFish.species}
 				</p>
 			</div>
 			<span class="shrink-0 text-sm font-bold tabular-nums text-amber-300">
@@ -52,9 +53,13 @@
 				<div class="flex items-center justify-between rounded-md bg-white/10 px-2.5 py-1.5">
 					<div class="flex items-center gap-1.5 min-w-0">
 						<span class="h-1.5 w-1.5 shrink-0 rounded-full bg-emerald-400/70"></span>
-						<span class="truncate text-sm text-white/80">{fish.classificationLabel} {fish.species}</span>
+						<span class="truncate text-sm text-white/80"
+							>{fish.classificationLabel} {fish.species}</span
+						>
 					</div>
-					<span class="shrink-0 text-sm tabular-nums text-white/50">{formatWeight(fish.weightOz)}</span>
+					<span class="shrink-0 text-sm tabular-nums text-white/50"
+						>{formatWeight(fish.weightOz)}</span
+					>
 				</div>
 			{/each}
 		</div>

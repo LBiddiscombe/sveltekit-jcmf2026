@@ -430,7 +430,7 @@
 </svelte:head>
 
 <div class="min-h-dvh lg:flex lg:flex-row">
-	<div class="flex min-h-dvh flex-1 flex-col items-center gap-4 p-4">
+	<div class="flex flex-1 flex-col items-center gap-4 p-4">
 		<div
 			class="relative w-full overflow-hidden rounded-xl bg-surface/20 sm:max-w-sm
 				{playerPhase === 'bite' ? 'strike-glow' : ''}"
@@ -540,7 +540,7 @@
 				</div>
 				{#if wakeLock.active}
 					<span
-						class="mt-1 h-2 w-2 flex-shrink-0 rounded-full bg-green-400 shadow-[0_0_4px_theme(colors.green.400)]"
+						class="mt-1 h-2 w-2 shrink-0 rounded-full bg-green-400 shadow-[0_0_4px_var(--color-green-400)]"
 					></span>
 				{/if}
 			</div>

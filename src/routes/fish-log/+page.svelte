@@ -78,7 +78,7 @@
 		<h1 class="text-2xl font-bold text-dark-teal sm:text-3xl">Fish Log</h1>
 		<button
 			onclick={handleResetAll}
-			class="cursor-pointer rounded bg-red-500/80 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-red-500"
+			class="cursor-pointer rounded bg-red-500/80 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-red-500 focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none"
 		>
 			Reset All PBs
 		</button>

@@ -44,7 +44,7 @@
 
 <div
 	bind:this={container}
-	class="flex shrink-0 gap-3 overflow-x-auto px-4 pb-3 sm:overflow-visible sm:justify-center sm:-mx-4 sm:px-0"
+	class="flex shrink-0 gap-3 overflow-x-auto px-4 pb-3 pt-1 sm:overflow-visible sm:justify-center sm:-mx-4 sm:px-0"
 	style="scrollbar-width:none"
 >
 	{#each items as item (item.id)}

@@ -39,7 +39,7 @@
 	<div class="mt-8 text-center">
 		<a
 			href="/menu"
-			class="inline-flex rounded bg-primary px-6 py-3 text-white no-underline hover:bg-primary/80"
+			class="inline-flex rounded bg-primary px-6 py-3 text-white no-underline hover:bg-primary/80 focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none"
 		>
 			Back to Menu
 		</a>

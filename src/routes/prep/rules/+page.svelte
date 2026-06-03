@@ -127,7 +127,7 @@
 						<p class="text-lg font-bold text-white">Peg {selectedPegData.name}</p>
 					</div>
 				</div>
-				<p class="min-h-26 text-center text-xs leading-relaxed text-dark-teal/80">
+				<p class="min-h-[6.5rem] text-center text-xs leading-relaxed text-dark-teal/80">
 					{selectedPegData.description}
 				</p>
 			</div>
