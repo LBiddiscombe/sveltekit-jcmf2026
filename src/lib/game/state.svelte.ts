@@ -43,6 +43,16 @@ export class GameState {
 	sessionStartMs = 0;
 	initialTackleChosen = $state(false);
 
+	onCatch:
+		| ((info: {
+				species: string;
+				classificationLabel: string;
+				weightOz: number;
+				anglerName: string;
+				pegName: string;
+		  }) => void)
+		| null = null;
+
 	private playerPeg = '';
 
 	get playerAngler(): AnglerState | undefined {
@@ -385,6 +395,13 @@ export class GameState {
 						weightOz: event.weightOz
 					}
 				];
+				this.onCatch?.({
+					species: event.species,
+					classificationLabel: event.classificationLabel,
+					weightOz: event.weightOz,
+					anglerName: player.name,
+					pegName: player.pegName
+				});
 			}
 		}
 		this.syncPlayerState();
@@ -435,6 +452,7 @@ export class GameState {
 		this.catchAudit = [];
 		this.sessionStartMs = 0;
 		this.initialTackleChosen = false;
+		this.onCatch = null;
 	}
 }
 

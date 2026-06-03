@@ -372,6 +372,9 @@
 			angler.totalWeightOz = 0;
 			angler.biggestFish = null;
 		}
+		gameState.onCatch = (info) => {
+			multiplayer.sendCatch(info);
+		};
 		const venue = venues[0];
 		const lake = venue.lakes[0];
 		gameState.beginFishing([angler], venue, lake, multiplayer.timeLimitMinutes);
@@ -387,6 +390,10 @@
 
 	onMount(() => {
 		startWakeLock();
+		if (typeof window !== 'undefined' && debugEnabled) {
+			window.__gameState = gameState;
+			window.__multiplayer = multiplayer;
+		}
 		if (isMulti) {
 			setupMultiplayerGame();
 		} else if (gameState.phase !== 'fishing') {

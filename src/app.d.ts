@@ -8,6 +8,11 @@ declare global {
 		// interface PageState {}
 		// interface Platform {}
 	}
+
+	interface Window {
+		__gameState?: import('$lib/game/state.svelte').GameState;
+		__multiplayer?: import('$lib/game/party/connection.svelte').MultiplayerConnection;
+	}
 }
 
 export {};
