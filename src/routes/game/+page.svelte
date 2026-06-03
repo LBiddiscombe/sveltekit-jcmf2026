@@ -10,15 +10,15 @@
 	import type { TackleSelection } from '$lib/data';
 	import { defaultTackle } from '$lib/game/tackle-utils';
 	import { formatWeight, formatShortDuration } from '$lib/utils/format';
-	import CatchToast from '$lib/components/CatchToast.svelte';
 	import DebugPanel from '$lib/components/DebugPanel.svelte';
-	import TackleModal from '$lib/components/TackleModal.svelte';
-	import FishingCanvas from '$lib/components/FishingCanvas.svelte';
 	import { isTutorialCompleted, completeTutorial } from '$lib/game/tutorial';
 	import { checkIsPB, recordPB } from '$lib/game/pbs';
 	import confetti from 'canvas-confetti';
-	import ComboGridHud from '$lib/components/ComboGridHud.svelte';
 	import CatchCard from './CatchCard.svelte';
+	import CatchToast from './CatchToast.svelte';
+	import TackleModal from './TackleModal.svelte';
+	import FishingCanvas from './FishingCanvas.svelte';
+	import ComboGridHud from './ComboGridHud.svelte';
 	import {
 		startWakeLock,
 		stopWakeLock,

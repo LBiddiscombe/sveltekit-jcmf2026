@@ -6,7 +6,7 @@
 	import { multiplayer } from '$lib/game/party/connection.svelte';
 	import DebugPanel from '$lib/components/DebugPanel.svelte';
 	import Leaderboard from './Leaderboard.svelte';
-	import CatchBreakdown from '$lib/components/CatchBreakdown.svelte';
+	import CatchBreakdown from './CatchBreakdown.svelte';
 	import { formatWeight } from '$lib/utils/format';
 
 	let isMulti = $derived(page.url.searchParams.has('multi'));
