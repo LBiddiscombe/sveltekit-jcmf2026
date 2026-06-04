@@ -6,7 +6,6 @@
 	import { bots } from '$lib/data';
 	import Filmstrip from '$lib/components/Filmstrip.svelte';
 	import type { FilmstripItem } from '$lib/components/Filmstrip.svelte';
-	import reelThumb from '$lib/assets/images/tackle/reel-fixed-spool.png';
 
 	const NAME_KEY = 'jcmf-player-name';
 	const AVATAR_KEY = 'jcmf-player-avatar';
@@ -62,14 +61,6 @@
 
 <div class="flex min-h-dvh flex-col items-center justify-center bg-surface px-4 py-8">
 	<div class="flex w-full max-w-sm flex-col items-center gap-4">
-		<div class="flex w-full items-center gap-4 rounded-2xl bg-white/70 px-5 py-5 shadow-md">
-			<img src={reelThumb} alt="" class="h-14 w-14 shrink-0 rounded-xl object-cover" />
-			<div class="min-w-0">
-				<h1 class="text-lg font-bold text-dark-teal">Join a Match</h1>
-				<p class="text-sm text-dark-teal/60">Enter a code to join a friend's match</p>
-			</div>
-		</div>
-
 		<div class="flex w-full flex-col gap-4 rounded-2xl bg-white/70 px-5 py-5 shadow-md">
 			{#if multiplayer.error}
 				<div class="rounded-xl bg-danger/10 px-4 py-3 text-sm text-danger">

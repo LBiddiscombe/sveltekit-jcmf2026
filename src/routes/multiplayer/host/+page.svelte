@@ -6,7 +6,6 @@
 	import { bots } from '$lib/data';
 	import Filmstrip from '$lib/components/Filmstrip.svelte';
 	import type { FilmstripItem } from '$lib/components/Filmstrip.svelte';
-	import venueThumb from '$lib/assets/images/venues/jcs.jpeg';
 
 	const NAME_KEY = 'jcmf-player-name';
 	const AVATAR_KEY = 'jcmf-player-avatar';
@@ -65,14 +64,6 @@
 
 <div class="flex min-h-dvh flex-col items-center justify-center bg-surface px-4 py-8">
 	<div class="flex w-full max-w-sm flex-col items-center gap-4">
-		<div class="flex w-full items-center gap-4 rounded-2xl bg-white/70 px-5 py-5 shadow-md">
-			<img src={venueThumb} alt="" class="h-14 w-14 shrink-0 rounded-xl object-cover" />
-			<div class="min-w-0">
-				<h1 class="text-lg font-bold text-dark-teal">Host a Match</h1>
-				<p class="text-sm text-dark-teal/60">Create a match and share the code with friends</p>
-			</div>
-		</div>
-
 		<div class="flex w-full flex-col gap-4 rounded-2xl bg-white/70 px-5 py-5 shadow-md">
 			<div class="flex flex-col gap-1">
 				<label for="name" class="text-sm font-medium text-dark-teal">Your Name</label>
@@ -135,7 +126,7 @@
 				disabled={!name.trim() || creating}
 				class="w-full cursor-pointer rounded-xl bg-accent px-5 py-3 text-center font-bold text-white shadow-md transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none"
 			>
-				{creating ? 'Creating...' : 'Create Match'}
+				{creating ? 'Creating...' : 'Host Match'}
 			</button>
 		</div>
 
