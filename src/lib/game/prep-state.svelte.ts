@@ -2,7 +2,6 @@ import { browser } from '$app/environment';
 import { bots, venues } from '$lib/data';
 import type { Venue, Lake, TackleSelection, CaughtFish } from '$lib/data';
 import type { GameMode } from './prep-flow';
-import { resetIds } from './population';
 import type { FishingPhase } from './loop';
 import { defaultTackle, pickBotTackle } from './tackle-utils';
 
@@ -157,7 +156,6 @@ export class PrepState {
 		this.matchStartTime = undefined;
 		this.anglers = [];
 		if (browser) sessionStorage.removeItem(STORAGE_KEY);
-		resetIds();
 	}
 
 	startMatchTimer() {

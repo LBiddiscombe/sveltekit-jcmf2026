@@ -31,14 +31,8 @@ function calcStepMs(tierIndex: number, record: number): number {
 	return Math.round(min + (record / MAX_RECORD) * (max - min));
 }
 
-let nextId = 0;
-
 function generateId(): string {
-	return `fish-${nextId++}`;
-}
-
-export function resetIds() {
-	nextId = 0;
+	return crypto.randomUUID();
 }
 
 function randomInRange(min: number, max: number, rng: () => number): number {

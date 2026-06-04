@@ -1,7 +1,7 @@
 import { SvelteMap } from 'svelte/reactivity';
 import { species } from '$lib/data';
 import type { Venue, Lake, TackleSelection } from '$lib/data';
-import { populatePeg, reassignDynamicProperties, resetIds } from './population';
+import { populatePeg, reassignDynamicProperties } from './population';
 import type { FishData } from './population';
 import { FishingLoop } from './loop';
 import type { FishingEvent, PlayerLoopSnapshot } from './loop';
@@ -85,7 +85,6 @@ export class GameState {
 		this.catchAudit = [];
 		this.initialTackleChosen = false;
 		this.sessionStartMs = Date.now();
-		resetIds();
 		this.generateFish(lake);
 
 		this.playerLoop = this.createPlayerLoop(lake, player);

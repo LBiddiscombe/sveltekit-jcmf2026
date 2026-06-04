@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { passesTolerances, fishMatchScore, weightedSelectIndex } from './env-utils';
-import { populatePeg, reassignDynamicProperties, resetIds } from './population';
+import { populatePeg, reassignDynamicProperties } from './population';
 import type { FishData } from './population';
 import type { EnvironmentalFeatures, Lake, Peg, Species } from '$lib/data';
 
@@ -339,10 +339,6 @@ function cycleRng(values: number[]): () => number {
 }
 
 describe('populatePeg', () => {
-	beforeEach(() => {
-		resetIds();
-	});
-
 	it('returns the requested count of fish', () => {
 		const fish = populatePeg(mockLake, mockPeg, mockSpecies, 10, () => 0.5);
 		expect(fish).toHaveLength(10);
@@ -518,10 +514,6 @@ describe('reassignDynamicProperties', () => {
 });
 
 describe('deterministic RNG', () => {
-	beforeEach(() => {
-		resetIds();
-	});
-
 	it('produces identical results for the same seed', () => {
 		const calls: number[] = [];
 		const rng = () => {
@@ -530,9 +522,12 @@ describe('deterministic RNG', () => {
 		};
 
 		const a = populatePeg(mockLake, mockPeg, mockSpecies, 10, rng);
-		resetIds();
 		const b = populatePeg(mockLake, mockPeg, mockSpecies, 10, rng);
 
-		expect(a).toEqual(b);
+		const withoutId = (f: FishData) => {
+			const { id: _, ...rest } = f;
+			return rest;
+		};
+		expect(a.map(withoutId)).toEqual(b.map(withoutId));
 	});
 });
