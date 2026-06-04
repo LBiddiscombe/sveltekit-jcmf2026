@@ -179,6 +179,7 @@ export interface TacklePreset {
 
 export interface CaughtFish {
 	species: string;
+	tierIndex: number;
 	classificationLabel: string;
 	weightOz: number;
 	caughtAtMs: number;

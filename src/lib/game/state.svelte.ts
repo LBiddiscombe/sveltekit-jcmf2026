@@ -1,6 +1,6 @@
 import { SvelteMap } from 'svelte/reactivity';
 import { species } from '$lib/data';
-import type { Venue, Lake, TackleSelection } from '$lib/data';
+import type { Venue, Lake, TackleSelection, CaughtFish } from '$lib/data';
 import { populatePeg, reassignDynamicProperties } from './population';
 import type { FishData } from './population';
 import { FishingLoop } from './loop';
@@ -9,6 +9,9 @@ import { BotController } from './bot-controller';
 import { pickBotTackle } from './tackle-utils';
 import type { AnglerState, GamePhase } from './prep-state.svelte';
 import { MatchTimer } from './match-timer.svelte';
+import type { MatchRules } from './match-rules';
+import { defaultMatchRules } from './match-rules';
+import { recordCatch } from './scorecard.svelte';
 
 export { type GamePhase, type AnglerState } from './prep-state.svelte';
 
@@ -32,6 +35,7 @@ export class GameState {
 	matchTimer = new MatchTimer();
 	phase = $state<GamePhase>('idle');
 	anglers = $state<AnglerState[]>([]);
+	matchRules: MatchRules = defaultMatchRules();
 
 	get timeRemainingSeconds() {
 		return this.matchTimer.timeRemainingSeconds;
@@ -70,7 +74,13 @@ export class GameState {
 		return this.anglers.find((a) => a.isPlayer);
 	}
 
-	beginFishing(anglers: AnglerState[], venue: Venue, lake: Lake, timeLimitMinutes?: number) {
+	beginFishing(
+		anglers: AnglerState[],
+		venue: Venue,
+		lake: Lake,
+		timeLimitMinutes?: number,
+		matchRules?: MatchRules
+	) {
 		const player = anglers.find((a) => a.isPlayer);
 		if (!player?.pegName) {
 			throw new Error('Peg must be selected before fishing');
@@ -78,6 +88,7 @@ export class GameState {
 
 		this.anglers = anglers;
 		this.playerPeg = player.pegName;
+		this.matchRules = matchRules ?? defaultMatchRules({ timeLimitMinutes: timeLimitMinutes ?? 5 });
 
 		this.matchTimer.setTimeLimit(timeLimitMinutes);
 
@@ -159,11 +170,7 @@ export class GameState {
 	private syncBotAngler(angler: AnglerState, loop: FishingLoop) {
 		if (loop.caughtFish.length > angler.catch.length) {
 			const newFish = loop.caughtFish[loop.caughtFish.length - 1];
-			angler.catch.push(newFish);
-			angler.totalWeightOz += newFish.weightOz;
-			if (!angler.biggestFish || newFish.weightOz > angler.biggestFish.weightOz) {
-				angler.biggestFish = { ...newFish };
-			}
+			const result = recordCatch(angler, newFish, this.matchRules);
 			this.catchAudit = [
 				...this.catchAudit,
 				{
@@ -370,21 +377,14 @@ export class GameState {
 		if (event?.type === 'fishCaught') {
 			const player = this.playerAngler;
 			if (player) {
-				player.catch.push({
+				const fish: CaughtFish = {
 					species: event.species,
+					tierIndex: event.tierIndex,
 					classificationLabel: event.classificationLabel,
 					weightOz: event.weightOz,
 					caughtAtMs: Date.now()
-				});
-				player.totalWeightOz += event.weightOz;
-				if (!player.biggestFish || event.weightOz > player.biggestFish.weightOz) {
-					player.biggestFish = {
-						species: event.species,
-						classificationLabel: event.classificationLabel,
-						weightOz: event.weightOz,
-						caughtAtMs: Date.now()
-					};
-				}
+				};
+				recordCatch(player, fish, this.matchRules);
 				this.catchAudit = [
 					...this.catchAudit,
 					{

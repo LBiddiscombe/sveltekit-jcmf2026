@@ -48,6 +48,7 @@
 		creating = true;
 		prepState.playerName = name.trim();
 		prepState.playerAvatar = avatar;
+		prepState.matchRules = { ...prepState.matchRules };
 		multiplayer.createRoom(name.trim(), timeLimit, avatar);
 	}
 
@@ -104,6 +105,28 @@
 							{preset}m
 						</button>
 					{/each}
+				</div>
+			</div>
+
+			<div class="flex flex-col gap-1">
+				<span class="text-sm font-medium text-dark-teal">Win Condition</span>
+				<div class="grid grid-cols-1 gap-2">
+					<button
+						class="rounded-xl border border-accent bg-accent/10 px-3 py-2 text-center text-sm font-medium text-accent"
+					>
+						Weight
+					</button>
+				</div>
+			</div>
+
+			<div class="flex flex-col gap-1">
+				<span class="text-sm font-medium text-dark-teal">Qualifying Species</span>
+				<div class="grid grid-cols-1 gap-2">
+					<button
+						class="rounded-xl border border-accent bg-accent/10 px-3 py-2 text-center text-sm font-medium text-accent"
+					>
+						Any
+					</button>
 				</div>
 			</div>
 

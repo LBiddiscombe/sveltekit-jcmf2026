@@ -1,0 +1,428 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<title>Architecture review — JCMF2026 match rules</title>
+		<script src="https://cdn.tailwindcss.com"></script>
+		<script type="module">
+			import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+			mermaid.initialize({ startOnLoad: true, theme: 'neutral', securityLevel: 'loose' });
+		</script>
+		<style>
+			.seam {
+				stroke-dasharray: 4 4;
+			}
+			.leak {
+				stroke: #dc2626;
+			}
+			.deep {
+				background: linear-gradient(135deg, #0f172a, #1e293b);
+			}
+		</style>
+	</head>
+	<body class="bg-stone-50 font-sans text-slate-900">
+		<main class="mx-auto max-w-5xl space-y-12 px-6 py-12">
+			<!-- Header -->
+			<header class="space-y-2">
+				<h1 class="text-3xl font-bold tracking-tight">Match rules architecture</h1>
+				<p class="text-sm text-slate-500">JCMF2026 &middot; 4 June 2026</p>
+				<div class="mt-4 flex gap-4 text-xs">
+					<span class="inline-flex items-center gap-1.5"
+						><span class="inline-block h-3 w-3 rounded border border-slate-400 bg-white"></span>
+						module</span
+					>
+					<span class="inline-flex items-center gap-1.5"
+						><span
+							class="inline-block h-3 w-3 rounded border border-dashed border-slate-400"
+						></span>
+						seam</span
+					>
+					<span class="inline-flex items-center gap-1.5"
+						><span
+							class="inline-block h-0 w-0 border-t-4 border-r-4 border-l-4 border-t-red-500 border-r-transparent border-l-transparent"
+						></span>
+						leakage</span
+					>
+					<span class="inline-flex items-center gap-1.5"
+						><span class="deep inline-block h-4 w-4 rounded"></span> deep module</span
+					>
+				</div>
+				<p class="mt-2 text-sm text-slate-500">
+					Reviewing whether the current architecture supports adding
+					<strong>qualifying species filters</strong> and
+					<strong>alternative win conditions</strong> to competitive matches.
+				</p>
+			</header>
+
+			<!-- Legend / Key finding -->
+			<div class="rounded-lg border border-amber-200 bg-amber-50 px-5 py-4 text-sm text-amber-900">
+				<strong>Key finding:</strong> The win condition is implicit — hardcoded as total-weight
+				sorting across 4+ files. Neither <em>qualifying species</em> nor
+				<em>win-condition strategy</em> exists as a concept in the type system or data flow. Adding
+				them would touch every layer from config UI to leaderboard rank, demanding a
+				<strong>MatchRules</strong> seam.
+			</div>
+
+			<!-- Candidates -->
+			<section id="candidates" class="space-y-10">
+				<!-- Candidate 1 -->
+				<article class="space-y-4">
+					<div class="flex items-start justify-between">
+						<div>
+							<h2 class="text-xl font-bold">Introduce a MatchRules module</h2>
+							<div class="mt-1 flex gap-2">
+								<span
+									class="inline-block rounded-full bg-emerald-100 px-3 py-0.5 text-xs font-semibold text-emerald-800"
+									>Strong</span
+								>
+								<span
+									class="inline-block rounded-full bg-slate-100 px-3 py-0.5 text-xs font-semibold text-slate-700"
+									>in-process</span
+								>
+							</div>
+						</div>
+					</div>
+
+					<div class="space-y-0.5 font-mono text-sm text-slate-600">
+						<div>src/lib/game/prep-state.svelte.ts &middot; src/lib/game/state.svelte.ts</div>
+						<div>src/lib/game/loop.ts &middot; src/routes/results/Leaderboard.svelte</div>
+						<div>src/routes/results/+page.svelte &middot; src/routes/prep/rules/+page.svelte</div>
+						<div>src/lib/data/types.ts</div>
+					</div>
+
+					<!-- Before / After -->
+					<div class="grid grid-cols-2 gap-4">
+						<!-- Before -->
+						<div class="rounded-lg border border-slate-200 bg-white p-4">
+							<div class="mb-3 text-xs tracking-wider text-slate-400 uppercase">Before</div>
+							<pre class="mermaid">
+                flowchart LR
+                  PR[PrepState] --> GRE[GameState]
+                  GRE --> L[Leaderboard]
+                  L --> S["sorted by totalWeightOz&lt;br/>(hardcoded)"]
+
+                  PR -.->|no rule config| N["match config =&lt;br/>duration only"]
+
+                  GRE -.-> A1["angler.totalWeightOz&lt;br/>(sole accumulator)"]
+                  GRE -.-> A2["self.syncBotAngler()&lt;br/>player.handleReelingOutcome()&lt;br/>2 places, same logic"]
+
+                  style N fill:#fef3c7,stroke:#d97706
+                  style S fill:#fef3c7,stroke:#d97706
+              </pre>
+						</div>
+						<!-- After -->
+						<div class="rounded-lg border border-slate-200 bg-white p-4">
+							<div class="mb-3 text-xs tracking-wider text-slate-400 uppercase">After</div>
+							<pre class="mermaid">
+                flowchart LR
+                  PR[PrepState] -->|stores| MR
+                  MR[MatchRules] -->|passed to| GRE[GameState]
+                  GRE -->|scorecard| MR
+                  MR -->|rankings| L[Leaderboard]
+
+                  subgraph MR[MatchRules]
+                    direction TB
+                    WC[WinCondition]
+                    SF[SpeciesFilter]
+                    SC[Scorecard]
+                  end
+
+                  style MR fill:#1e293b,color:#fff,stroke-width:3px
+                  style WC fill:#334155,color:#fff
+                  style SF fill:#334155,color:#fff
+                  style SC fill:#334155,color:#fff
+              </pre>
+						</div>
+					</div>
+
+					<div class="grid grid-cols-2 gap-4 text-sm">
+						<div>
+							<h4 class="font-semibold text-slate-700">Problem</h4>
+							<p class="mt-1 text-slate-600">
+								Win condition is implicit — total weight baked into every layer. Adding "biggest
+								fish wins" or "points by classification" requires editing 6+ files across the stack.
+								Species filtering doesn't exist at all.
+							</p>
+						</div>
+						<div>
+							<h4 class="font-semibold text-slate-700">Solution</h4>
+							<p class="mt-1 text-slate-600">
+								Introduce a <code class="rounded bg-slate-100 px-1 text-xs">MatchRules</code> module
+								with a <code class="rounded bg-slate-100 px-1 text-xs">WinCondition</code> strategy
+								and <code class="rounded bg-slate-100 px-1 text-xs">SpeciesFilter</code>. PrepState
+								stores the rules. GameState passes fish events through the rules. Leaderboard
+								queries the rules for rankings. One seam, two adapters per strategy.
+							</p>
+						</div>
+					</div>
+
+					<div>
+						<h4 class="text-sm font-semibold text-slate-700">Wins</h4>
+						<ul class="mt-1 list-inside list-disc space-y-0.5 text-sm text-slate-600">
+							<li>
+								<strong>Leverage</strong> — one interface (WinCondition), N implementors (total
+								weight, biggest fish, points, fish count)
+							</li>
+							<li>
+								<strong>Locality</strong> — scoring logic in one module, ranking in one module, UI
+								config in one component
+							</li>
+							<li>
+								<strong>Test surface</strong> — MatchRules tested in isolation without GameState
+								instantiation
+							</li>
+							<li>
+								<strong>Deletion test passes</strong> — deleting total-weight logic today scatters
+								the same accumulation across 4 call sites
+							</li>
+						</ul>
+					</div>
+				</article>
+
+				<!-- Candidate 2 -->
+				<article class="space-y-4">
+					<div class="flex items-start justify-between">
+						<div>
+							<h2 class="text-xl font-bold">Collapse fish accumulation into a Scorecard</h2>
+							<div class="mt-1 flex gap-2">
+								<span
+									class="inline-block rounded-full bg-emerald-100 px-3 py-0.5 text-xs font-semibold text-emerald-800"
+									>Strong</span
+								>
+								<span
+									class="inline-block rounded-full bg-slate-100 px-3 py-0.5 text-xs font-semibold text-slate-700"
+									>in-process</span
+								>
+							</div>
+						</div>
+					</div>
+
+					<div class="space-y-0.5 font-mono text-sm text-slate-600">
+						<div>src/lib/game/state.svelte.ts:159-179 :: syncBotAngler()</div>
+						<div>src/lib/game/state.svelte.ts:367-410 :: handleReelingOutcome()</div>
+						<div>src/lib/game/loop.ts:317-349 :: handleReelingOutcome()</div>
+						<div>src/lib/game/loop.ts:351-379 :: reelWithCapacityCheck()</div>
+					</div>
+
+					<!-- Before / After -->
+					<div class="grid grid-cols-2 gap-4">
+						<div class="rounded-lg border border-slate-200 bg-white p-4">
+							<div class="mb-3 text-xs tracking-wider text-slate-400 uppercase">
+								Before: 4 places, same logic
+							</div>
+							<pre class="mermaid">
+                flowchart TB
+                  subgraph state["state.svelte.ts"]
+                    H[handleReelingOutcome] -->|push to angler.catch&lt;br/>add to totalWeightOz&lt;br/>update biggestFish&lt;br/>push to catchAudit| MA1[manual accumulation]
+                    SB[syncBotAngler] -->|same 4 steps| MA2[manual accumulation]
+                    MA1 ~~~ MA2
+                  end
+
+                  subgraph loop["loop.ts"]
+                    H2[handleReelingOutcome] -->|create CaughtFish&lt;br/>push to caughtFish[]| MA3[manual push]
+                    RC[reelWithCapacityCheck] -->|same 2 steps| MA4[manual push]
+                    H2 ~~~ RC
+                  end
+
+                  MA1 -.->|duplicated| MA2
+                  MA2 -.->|duplicated| MA3
+                  MA3 -.->|duplicated| MA4
+
+                  classDef leak fill:#fef2f2,stroke:#dc2626
+                  class MA1,MA2,MA3,MA4 leak
+              </pre>
+						</div>
+						<div class="rounded-lg border border-slate-200 bg-white p-4">
+							<div class="mb-3 text-xs tracking-wider text-slate-400 uppercase">
+								After: Scorecard behind seam
+							</div>
+							<pre class="mermaid">
+                flowchart TB
+                  subgraph SC[Scorecard]
+                    RC[recordCatch]
+                  end
+
+                  stateTS[state.svelte.ts] -->|calls| RC
+                  loopTS[loop.ts] -->|calls| RC
+
+                  RC -->|writes| ANG[angler.catch + score]
+                  RC -->|writes| AUDIT[catchAudit]
+
+                  N[MatchRules.WinCondition] -->|computes| SCORE[points per fish]
+                  N -->|computes| RANK[rankings per angler]
+
+                  style SC fill:#1e293b,color:#fff,stroke-width:3px
+                  style RC fill:#334155,color:#fff
+                  style N fill:#1e293b,color:#fff,stroke-width:3px
+              </pre>
+						</div>
+					</div>
+
+					<div class="grid grid-cols-2 gap-4 text-sm">
+						<div>
+							<h4 class="font-semibold text-slate-700">Problem</h4>
+							<p class="mt-1 text-slate-600">
+								Four sites duplicate the same "record caught fish" logic — creating a
+								<code class="rounded bg-slate-100 px-1 text-xs">CaughtFish</code> entry, pushing to
+								arrays, accumulating weight. Adding a new scoring field (e.g. points,
+								species-specific count) means editing all four.
+							</p>
+						</div>
+						<div>
+							<h4 class="font-semibold text-slate-700">Solution</h4>
+							<p class="mt-1 text-slate-600">
+								Extract a <code class="rounded bg-slate-100 px-1 text-xs">Scorecard</code> module
+								behind the MatchRules seam. A single
+								<code class="rounded bg-slate-100 px-1 text-xs"
+									>scorecard.recordCatch(angler, fish)</code
+								>
+								call replaces the four manual blocks. Works with any win condition.
+							</p>
+						</div>
+					</div>
+
+					<div>
+						<h4 class="text-sm font-semibold text-slate-700">Wins</h4>
+						<ul class="mt-1 list-inside list-disc space-y-0.5 text-sm text-slate-600">
+							<li>
+								<strong>Locality</strong> — one module owns the "how a fish becomes points" question
+							</li>
+							<li><strong>Leverage</strong> — one interface, 4 call sites replaced by 1</li>
+							<li>
+								<strong>Test surface</strong> — scorecard tested in isolation; loop and state tests
+								stop re-testing accumulation
+							</li>
+							<li>
+								<strong>Enables</strong> — species-specific scoring (points by classification,
+								qualifying species filters) naturally lands here
+							</li>
+						</ul>
+					</div>
+				</article>
+
+				<!-- Candidate 3 -->
+				<article class="space-y-4">
+					<div class="flex items-start justify-between">
+						<div>
+							<h2 class="text-xl font-bold">Extract ranking from Leaderboard.svelte</h2>
+							<div class="mt-1 flex gap-2">
+								<span
+									class="inline-block rounded-full bg-amber-100 px-3 py-0.5 text-xs font-semibold text-amber-800"
+									>Worth exploring</span
+								>
+								<span
+									class="inline-block rounded-full bg-slate-100 px-3 py-0.5 text-xs font-semibold text-slate-700"
+									>ports &amp; adapters</span
+								>
+							</div>
+						</div>
+					</div>
+
+					<div class="space-y-0.5 font-mono text-sm text-slate-600">
+						<div>src/routes/results/Leaderboard.svelte:31-54</div>
+						<div>src/routes/results/+page.svelte:19-33</div>
+					</div>
+
+					<!-- Before / After -->
+					<div class="grid grid-cols-2 gap-4">
+						<div class="rounded-lg border border-slate-200 bg-white p-4">
+							<div class="mb-3 text-xs tracking-wider text-slate-400 uppercase">
+								Before: sort baked into component
+							</div>
+							<pre class="mermaid">
+                flowchart LR
+                  R[results/+page.svelte] -->|passes anglers| LB[Leaderboard.svelte]
+                  R2[multiLeaderboard<br/>derived in +page.svelte] --> LB
+
+                  LB --> SORT["anglers.sort((a,b) => b.totalWeightOz - a.totalWeightOz)<br/>&lt;multiLeaderboard>.sort((a,b) => b.totalOz - a.totalOz)<br/>two sort sites"]
+                  SORT --> PODIUM[podium display]
+
+                  style SORT fill:#fef3c7,stroke:#d97706
+              </pre>
+						</div>
+						<div class="rounded-lg border border-slate-200 bg-white p-4">
+							<div class="mb-3 text-xs tracking-wider text-slate-400 uppercase">
+								After: ranker behind seam
+							</div>
+							<pre class="mermaid">
+                flowchart LR
+                  MATCH[MatchRules] -->|rankingFn| RANKER[Ranker]
+                  R[results/+page.svelte] -->|anglers + rules| RANKER
+                  RANKER -->|sorted entries| LB[Leaderboard.svelte]
+
+                  subgraph RANKER[Ranker]
+                    direction TB
+                    RF[rankingFn]
+                    S[sort by score]
+                  end
+
+                  style RANKER fill:#334155,color:#fff
+                  style MATCH fill:#1e293b,color:#fff,stroke-width:3px
+              </pre>
+						</div>
+					</div>
+
+					<div class="grid grid-cols-2 gap-4 text-sm">
+						<div>
+							<h4 class="font-semibold text-slate-700">Problem</h4>
+							<p class="mt-1 text-slate-600">
+								Leaderboard sorts by
+								<code class="rounded bg-slate-100 px-1 text-xs">totalWeightOz</code> at line 42,
+								hardcoded. The multiplayer path duplicates the sort at line 32 in
+								<code class="rounded bg-slate-100 px-1 text-xs">+page.svelte</code>. Adding a new
+								win condition means editing both sorts and the derived data structures.
+							</p>
+						</div>
+						<div>
+							<h4 class="font-semibold text-slate-700">Solution</h4>
+							<p class="mt-1 text-slate-600">
+								Extract a <code class="rounded bg-slate-100 px-1 text-xs">Ranker</code> module that
+								accepts <code class="rounded bg-slate-100 px-1 text-xs">MatchRules</code> and
+								returns pre-ranked entries. Leaderboard becomes a pure display component — no
+								sorting logic, no derived.
+							</p>
+						</div>
+					</div>
+
+					<div>
+						<h4 class="text-sm font-semibold text-slate-700">Wins</h4>
+						<ul class="mt-1 list-inside list-disc space-y-0.5 text-sm text-slate-600">
+							<li><strong>Locality</strong> — ranking logic testable without Puppeteer</li>
+							<li>
+								<strong>Leverage</strong> — one Ranker used by both bot-match and multiplayer paths
+							</li>
+							<li>
+								<strong>Test surface</strong> — no more "is the sort direction right?" inside a
+								Svelte component test
+							</li>
+						</ul>
+					</div>
+				</article>
+			</section>
+
+			<!-- Top recommendation -->
+			<section
+				id="top-recommendation"
+				class="space-y-3 rounded-xl border border-emerald-200 bg-emerald-50 p-6"
+			>
+				<h2 class="text-xl font-bold text-emerald-900">Top recommendation</h2>
+				<p class="text-sm text-emerald-800">
+					<strong>Candidate 1 — Introduce a MatchRules module.</strong> This is the prerequisite for
+					candidates 2 and 3. Without it, every new win condition or species filter must be
+					hand-stitched across 6+ files. With it, adding "biggest fish wins" or "carp-only" becomes
+					writing a second adapter behind an existing seam. Start here: define the
+					<code class="rounded bg-emerald-100 px-1 text-xs">WinCondition</code> and
+					<code class="rounded bg-emerald-100 px-1 text-xs">SpeciesFilter</code> interfaces,
+					implement the total-weight adapter (move existing logic behind it), then add the UI picker
+					in <code class="rounded bg-emerald-100 px-1 text-xs">prep/rules</code>. Each subsequent
+					condition is a new file, not a cross-cutting edit.
+				</p>
+				<p class="text-sm text-emerald-700">
+					Candidate 2 (Scorecard) is a natural second step — it consolidates the 4 duplicate
+					accumulation blocks into one call. Do it after the MatchRules seam exists so the Scorecard
+					sits behind it.
+				</p>
+			</section>
+		</main>
+	</body>
+</html>

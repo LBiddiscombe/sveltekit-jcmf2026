@@ -83,6 +83,38 @@
 			null
 		)
 	);
+	let matchScore = $derived.by(() => {
+		const angler = gameState.playerAngler;
+		const rules = gameState.matchRules;
+		if (!angler) return '';
+		switch (rules.winConditionKey) {
+			case 'weight':
+				return formatWeight(angler.score);
+			case 'count':
+				return String(angler.score);
+			case 'biggest':
+				return formatWeight(angler.score);
+			case 'points':
+				return String(angler.score);
+			default:
+				return '';
+		}
+	});
+	let scoreLabel = $derived.by(() => {
+		const rules = gameState.matchRules;
+		switch (rules.winConditionKey) {
+			case 'weight':
+				return 'weight';
+			case 'count':
+				return 'fish';
+			case 'biggest':
+				return 'best';
+			case 'points':
+				return 'pts';
+			default:
+				return 'score';
+		}
+	});
 	let debugMode = $state(false);
 	let debugEnabled = $derived(
 		typeof localStorage !== 'undefined' && !!localStorage.getItem('jcmf-debug')
@@ -310,6 +342,7 @@
 					phase: 'idle',
 					tackle: { ...defaultTackle },
 					totalWeightOz: 0,
+					score: 0,
 					biggestFish: null,
 					catch: []
 				}
@@ -322,6 +355,7 @@
 			angler.pegName = multiplayer.ownPeg ?? '';
 			angler.catch = [];
 			angler.totalWeightOz = 0;
+			angler.score = 0;
 			angler.biggestFish = null;
 		}
 		gameState.onCatch = (info) => {
@@ -329,7 +363,7 @@
 		};
 		const venue = venues[0];
 		const lake = venue.lakes[0];
-		gameState.beginFishing([angler], venue, lake, multiplayer.timeLimitMinutes);
+		gameState.beginFishing([angler], venue, lake, multiplayer.timeLimitMinutes, undefined);
 	}
 
 	function onKeydown(e: KeyboardEvent) {
@@ -356,7 +390,8 @@
 					prepState.anglers,
 					venue,
 					lake,
-					prepState.mode === 'match' ? prepState.timeLimitMinutes : undefined
+					prepState.mode === 'match' ? prepState.timeLimitMinutes : undefined,
+					prepState.mode === 'match' ? prepState.matchRules : undefined
 				);
 			}
 		}
@@ -545,7 +580,7 @@
 		{/if}
 
 		<!-- Catch panel -->
-		<CatchCard {catchList} {totalWeight} {biggestFish} />
+		<CatchCard {catchList} {totalWeight} {biggestFish} {matchScore} {scoreLabel} />
 
 		<!-- Finish button -->
 		<div class="mt-auto flex justify-center pb-2">

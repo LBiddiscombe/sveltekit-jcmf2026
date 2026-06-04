@@ -15,7 +15,13 @@ export type FishingPhase =
 export type FishingEvent =
 	| { type: 'bite' }
 	| { type: 'biteExpired' }
-	| { type: 'fishCaught'; species: string; classificationLabel: string; weightOz: number }
+	| {
+			type: 'fishCaught';
+			species: string;
+			classificationLabel: string;
+			weightOz: number;
+			tierIndex: number;
+	  }
 	| { type: 'fishLost' }
 	| { type: 'hookBroken' }
 	| { type: 'fishGotAway' }
@@ -334,6 +340,7 @@ export class FishingLoop {
 		this.population = this.population.filter((f) => f.id !== fish.id);
 		this.caughtFish.push({
 			species: fish.species,
+			tierIndex: fish.tierIndex,
 			classificationLabel: fish.classificationLabel,
 			weightOz: fish.weightOz,
 			caughtAtMs: Date.now()
@@ -344,7 +351,8 @@ export class FishingLoop {
 			type: 'fishCaught',
 			species: fish.species,
 			classificationLabel: fish.classificationLabel,
-			weightOz: fish.weightOz
+			weightOz: fish.weightOz,
+			tierIndex: fish.tierIndex
 		};
 	}
 
@@ -364,6 +372,7 @@ export class FishingLoop {
 		this.population = this.population.filter((f) => f.id !== fish.id);
 		this.caughtFish.push({
 			species: fish.species,
+			tierIndex: fish.tierIndex,
 			classificationLabel: fish.classificationLabel,
 			weightOz: fish.weightOz,
 			caughtAtMs: Date.now()
@@ -374,7 +383,8 @@ export class FishingLoop {
 			type: 'fishCaught',
 			species: fish.species,
 			classificationLabel: fish.classificationLabel,
-			weightOz: fish.weightOz
+			weightOz: fish.weightOz,
+			tierIndex: fish.tierIndex
 		};
 	}
 

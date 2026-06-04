@@ -4,6 +4,8 @@ import type { Venue, Lake, TackleSelection, CaughtFish } from '$lib/data';
 import type { GameMode } from './prep-flow';
 import type { FishingPhase } from './loop';
 import { defaultTackle, pickBotTackle } from './tackle-utils';
+import type { MatchRules, SpeciesFilterKind } from './match-rules';
+import { defaultMatchRules } from './match-rules';
 
 const STORAGE_KEY = 'jcmf-prep';
 const AVATAR_KEY = 'jcmf-player-avatar';
@@ -20,6 +22,7 @@ export interface AnglerState {
 	phase: FishingPhase;
 	tackle: TackleSelection;
 	totalWeightOz: number;
+	score: number;
 	biggestFish: CaughtFish | null;
 	catch: CaughtFish[];
 }
@@ -34,6 +37,7 @@ export class PrepState {
 	timeLimitMinutes = $state<number | undefined>();
 	matchStartTime = $state<number | undefined>();
 	anglers = $state<AnglerState[]>([]);
+	matchRules = $state<MatchRules>(defaultMatchRules());
 
 	constructor() {
 		this.restore();
@@ -64,6 +68,13 @@ export class PrepState {
 			if (typeof data.timeLimitMinutes === 'number') this.timeLimitMinutes = data.timeLimitMinutes;
 			if (typeof data.matchStartTime === 'number') this.matchStartTime = data.matchStartTime;
 			if (Array.isArray(data.anglers)) this.anglers = data.anglers as AnglerState[];
+			if (data.matchRules) {
+				this.matchRules = data.matchRules as MatchRules;
+			} else {
+				this.matchRules = defaultMatchRules({
+					timeLimitMinutes: typeof data.timeLimitMinutes === 'number' ? data.timeLimitMinutes : 5
+				});
+			}
 		} catch {
 			sessionStorage.removeItem(STORAGE_KEY);
 		}
@@ -82,7 +93,8 @@ export class PrepState {
 				playerAvatar: this.playerAvatar,
 				timeLimitMinutes: this.timeLimitMinutes,
 				matchStartTime: this.matchStartTime,
-				anglers: this.anglers
+				anglers: this.anglers,
+				matchRules: this.matchRules
 			})
 		);
 	}
@@ -125,6 +137,7 @@ export class PrepState {
 			phase: 'idle',
 			tackle: { ...defaultTackle },
 			totalWeightOz: 0,
+			score: 0,
 			biggestFish: null,
 			catch: []
 		};
@@ -155,6 +168,7 @@ export class PrepState {
 		this.timeLimitMinutes = undefined;
 		this.matchStartTime = undefined;
 		this.anglers = [];
+		this.matchRules = defaultMatchRules();
 		if (browser) sessionStorage.removeItem(STORAGE_KEY);
 	}
 
@@ -257,6 +271,7 @@ export class PrepState {
 				phase: 'idle',
 				tackle: botTackle,
 				totalWeightOz: 0,
+				score: 0,
 				biggestFish: null,
 				catch: []
 			};

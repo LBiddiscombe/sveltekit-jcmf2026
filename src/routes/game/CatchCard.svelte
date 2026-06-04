@@ -5,10 +5,14 @@
 	let {
 		catchList = [],
 		totalWeight = 0,
+		matchScore = '',
+		scoreLabel = 'score',
 		biggestFish = null
 	}: {
 		catchList: CaughtFish[];
 		totalWeight: number;
+		matchScore: string;
+		scoreLabel: string;
 		biggestFish: CaughtFish | null;
 	} = $props();
 
@@ -25,8 +29,13 @@
 			<span class="text-sm text-white/60">fish</span>
 		</div>
 		<div class="flex items-baseline gap-1 rounded-full bg-white/10 px-3 py-1">
-			<span class="text-base font-bold tabular-nums text-white">{formatWeight(totalWeight)}</span>
-			<span class="text-sm text-white/60">total</span>
+			{#if matchScore}
+				<span class="text-base font-bold tabular-nums text-white">{matchScore}</span>
+				<span class="text-sm text-white/60">{scoreLabel}</span>
+			{:else}
+				<span class="text-base font-bold tabular-nums text-white">{formatWeight(totalWeight)}</span>
+				<span class="text-sm text-white/60">total</span>
+			{/if}
 		</div>
 	</div>
 

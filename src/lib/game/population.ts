@@ -32,7 +32,7 @@ function calcStepMs(tierIndex: number, record: number): number {
 }
 
 function generateId(): string {
-	return crypto.randomUUID();
+	return `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
 }
 
 function randomInRange(min: number, max: number, rng: () => number): number {

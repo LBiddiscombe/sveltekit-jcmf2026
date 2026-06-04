@@ -65,6 +65,7 @@ function makePlayer(pegName = '1'): AnglerState[] {
 			phase: 'idle',
 			tackle: { ...tackle },
 			totalWeightOz: 0,
+			score: 0,
 			biggestFish: null,
 			catch: []
 		}
@@ -77,6 +78,7 @@ function makeBotAngler(): AnglerState {
 		name: 'Bot',
 		image: '',
 		isPlayer: false,
+		score: 0,
 		skill: 10,
 		pegName: '2',
 		phase: 'idle',
@@ -351,6 +353,7 @@ describe('GameState match ending', () => {
 	it('beginFishing with defaultTackle (multiplayer path) enters changing phase', () => {
 		const player: AnglerState = {
 			id: 'player',
+			score: 0,
 			name: 'TestPlayer',
 			image: '',
 			isPlayer: true,
@@ -372,6 +375,7 @@ describe('GameState match ending', () => {
 	it('multiplayer path: after tackle confirm, auto-cast begins waiting phase', () => {
 		const player: AnglerState = {
 			id: 'player',
+			score: 0,
 			name: 'TestPlayer',
 			image: '',
 			isPlayer: true,

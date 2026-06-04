@@ -33,6 +33,7 @@ const defaultPlayer: AnglerState = {
 		castStrength: 'Medium'
 	},
 	totalWeightOz: 0,
+	score: 0,
 	biggestFish: null,
 	catch: []
 };

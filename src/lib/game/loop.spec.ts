@@ -375,7 +375,8 @@ describe('FishingLoop', () => {
 				type: 'fishCaught',
 				species: 'Roach',
 				classificationLabel: 'Small',
-				weightOz: 12
+				weightOz: 12,
+				tierIndex: 0
 			});
 			expect(loop.phase).toBe('caught');
 			expect(loop.caughtFish).toHaveLength(1);

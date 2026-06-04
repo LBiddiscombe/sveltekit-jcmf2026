@@ -76,6 +76,12 @@ _Avoid_: Practice, free play
 A competitive fishing session with a time limit and bots filling every other peg. Winner is determined by total catch weight. The timer starts when the game page mounts — tackle selection (the `changing` phase) counts against match time. Bots receive a skill-based tackle setup delay (3–10s range, same formula as BotStrikeDelay). Flows through Prep (player sets time, peg draw) → Start Match (timer begins) → Game (tackle modal, timer ticks throughout) → Results.
 _Avoid_: Multiplayer, Party
 
+**WinCondition**:
+A strategy defining how a caught fish scores points and how per-fish scores are aggregated into a rank value. The interface exposes a `scoreFish(fish)` method that returns points for a single catch, and an `aggregate` mode (`'sum'` | `'max'` | `'count'`) specifying how per-fish scores combine into an angler's rank score. Concrete implementations: total weight (score = weightOz, aggregate = sum), biggest fish (score = weightOz, aggregate = max), fish count (score = 1, aggregate = sum), points by classification (score by tier: small=1, medium=2, specimen=4, monster=8, aggregate = sum).
+
+**SpeciesFilter**:
+A predicate determining whether a caught fish counts toward an angler's score. Two variants: `{ kind: 'all' }` (no filter — every fish counts) or `{ kind: 'group'; group: string }` where the group name maps to a predefined species list. Known groups are: `silverfish` (Roach, Rudd, Dace, Grayling), `predators` (Perch, Pike, Eel), `carps` (Carp, Crucian, Chub), `bottom-dwellers` (Barbel, Bream, Tench). Fish rejected by the filter are excluded from the scorecard and leaderboard calculations but remain in `AnglerState.catch` for display.
+
 **WeighInEarly**:
 A Solo Match action that submits the player's current catch early while bots continue fishing at 10× accelerated speed. The player sees a "Weighed In Early" overlay with "Waiting for other anglers to finish..." while the match timer and bot simulation run at 10× speed. Once the timer expires, all bots are cut off and the game transitions to Results. The "Weigh in Early" button is disabled during the `reeling` phase — the player must finish or lose their current fish before weighing in early. No effect on bot skill or behaviour (they simply finish faster).
 
@@ -91,6 +97,15 @@ _Avoid_: Bot image, player image
 
 **AnglerBot**:
 An NPC angler controlled by the game, with a skill level (1–10) that influences tackle choices (via skill-weighted species roll at draw and mid-match tackle changes) and strike/reel timing. Bots are defined in reference data (`src/lib/data/bots.ts`) with a name and fixed skill. Bots are available in Match mode only. Bot skill does NOT affect a separate strike accuracy roll — the HookRangeCheck alone determines strike outcome; skill only affects how quickly the bot reacts.
+
+**WinConditionPicker**:
+The UI control on the prep/rules page for selecting a win condition. Rendered as grouped buttons: Weight, Count, Biggest, Points. Defaults to Weight for backwards compatibility.
+
+**SpeciesFilterPicker**:
+The UI control on the prep/rules page for selecting a species filter. Rendered as grouped buttons: Any, Silver, Predator, Carps, Bottom. Defaults to Any for backwards compatibility.
+
+**AnglerScore**:
+The active score for an angler in a competitive match, computed by the WinCondition for qualifying (SpeciesFilter-passing) fish only. Stored as `AnglerState.score` and displayed as the primary metric on the game HUD and catch panel. The label varies by win condition (e.g. "Score", "Weight", "Fish", "Points"). Always derived through the Scorecard — never set directly. Runs alongside `totalWeightOz` (all fish, unfiltered) for reference display.
 
 **Angler State / AnglerPhase**:
 A phase in the fishing loop: changing, idle, wait, bite, strike, reel, landing, catch, lost, finished. `netting` was removed from the original spec. `changing` is the tackle-selection phase — the match clock runs but the loop does not fish. All anglers (player and bots) start a timed match in `changing`; bots auto-advance after a skill-based delay (same formula as BotStrikeDelay, ~3–10s), while the player advances via the tackle modal. Mid-game tackle changes transition back to `changing` via `resetCast()` (losing the current fish). For human anglers, `reeling` activates a **ReelingMinigame** in the FishingCanvas — the player must control rod angle and tension to bring the fish to the bank; landing phase is bypassed entirely. For bots, `reeling` uses a **ReelDuration** countdown followed by an instant capacity check after **BotReelDelay** elapses (no landing window). The human reeling phase replaces the old timed-reel + landing-window model.
@@ -142,6 +157,12 @@ An ordered log of every fish landed during a session or match, recording the tim
 
 **GamePhase**:
 The high-level stage of a game: prep (setup), draw (match-only peg assignment on the /prep/draw page), fishing (the game loop), results (post-session summary).
+
+**MatchRules**:
+The configuration for a competitive match, bundling the time limit, win condition, and species filter. Stored on PrepState and passed to GameState at match start. Does not include session-level metadata (venue, lake, player name, avatar) or draw state (anglers, peg assignments).
+
+**Scorecard**:
+A module that records a caught fish for an angler: applies the SpeciesFilter (marks fish as qualifying or not), applies the WinCondition (computes per-fish score), updates `AnglerState.catch` and the angler's running score, and appends to `CatchAudit`. A single `recordCatch(angler, fish)` call replaces the four currently duplicated accumulation blocks in `state.svelte.ts` and `loop.ts`.
 
 **PrepState**:
 A reactive singleton (`src/lib/game/prep-state.svelte.ts`) holding the fishing-trip selection state: mode (session/match), venue name, lake name, chosen peg, time limit, and the initial anglers array (player + bots after draw). Responsible for the draw logic. Populated through the prep routes (lake → rules → draw → tackle). Exported as `prepState` and imported by all prep routes and the game/results pages for display (venue name, lake name, mode). The `anglers` array is handed off to **GameState** at `beginFishing()` — after that point, GameState owns and mutates anglers.

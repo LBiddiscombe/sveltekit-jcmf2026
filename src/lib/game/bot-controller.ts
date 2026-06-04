@@ -41,7 +41,8 @@ export class BotController {
 				type: 'fishCaught',
 				species: last.species,
 				classificationLabel: last.classificationLabel,
-				weightOz: last.weightOz
+				weightOz: last.weightOz,
+				tierIndex: last.tierIndex
 			};
 		}
 		return event;
