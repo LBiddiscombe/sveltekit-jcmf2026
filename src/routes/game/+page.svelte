@@ -12,13 +12,14 @@
 	import { formatWeight, formatShortDuration } from '$lib/utils/format';
 	import DebugPanel from '$lib/components/DebugPanel.svelte';
 	import { isTutorialCompleted, completeTutorial } from '$lib/game/tutorial';
-	import { checkIsPB, recordPB, getPBs } from '$lib/game/pbs';
-	import confetti from 'canvas-confetti';
 	import CatchCard from './CatchCard.svelte';
 	import CatchToast from './CatchToast.svelte';
 	import TackleModal from './TackleModal.svelte';
 	import FishingCanvas from './FishingCanvas.svelte';
 	import ComboGridHud from './ComboGridHud.svelte';
+	import CaughtOverlay from './CaughtOverlay.svelte';
+	import LostOverlay from './LostOverlay.svelte';
+	import WaitingOverlay from './WaitingOverlay.svelte';
 	import {
 		startWakeLock,
 		stopWakeLock,
@@ -42,11 +43,6 @@
 		import: 'default'
 	});
 	const silhouetteImages = import.meta.glob<string>('$lib/assets/images/bots/*-silhouette.png', {
-		eager: true,
-		query: '?url',
-		import: 'default'
-	});
-	const fishImages = import.meta.glob<string>('$lib/assets/images/fish/*.PNG', {
 		eager: true,
 		query: '?url',
 		import: 'default'
@@ -81,56 +77,6 @@
 	let catchList = $derived(gameState.playerAngler?.catch ?? []);
 	let totalWeight = $derived(catchList.reduce((sum: number, f) => sum + f.weightOz, 0));
 	let lastEvent = $derived(gameState.lastEvent);
-	let lastCaughtSpecies = $derived.by(() => {
-		const e = lastEvent;
-		if (e?.type !== 'fishCaught') return null;
-		return species.find((s) => s.name === e.species) ?? null;
-	});
-	let fishImageUrl = $derived.by(() => {
-		if (!lastCaughtSpecies) return '';
-		const key = `/src/lib/assets/images/fish/${lastCaughtSpecies.name.toLowerCase()}.PNG`;
-		return fishImages[key] ?? '';
-	});
-	const TIER_WIDTHS = [80, 160, 240, 240] as const;
-	const MONSTER_HEIGHT = 1.5;
-	let fishDisplay = $derived.by((): { width: number; heightScale: number } | null => {
-		const e = lastEvent;
-		if (e?.type !== 'fishCaught' || !lastCaughtSpecies) return null;
-		const tiers = lastCaughtSpecies.classifications;
-		if (e.weightOz <= tiers[0].maxOz) return { width: TIER_WIDTHS[0], heightScale: 1 };
-		if (e.weightOz <= tiers[1].maxOz) return { width: TIER_WIDTHS[1], heightScale: 1 };
-		if (e.weightOz <= tiers[2].maxOz) return { width: TIER_WIDTHS[2], heightScale: 1 };
-		return { width: TIER_WIDTHS[3], heightScale: MONSTER_HEIGHT };
-	});
-	let pbStatus = $derived.by(() => {
-		const e = lastEvent;
-		if (e?.type !== 'fishCaught' || !lastCaughtSpecies) return null;
-		return checkIsPB(e.species, e.weightOz, lastCaughtSpecies.record);
-	});
-	let isNewSpecies = $derived.by(() => {
-		const e = lastEvent;
-		if (e?.type !== 'fishCaught' || !lastCaughtSpecies) return false;
-		const pbs = getPBs();
-		return !pbs[e.species];
-	});
-
-	$effect(() => {
-		if (pbStatus && lastEvent?.type === 'fishCaught') {
-			recordPB(lastEvent.species, lastEvent.weightOz);
-		}
-	});
-
-	$effect(() => {
-		if (pbStatus) {
-			if (pbStatus === 'record') {
-				confetti({ particleCount: 100, spread: 80, origin: { y: 0.5 } });
-				setTimeout(() => confetti({ particleCount: 80, spread: 100, origin: { y: 0.5 } }), 300);
-				setTimeout(() => confetti({ particleCount: 60, spread: 120, origin: { y: 0.5 } }), 600);
-			} else {
-				confetti({ particleCount: 60, spread: 60, origin: { y: 0.6 } });
-			}
-		}
-	});
 	let biggestFish = $derived(
 		catchList.reduce<CaughtFish | null>(
 			(best, f) => (!best || f.weightOz > best.weightOz ? f : best),
@@ -468,55 +414,19 @@
 						aria-label="Strike"
 					></button>
 				{/if}
-				{#if playerPhase === 'caught'}
-					<div
-						class="absolute inset-0 flex cursor-pointer items-center justify-center"
-						role="button"
-						tabindex="0"
-						onclick={handleDismissCaught}
-						onkeydown={(e) => {
-							if (e.key === 'Enter' || e.key === ' ') handleDismissCaught();
-						}}
-					>
-						<div class="relative rounded-lg bg-black/40 px-6 py-4 text-center">
-							{#if isNewSpecies}
-								<span
-									class="absolute -top-2 -right-2 flex items-center gap-1 rounded-full bg-emerald-500/80 px-2.5 py-1 text-[10px] font-bold leading-none text-white shadow-lg backdrop-blur-sm"
-								>
-									new species
-								</span>
-							{:else if pbStatus}
-								<span
-									class="absolute -top-2 -right-2 flex items-center gap-1 rounded-full bg-amber-400/80 px-2.5 py-1 text-[10px] font-bold leading-none text-white shadow-lg backdrop-blur-sm"
-								>
-									{pbStatus === 'record' ? 'new world record' : 'personal best'}
-								</span>
-							{/if}
-							{#if fishImageUrl && lastCaughtSpecies && fishDisplay}
-								<div class="mb-2 flex justify-center">
-									<div
-										style="transform: scaleY({fishDisplay.heightScale}); transform-origin: bottom;"
-									>
-										<img
-											src={fishImageUrl}
-											alt={lastCaughtSpecies.name}
-											class="fish-bounce-in"
-											style="max-width: {fishDisplay.width}px"
-											loading="eager"
-										/>
-									</div>
-								</div>
-							{/if}
-							<p class="text-sm font-bold text-white">{statusMessage}</p>
-						</div>
-					</div>
+				{#if playerPhase === 'caught' && lastEvent?.type === 'fishCaught'}
+					{@const caughtSpecies = species.find((s) => s.name === lastEvent.species) ?? null}
+					{#if caughtSpecies}
+						<CaughtOverlay
+							species={caughtSpecies}
+							weightOz={lastEvent.weightOz}
+							classificationLabel={lastEvent.classificationLabel}
+							ondismiss={handleDismissCaught}
+						/>
+					{/if}
 				{/if}
 				{#if playerPhase === 'lost'}
-					<div class="pointer-events-none absolute inset-0 flex items-center justify-center">
-						<div class="rounded-lg bg-black/40 px-6 py-4 text-center">
-							<p class="text-sm font-bold text-white">{statusMessage}</p>
-						</div>
-					</div>
+					<LostOverlay message={statusMessage} />
 				{/if}
 				{#if currentHint}
 					<div class="pointer-events-none absolute inset-0 flex items-center justify-center p-3">
@@ -526,26 +436,10 @@
 					</div>
 				{/if}
 				{#if waitingForPlayers || isWeighingIn}
-					<div
-						class="absolute inset-0 z-10 flex flex-col items-center justify-center gap-3 rounded-xl bg-black/60"
-					>
-						<p class="text-xl font-bold text-white">{overlayHeading}</p>
-						<p class="text-sm text-white/80">Waiting for other anglers to finish...</p>
-						<div class="flex gap-1">
-							<span
-								class="h-2 w-2 animate-bounce rounded-full bg-white/60"
-								style="animation-delay: 0s"
-							></span>
-							<span
-								class="h-2 w-2 animate-bounce rounded-full bg-white/60"
-								style="animation-delay: 0.15s"
-							></span>
-							<span
-								class="h-2 w-2 animate-bounce rounded-full bg-white/60"
-								style="animation-delay: 0.3s"
-							></span>
-						</div>
-					</div>
+					<WaitingOverlay
+						heading={overlayHeading}
+						subtext="Waiting for other anglers to finish..."
+					/>
 				{/if}
 			</div>
 			{#if tackle}
@@ -752,28 +646,6 @@
 		to {
 			opacity: 1;
 			transform: translateY(0);
-		}
-	}
-
-	.fish-bounce-in {
-		animation: fishBounceIn 0.6s cubic-bezier(0.68, -0.55, 0.27, 1.55) forwards;
-	}
-
-	@keyframes fishBounceIn {
-		0% {
-			transform: scale(0);
-			opacity: 0;
-		}
-		60% {
-			transform: scale(1.1);
-			opacity: 1;
-		}
-		80% {
-			transform: scale(0.95);
-		}
-		100% {
-			transform: scale(1);
-			opacity: 1;
 		}
 	}
 </style>
