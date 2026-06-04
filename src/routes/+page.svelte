@@ -14,7 +14,7 @@
 	<img src={jcsMatch} alt="" class="ken-burns absolute inset-0 h-full w-full object-cover" />
 
 	<div
-		class="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/70 via-black/30 to-black/70"
+		class="pointer-events-none absolute inset-0 bg-linear-to-b from-black/70 via-black/30 to-black/70"
 	></div>
 
 	<div class="relative z-10 flex h-lvh flex-col items-center justify-center px-8">

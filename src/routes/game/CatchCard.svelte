@@ -16,7 +16,7 @@
 </script>
 
 <div
-	class="w-full max-w-sm rounded-xl bg-gradient-to-b from-black/30 to-black/10 p-3 text-white shadow-lg"
+	class="w-full max-w-sm rounded-xl bg-linear-to-b from-dark-teal/30 to-dark-teal/20 p-3 text-white"
 	style="backdrop-filter: blur(4px)"
 >
 	<div class="mb-2 flex items-center justify-between">
@@ -32,7 +32,7 @@
 
 	{#if biggestFish}
 		<div
-			class="mb-2 flex items-center gap-2 rounded-lg bg-gradient-to-r from-amber-500/20 to-amber-500/5 px-2.5 py-1.5"
+			class="mb-2 flex items-center gap-2 rounded-lg bg-linear-to-r from-amber-500/20 to-amber-500/5 px-2.5 py-1.5"
 		>
 			<span class="text-base">🏆</span>
 			<div class="min-w-0 flex-1">

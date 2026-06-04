@@ -12,7 +12,7 @@
 	import { formatWeight, formatShortDuration } from '$lib/utils/format';
 	import DebugPanel from '$lib/components/DebugPanel.svelte';
 	import { isTutorialCompleted, completeTutorial } from '$lib/game/tutorial';
-	import { checkIsPB, recordPB } from '$lib/game/pbs';
+	import { checkIsPB, recordPB, getPBs } from '$lib/game/pbs';
 	import confetti from 'canvas-confetti';
 	import CatchCard from './CatchCard.svelte';
 	import CatchToast from './CatchToast.svelte';
@@ -106,6 +106,12 @@
 		const e = lastEvent;
 		if (e?.type !== 'fishCaught' || !lastCaughtSpecies) return null;
 		return checkIsPB(e.species, e.weightOz, lastCaughtSpecies.record);
+	});
+	let isNewSpecies = $derived.by(() => {
+		const e = lastEvent;
+		if (e?.type !== 'fishCaught' || !lastCaughtSpecies) return false;
+		const pbs = getPBs();
+		return !pbs[e.species];
 	});
 
 	$effect(() => {
@@ -473,11 +479,17 @@
 						}}
 					>
 						<div class="relative rounded-lg bg-black/40 px-6 py-4 text-center">
-							{#if pbStatus}
+							{#if isNewSpecies}
 								<span
-									class="absolute -top-3 -right-3 flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-b from-amber-300 to-amber-500 text-[9px] font-bold leading-none text-amber-900 shadow-lg ring-2 ring-inset ring-amber-200/50"
+									class="absolute -top-2 -right-2 flex items-center gap-1 rounded-full bg-emerald-500/80 px-2.5 py-1 text-[10px] font-bold leading-none text-white shadow-lg backdrop-blur-sm"
 								>
-									{pbStatus === 'record' ? 'REC' : 'PB'}
+									new species
+								</span>
+							{:else if pbStatus}
+								<span
+									class="absolute -top-2 -right-2 flex items-center gap-1 rounded-full bg-amber-400/80 px-2.5 py-1 text-[10px] font-bold leading-none text-white shadow-lg backdrop-blur-sm"
+								>
+									{pbStatus === 'record' ? 'new world record' : 'personal best'}
 								</span>
 							{/if}
 							{#if fishImageUrl && lastCaughtSpecies && fishDisplay}
@@ -669,7 +681,7 @@
 						goto('/results');
 					}
 				}}
-				class="inline-flex min-h-[44px] cursor-pointer items-center justify-center rounded bg-secondary px-6 py-3 text-center text-white transition-colors
+				class="inline-flex min-h-11 cursor-pointer items-center justify-center rounded bg-secondary px-6 py-3 text-center text-white transition-colors
 					{mode === 'match' && playerPhase === 'reeling' ? 'opacity-50' : 'hover:bg-secondary/80'}"
 				disabled={mode === 'match' && playerPhase === 'reeling'}
 			>
