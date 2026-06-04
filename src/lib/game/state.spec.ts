@@ -92,7 +92,7 @@ function makeBotAngler(): AnglerState {
  * a tiny positive value that one tick (100ms) will exhaust.
  */
 function armExpiry(gs: GameState) {
-	gs.timeRemainingSeconds = 0.001;
+	gs.matchTimer.timeRemainingSeconds = 0.001;
 }
 
 describe('GameState match ending', () => {

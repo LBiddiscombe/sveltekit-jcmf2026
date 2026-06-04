@@ -332,7 +332,7 @@
 		const mp = isMulti ? multiplayer.phase : null;
 
 		if (isMulti && mp === 'grace-period') {
-			gameState.timeExpired = true;
+			gameState.forceExpire();
 		}
 
 		if (gp === 'results') {

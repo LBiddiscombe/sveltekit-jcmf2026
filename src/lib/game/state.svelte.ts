@@ -8,6 +8,7 @@ import type { FishingEvent, PlayerLoopSnapshot } from './loop';
 import { BotController } from './bot-controller';
 import { pickBotTackle } from './tackle-utils';
 import type { AnglerState, GamePhase } from './prep-state.svelte';
+import { MatchTimer } from './match-timer.svelte';
 
 export { type GamePhase, type AnglerState } from './prep-state.svelte';
 
@@ -28,11 +29,21 @@ export interface CatchAuditEntry {
 }
 
 export class GameState {
+	matchTimer = new MatchTimer();
 	phase = $state<GamePhase>('idle');
-	timeRemainingSeconds = $state(0);
-	timeExpired = $state(false);
-	weighInEarlyActive = $state(false);
 	anglers = $state<AnglerState[]>([]);
+
+	get timeRemainingSeconds() {
+		return this.matchTimer.timeRemainingSeconds;
+	}
+
+	get timeExpired() {
+		return this.matchTimer.timeExpired;
+	}
+
+	get weighInEarlyActive() {
+		return this.matchTimer.weighInEarlyActive;
+	}
 	pegPopulations = new SvelteMap<string, FishData[]>();
 	playerLoop: FishingLoop | null = null;
 	botControllers = new SvelteMap<string, BotController>();
@@ -68,13 +79,7 @@ export class GameState {
 		this.anglers = anglers;
 		this.playerPeg = player.pegName;
 
-		if (timeLimitMinutes !== undefined) {
-			this.timeRemainingSeconds = Math.max(0, timeLimitMinutes * 60);
-			this.timeExpired = this.timeRemainingSeconds <= 0;
-		} else {
-			this.timeRemainingSeconds = 0;
-			this.timeExpired = false;
-		}
+		this.matchTimer.setTimeLimit(timeLimitMinutes);
 
 		this.phase = 'fishing';
 		this.catchAudit = [];
@@ -208,13 +213,10 @@ export class GameState {
 	tick(elapsedMs: number): FishingEvent | null {
 		const ms = this.weighInEarlyActive ? elapsedMs * 30 : elapsedMs;
 
-		if (this.phase === 'fishing' && this.timeRemainingSeconds > 0) {
-			this.timeRemainingSeconds = Math.max(0, this.timeRemainingSeconds - ms / 1000);
-
-			if (this.timeRemainingSeconds <= 0) {
-				this.cutOffBots();
-				this.timeExpired = true;
-			}
+		const wasExpired = this.matchTimer.timeExpired;
+		this.matchTimer.tick(elapsedMs);
+		if (!wasExpired && this.matchTimer.timeExpired) {
+			this.cutOffBots();
 		}
 
 		if (this.timeExpired && !this.weighInEarlyActive && this.playerSnapshot?.phase === 'idle') {
@@ -297,7 +299,7 @@ export class GameState {
 	}
 
 	weighInEarly() {
-		this.weighInEarlyActive = true;
+		this.matchTimer.weighInEarly();
 		if (this.playerLoop) {
 			this.playerLoop.resetCast();
 		}
@@ -437,11 +439,13 @@ export class GameState {
 		this.finishGame();
 	}
 
+	forceExpire() {
+		this.matchTimer.forceExpire();
+	}
+
 	reset() {
+		this.matchTimer.reset();
 		this.phase = 'idle';
-		this.timeRemainingSeconds = 0;
-		this.timeExpired = false;
-		this.weighInEarlyActive = false;
 		this.anglers = [];
 		this.pegPopulations = new SvelteMap();
 		this.playerLoop = null;
