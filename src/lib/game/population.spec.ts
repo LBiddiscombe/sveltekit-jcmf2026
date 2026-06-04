@@ -1,12 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import {
-	passesTolerances,
-	populatePeg,
-	reassignDynamicProperties,
-	fishMatchScore,
-	weightedSelectIndex,
-	resetIds
-} from './population';
+import { passesTolerances, fishMatchScore, weightedSelectIndex } from './env-utils';
+import { populatePeg, reassignDynamicProperties, resetIds } from './population';
 import type { FishData } from './population';
 import type { EnvironmentalFeatures, Lake, Peg, Species } from '$lib/data';
 

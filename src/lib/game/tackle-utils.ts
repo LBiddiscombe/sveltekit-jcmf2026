@@ -1,7 +1,7 @@
 import { baits, species, presets, resolvePreset, tacticalOverride } from '$lib/data';
 import type { TackleSelection, Peg, Lake } from '$lib/data';
 import { TackleBox } from '$lib/data/tackle';
-import { passesTolerances, fishMatchScore, weightedSelectIndex } from './population';
+import { passesTolerances, fishMatchScore, weightedSelectIndex } from './env-utils';
 
 const defaultBox = new TackleBox();
 
