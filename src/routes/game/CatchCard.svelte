@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { formatWeight } from '$lib/utils/format';
-	import type { CaughtFish } from '$lib/game/prep-state.svelte';
+	import type { CaughtFish } from '$lib/data';
 
 	let {
 		catchList = [],

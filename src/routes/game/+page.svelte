@@ -3,7 +3,7 @@
 	import { onMount } from 'svelte';
 	import { page } from '$app/state';
 	import { prepState } from '$lib/game/prep-state.svelte';
-	import type { CaughtFish } from '$lib/game/prep-state.svelte';
+	import type { CaughtFish } from '$lib/data';
 	import { gameState } from '$lib/game/state.svelte';
 	import { multiplayer } from '$lib/game/party/connection.svelte';
 	import { venues, species } from '$lib/data';

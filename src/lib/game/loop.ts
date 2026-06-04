@@ -1,12 +1,5 @@
-import type { Species, TackleSelection } from '$lib/data';
+import type { Species, TackleSelection, CaughtFish } from '$lib/data';
 import type { FishData } from './population';
-
-export interface CaughtFish {
-	species: string;
-	classificationLabel: string;
-	weightOz: number;
-	caughtAtMs: number;
-}
 
 export type FishingPhase =
 	| 'idle'

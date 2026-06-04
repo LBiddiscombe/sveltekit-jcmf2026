@@ -12,7 +12,8 @@ export type {
 	Line,
 	Hook,
 	TackleSelection,
-	TacklePreset
+	TacklePreset,
+	CaughtFish
 } from './types';
 export type { BotAngler } from './bots';
 export { venues } from './venues';

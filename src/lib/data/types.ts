@@ -176,3 +176,10 @@ export interface TacklePreset {
 	strata: string;
 	castStrength: string;
 }
+
+export interface CaughtFish {
+	species: string;
+	classificationLabel: string;
+	weightOz: number;
+	caughtAtMs: number;
+}

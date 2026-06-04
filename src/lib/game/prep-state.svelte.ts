@@ -1,6 +1,6 @@
 import { browser } from '$app/environment';
 import { bots, venues } from '$lib/data';
-import type { Venue, Lake, TackleSelection } from '$lib/data';
+import type { Venue, Lake, TackleSelection, CaughtFish } from '$lib/data';
 import type { GameMode } from './prep-flow';
 import { resetIds } from './population';
 import type { FishingPhase } from './loop';
@@ -10,13 +10,6 @@ const STORAGE_KEY = 'jcmf-prep';
 const AVATAR_KEY = 'jcmf-player-avatar';
 
 export type GamePhase = 'idle' | 'fishing' | 'results';
-
-export interface CaughtFish {
-	species: string;
-	classificationLabel: string;
-	weightOz: number;
-	caughtAtMs: number;
-}
 
 export interface AnglerState {
 	id: string;
