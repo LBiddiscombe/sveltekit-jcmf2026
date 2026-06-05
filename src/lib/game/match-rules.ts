@@ -47,24 +47,6 @@ const WIN_CONDITIONS: Record<string, WinCondition> = {
 		name: 'Biggest',
 		aggregate: 'max',
 		scoreFish: (f) => f.weightOz
-	},
-	points: {
-		name: 'Points',
-		aggregate: 'sum',
-		scoreFish: (f) => {
-			switch (f.tierIndex) {
-				case 0:
-					return 1;
-				case 1:
-					return 2;
-				case 2:
-					return 4;
-				case 3:
-					return 8;
-				default:
-					return 0;
-			}
-		}
 	}
 };
 

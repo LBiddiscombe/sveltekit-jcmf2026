@@ -94,8 +94,6 @@
 				return String(angler.score);
 			case 'biggest':
 				return formatWeight(angler.score);
-			case 'points':
-				return String(angler.score);
 			default:
 				return '';
 		}
@@ -109,8 +107,6 @@
 				return 'fish';
 			case 'biggest':
 				return 'best';
-			case 'points':
-				return 'pts';
 			default:
 				return 'score';
 		}
@@ -590,9 +586,7 @@
 					? 'Total Weight'
 					: gameState.matchRules.winConditionKey === 'count'
 						? 'Fish Count'
-						: gameState.matchRules.winConditionKey === 'biggest'
-							? 'Biggest Fish'
-							: 'Points'}
+						: 'Biggest Fish'}
 			{@const speciesLabel =
 				gameState.matchRules.speciesFilterKind === 'all'
 					? 'All Species'
