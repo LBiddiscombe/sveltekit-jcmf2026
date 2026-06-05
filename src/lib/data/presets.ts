@@ -219,11 +219,14 @@ export function resolvePreset(preset: TacklePreset): TackleSelection {
 
 export function tacticalOverride(
 	species: Species | null,
-	rod: Rod
+	rod: Rod,
+	forcedStrata?: string
 ): { strata: string; castStrength: string } {
 	let strata: string;
 
-	if (rod.allowedStrata.length === 1) {
+	if (forcedStrata && rod.allowedStrata.includes(forcedStrata)) {
+		strata = forcedStrata;
+	} else if (rod.allowedStrata.length === 1) {
 		strata = rod.allowedStrata[0];
 	} else if (species) {
 		const valid = species.strata.filter((s) => rod.allowedStrata.includes(s));

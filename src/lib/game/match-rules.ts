@@ -20,16 +20,41 @@ export interface MatchRules {
 	speciesFilterKind: SpeciesFilterKind;
 }
 
-export const SPECIES_GROUPS: Record<string, string[]> = {
-	silverfish: ['Roach', 'Rudd', 'Dace', 'Grayling'],
-	predators: ['Perch', 'Pike', 'Eel'],
-	carps: ['Carp', 'Crucian', 'Chub'],
-	'bottom-dwellers': ['Barbel', 'Bream', 'Tench']
+export interface SpeciesGroupProfile {
+	species: string[];
+	fallbackPresetNames: string[];
+	forcedStrata?: string;
+}
+
+const SPECIES_GROUP_PROFILES: Record<Exclude<SpeciesFilterKind, 'all'>, SpeciesGroupProfile> = {
+	silverfish: {
+		species: ['Roach', 'Rudd', 'Dace', 'Grayling'],
+		fallbackPresetNames: ['Tiddler Basher', 'Light', 'Medium']
+	},
+	predators: {
+		species: ['Perch', 'Pike', 'Eel'],
+		fallbackPresetNames: ['Predator']
+	},
+	carps: {
+		species: ['Carp', 'Crucian', 'Chub'],
+		fallbackPresetNames: ['Light', 'Medium', 'Heavy']
+	},
+	'bottom-dwellers': {
+		species: ['Barbel', 'Bream', 'Tench'],
+		fallbackPresetNames: ['Light', 'Medium', 'Heavy'],
+		forcedStrata: 'Bottom'
+	}
 };
 
 export function speciesFilterAccepts(filter: SpeciesFilterKind, species: string): boolean {
 	if (filter === 'all') return true;
-	return SPECIES_GROUPS[filter]?.includes(species) ?? false;
+	const profile = SPECIES_GROUP_PROFILES[filter];
+	return profile ? profile.species.includes(species) : false;
+}
+
+export function resolveSpeciesGroup(kind: SpeciesFilterKind): SpeciesGroupProfile | null {
+	if (kind === 'all') return null;
+	return SPECIES_GROUP_PROFILES[kind] ?? null;
 }
 
 const WIN_CONDITIONS: Record<string, WinCondition> = {

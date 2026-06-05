@@ -72,8 +72,12 @@ _Avoid_: Multiplayer, Party
 **WinCondition**:
 A strategy defining how a caught fish scores points and how per-fish scores are aggregated into a rank value. Concrete implementations: total weight (sum), biggest fish (max), fish count (count).
 
+**SpeciesGroup**:
+A named grouping of fish species sharing a filter criterion used in competitive matches (silverfish, predators, carps, bottom-dwellers). Each group defines its member species, suitable fallback tackle presets for bot selection, and optional tactical preferences (e.g., forced strata).
+_Avoid_: Filter category, species type
+
 **SpeciesFilter**:
-A predicate determining whether a caught fish counts toward an angler's score. Variants: all (no filter) or group (silverfish, predators, carps, bottom-dwellers). Rejected fish are excluded from scorecard calculations but remain in the angler's catch for display.
+A predicate determining whether a caught fish counts toward an angler's score. Variants: all (no filter) or a SpeciesGroup. Rejected fish are excluded from scorecard calculations but remain in the angler's catch for display.
 
 **WeighInEarly**:
 A Solo Match action that submits the player's current catch early while bots continue at accelerated speed. Once the match timer expires, the game transitions to Results. Disabled during the `reeling` phase.
