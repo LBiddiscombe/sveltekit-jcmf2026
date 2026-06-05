@@ -1,4 +1,5 @@
 import { partyUrl } from './host';
+import type { SpeciesFilterKind } from '../match-rules';
 
 export type MultiplayerPhase =
 	| 'idle'
@@ -35,6 +36,7 @@ export class MultiplayerConnection {
 	startTime = $state<number | null>(null);
 	timeLimitMinutes = $state(0);
 	winConditionKey = $state('weight');
+	speciesFilterKind = $state<SpeciesFilterKind>('all');
 	catchEvents = $state<CatchInfo[]>([]);
 	ownPeg = $state<string | null>(null);
 	error = $state<string | null>(null);
@@ -61,6 +63,8 @@ export class MultiplayerConnection {
 		this.players = [];
 		this.startTime = null;
 		this.timeLimitMinutes = 0;
+		this.winConditionKey = 'weight';
+		this.speciesFilterKind = 'all';
 		this.catchEvents = [];
 		this.ownPeg = null;
 		this.error = null;
@@ -71,12 +75,14 @@ export class MultiplayerConnection {
 		name: string,
 		timeLimitMinutes: number,
 		image: string = '',
-		winConditionKey: string = 'weight'
+		winConditionKey: string = 'weight',
+		speciesFilterKind: SpeciesFilterKind = 'all'
 	) {
 		this.playerName = name;
 		this.playerAvatar = image;
 		this.timeLimitMinutes = timeLimitMinutes;
 		this.winConditionKey = winConditionKey;
+		this.speciesFilterKind = speciesFilterKind;
 		this.isHost = true;
 		this.roomId = this.generateCode();
 		this.phase = 'connecting';
@@ -114,7 +120,8 @@ export class MultiplayerConnection {
 					name: this.playerName,
 					image: this.playerAvatar,
 					timeLimitMinutes: this.timeLimitMinutes,
-					winConditionKey: this.winConditionKey
+					winConditionKey: this.winConditionKey,
+					speciesFilterKind: this.speciesFilterKind
 				});
 			} else {
 				this.send({ type: 'join-room', name: this.playerName, image: this.playerAvatar });
@@ -164,6 +171,10 @@ export class MultiplayerConnection {
 					typeof data.timeLimitMinutes === 'number' ? data.timeLimitMinutes : 0;
 				this.winConditionKey =
 					typeof data.winConditionKey === 'string' ? data.winConditionKey : 'weight';
+				this.speciesFilterKind =
+					typeof data.speciesFilterKind === 'string'
+						? (data.speciesFilterKind as SpeciesFilterKind)
+						: 'all';
 				this.joinCode = typeof data.joinCode === 'string' ? data.joinCode : '';
 				this.ownPeg = this.players.find((p) => p.name === this.playerName)?.pegName ?? null;
 				break;
@@ -187,6 +198,9 @@ export class MultiplayerConnection {
 				}
 				if (typeof data.winConditionKey === 'string') {
 					this.winConditionKey = data.winConditionKey;
+				}
+				if (typeof data.speciesFilterKind === 'string') {
+					this.speciesFilterKind = data.speciesFilterKind as SpeciesFilterKind;
 				}
 				break;
 			}

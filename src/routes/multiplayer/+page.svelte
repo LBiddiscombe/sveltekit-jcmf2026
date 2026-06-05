@@ -1,11 +1,13 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { multiplayer } from '$lib/game/party/connection.svelte';
+	import { prepState } from '$lib/game/prep-state.svelte';
 	import venueThumb from '$lib/assets/images/venues/jcs.jpeg';
 	import reelThumb from '$lib/assets/images/tackle/reel-fixed-spool.png';
 
 	onMount(() => {
 		multiplayer.leave();
+		prepState.init('match');
 	});
 </script>
 

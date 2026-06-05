@@ -12,21 +12,22 @@ export function recordCatch(
 	fish: CaughtFish,
 	rules: MatchRules
 ): ScorecardResult {
-	angler.catch.push(fish);
-	angler.totalWeightOz += fish.weightOz;
-
 	const qualifies = speciesFilterAccepts(rules.speciesFilterKind, fish.species);
+
 	if (qualifies) {
+		angler.catch.push(fish);
+		angler.totalWeightOz += fish.weightOz;
+
 		const wc = resolveWinCondition(rules.winConditionKey);
 		if (wc.aggregate === 'max') {
 			angler.score = Math.max(angler.score, wc.scoreFish(fish));
 		} else {
 			angler.score += wc.scoreFish(fish);
 		}
-	}
 
-	if (!angler.biggestFish || fish.weightOz > angler.biggestFish.weightOz) {
-		angler.biggestFish = { ...fish };
+		if (!angler.biggestFish || fish.weightOz > angler.biggestFish.weightOz) {
+			angler.biggestFish = { ...fish };
+		}
 	}
 
 	return { qualifies };

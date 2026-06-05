@@ -4,7 +4,7 @@ import type { Venue, Lake, TackleSelection, CaughtFish } from '$lib/data';
 import type { GameMode } from './prep-flow';
 import type { FishingPhase } from './loop';
 import { defaultTackle, pickBotTackle } from './tackle-utils';
-import type { MatchRules, SpeciesFilterKind } from './match-rules';
+import type { MatchRules } from './match-rules';
 import { defaultMatchRules } from './match-rules';
 
 const STORAGE_KEY = 'jcmf-prep';
@@ -259,7 +259,7 @@ export class PrepState {
 			const botDef = botPool.splice(botIndex, 1)[0];
 			const peg = pegs[i + 1];
 
-			const botTackle = pickBotTackle(botDef.skill, peg, lake);
+			const botTackle = pickBotTackle(botDef.skill, peg, lake, this.matchRules.speciesFilterKind);
 
 			const botAngler: AnglerState = {
 				id: `bot-${botDef.name.toLowerCase()}`,

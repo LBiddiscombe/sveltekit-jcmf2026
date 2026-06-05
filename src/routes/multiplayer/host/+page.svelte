@@ -8,6 +8,7 @@
 	import type { FilmstripItem } from '$lib/components/Filmstrip.svelte';
 	import SelectMenu from '$lib/components/SelectMenu.svelte';
 	import type { SelectMenuItem } from '$lib/components/SelectMenu.svelte';
+	import type { SpeciesFilterKind } from '$lib/game/match-rules';
 
 	const NAME_KEY = 'jcmf-player-name';
 	const AVATAR_KEY = 'jcmf-player-avatar';
@@ -16,6 +17,10 @@
 		{ value: 'weight', label: 'Total Weight' },
 		{ value: 'count', label: 'Fish Count' },
 		{ value: 'biggest', label: 'Biggest Fish' }
+	];
+	const SPECIES_FILTER_ITEMS: SelectMenuItem[] = [
+		{ value: 'all', label: 'All' },
+		{ value: 'silverfish', label: 'Silver Fish' }
 	];
 
 	let name = $state(browser ? (localStorage.getItem(NAME_KEY) ?? '') : '');
@@ -55,7 +60,13 @@
 		prepState.playerName = name.trim();
 		prepState.playerAvatar = avatar;
 		prepState.matchRules = { ...prepState.matchRules };
-		multiplayer.createRoom(name.trim(), timeLimit, avatar, prepState.matchRules.winConditionKey);
+		multiplayer.createRoom(
+			name.trim(),
+			timeLimit,
+			avatar,
+			prepState.matchRules.winConditionKey,
+			prepState.matchRules.speciesFilterKind
+		);
 	}
 
 	$effect(() => {
@@ -118,13 +129,15 @@
 
 			<div class="flex flex-col gap-1">
 				<span class="text-sm font-medium text-dark-teal">Qualifying Species</span>
-				<div class="grid grid-cols-1 gap-2">
-					<button
-						class="rounded-xl border border-accent bg-accent/10 px-3 py-2 text-center text-sm font-medium text-accent"
-					>
-						Any
-					</button>
-				</div>
+				<SelectMenu
+					items={SPECIES_FILTER_ITEMS}
+					selected={prepState.matchRules.speciesFilterKind}
+					onselect={(value: string) =>
+						(prepState.matchRules = {
+							...prepState.matchRules,
+							speciesFilterKind: value as SpeciesFilterKind
+						})}
+				/>
 			</div>
 
 			<button

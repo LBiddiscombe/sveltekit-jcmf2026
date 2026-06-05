@@ -76,7 +76,8 @@
 					role="option"
 					aria-selected={item.value === selected}
 					onclick={() => select(item.value)}
-					class="w-full px-3 py-2 text-left text-sm font-medium transition-colors {item.value === selected
+					class="w-full px-3 py-2 text-left text-sm font-medium transition-colors {item.value ===
+					selected
 						? 'bg-accent/10 text-accent'
 						: 'text-dark-teal hover:bg-dark-teal/5'}"
 				>

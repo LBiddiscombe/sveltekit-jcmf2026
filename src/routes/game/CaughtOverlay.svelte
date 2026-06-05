@@ -13,11 +13,13 @@
 		species,
 		weightOz,
 		classificationLabel,
+		released = false,
 		ondismiss
 	}: {
 		species: Species;
 		weightOz: number;
 		classificationLabel: string;
+		released?: boolean;
 		ondismiss: () => void;
 	} = $props();
 
@@ -53,7 +55,7 @@
 	});
 
 	$effect(() => {
-		if (pbStatus) {
+		if (pbStatus && !released) {
 			if (pbStatus === 'record') {
 				confetti({ particleCount: 100, spread: 80, origin: { y: 0.5 } });
 				setTimeout(() => confetti({ particleCount: 80, spread: 100, origin: { y: 0.5 } }), 300);
@@ -104,8 +106,9 @@
 			</div>
 		{/if}
 		<p class="text-sm font-bold text-white">
-			You caught a {classificationLabel || ''}
-			{species.name}!
+			{released
+				? `You caught a ${classificationLabel || ''} ${species.name}! — Released, not a qualifying species`
+				: `You caught a ${classificationLabel || ''} ${species.name}!`}
 		</p>
 	</div>
 </div>

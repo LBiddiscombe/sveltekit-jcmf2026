@@ -9,6 +9,7 @@
 	import { venues, species } from '$lib/data';
 	import type { TackleSelection } from '$lib/data';
 	import { defaultTackle } from '$lib/game/tackle-utils';
+	import { speciesFilterAccepts } from '$lib/game/match-rules';
 	import { formatWeight, formatShortDuration } from '$lib/utils/format';
 	import DebugPanel from '$lib/components/DebugPanel.svelte';
 	import { isTutorialCompleted, completeTutorial } from '$lib/game/tutorial';
@@ -349,6 +350,7 @@
 			angler.name = multiplayer.playerName || 'You';
 			angler.image = multiplayer.playerAvatar;
 			angler.pegName = multiplayer.ownPeg ?? '';
+			angler.tackle = { ...defaultTackle };
 			angler.catch = [];
 			angler.totalWeightOz = 0;
 			angler.score = 0;
@@ -362,7 +364,7 @@
 		gameState.beginFishing([angler], venue, lake, multiplayer.timeLimitMinutes, {
 			timeLimitMinutes: multiplayer.timeLimitMinutes,
 			winConditionKey: multiplayer.winConditionKey,
-			speciesFilterKind: 'all'
+			speciesFilterKind: multiplayer.speciesFilterKind
 		});
 	}
 
@@ -451,11 +453,15 @@
 				{/if}
 				{#if playerPhase === 'caught' && lastEvent?.type === 'fishCaught'}
 					{@const caughtSpecies = species.find((s) => s.name === lastEvent.species) ?? null}
+					{@const qualifies = caughtSpecies
+						? speciesFilterAccepts(gameState.matchRules.speciesFilterKind, caughtSpecies.name)
+						: false}
 					{#if caughtSpecies}
 						<CaughtOverlay
 							species={caughtSpecies}
 							weightOz={lastEvent.weightOz}
 							classificationLabel={lastEvent.classificationLabel}
+							released={!qualifies}
 							ondismiss={handleDismissCaught}
 						/>
 					{/if}

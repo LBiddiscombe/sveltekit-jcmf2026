@@ -11,7 +11,7 @@ import type { AnglerState, GamePhase } from './prep-state.svelte';
 import { MatchTimer } from './match-timer.svelte';
 import type { MatchRules } from './match-rules';
 import { defaultMatchRules } from './match-rules';
-import { recordCatch } from './scorecard.svelte';
+import { recordCatch, type ScorecardResult } from './scorecard.svelte';
 
 export { type GamePhase, type AnglerState } from './prep-state.svelte';
 
@@ -57,6 +57,7 @@ export class GameState {
 	catchAudit = $state<CatchAuditEntry[]>([]);
 	sessionStartMs = 0;
 	initialTackleChosen = $state(false);
+	private botCaughtIndex = new SvelteMap<string, number>();
 
 	onCatch:
 		| ((info: {
@@ -149,7 +150,7 @@ export class GameState {
 			});
 
 			const controller = new BotController(loop, bot.skill, Math.random, () =>
-				pickBotTackle(bot.skill, peg, lake)
+				pickBotTackle(bot.skill, peg, lake, this.matchRules.speciesFilterKind)
 			);
 
 			this.botControllers.set(bot.id, controller);
@@ -167,22 +168,29 @@ export class GameState {
 		}
 	}
 
-	private syncBotAngler(angler: AnglerState, loop: FishingLoop) {
-		if (loop.caughtFish.length > angler.catch.length) {
+	private syncBotAngler(angler: AnglerState, loop: FishingLoop): ScorecardResult | null {
+		const lastSync = this.botCaughtIndex.get(angler.id) ?? 0;
+		if (loop.caughtFish.length > lastSync) {
 			const newFish = loop.caughtFish[loop.caughtFish.length - 1];
 			const result = recordCatch(angler, newFish, this.matchRules);
-			this.catchAudit = [
-				...this.catchAudit,
-				{
-					caughtAtMs: Date.now() - this.sessionStartMs,
-					anglerId: angler.id,
-					anglerName: angler.name,
-					species: newFish.species,
-					classificationLabel: newFish.classificationLabel,
-					weightOz: newFish.weightOz
-				}
-			];
+			this.botCaughtIndex.set(angler.id, loop.caughtFish.length);
+
+			if (result.qualifies) {
+				this.catchAudit = [
+					...this.catchAudit,
+					{
+						caughtAtMs: Date.now() - this.sessionStartMs,
+						anglerId: angler.id,
+						anglerName: angler.name,
+						species: newFish.species,
+						classificationLabel: newFish.classificationLabel,
+						weightOz: newFish.weightOz
+					}
+				];
+			}
+			return result;
 		}
+		return null;
 	}
 
 	updateTackle(tackle: TackleSelection) {
@@ -240,16 +248,18 @@ export class GameState {
 
 			const event = controller.tick(ms);
 			if (event && event.type === 'fishCaught') {
-				this.syncBotAngler(angler, loop);
-				this.botCatchFeed = [
-					...this.botCatchFeed,
-					{
-						name: angler.name,
-						pegName: angler.pegName,
-						classificationLabel: event.classificationLabel,
-						species: event.species
-					}
-				];
+				const cardResult = this.syncBotAngler(angler, loop);
+				if (cardResult?.qualifies) {
+					this.botCatchFeed = [
+						...this.botCatchFeed,
+						{
+							name: angler.name,
+							pegName: angler.pegName,
+							classificationLabel: event.classificationLabel,
+							species: event.species
+						}
+					];
+				}
 			}
 		}
 
@@ -384,25 +394,27 @@ export class GameState {
 					weightOz: event.weightOz,
 					caughtAtMs: Date.now()
 				};
-				recordCatch(player, fish, this.matchRules);
-				this.catchAudit = [
-					...this.catchAudit,
-					{
-						caughtAtMs: Date.now() - this.sessionStartMs,
-						anglerId: player.id,
-						anglerName: player.name,
+				const { qualifies } = recordCatch(player, fish, this.matchRules);
+				if (qualifies) {
+					this.catchAudit = [
+						...this.catchAudit,
+						{
+							caughtAtMs: Date.now() - this.sessionStartMs,
+							anglerId: player.id,
+							anglerName: player.name,
+							species: event.species,
+							classificationLabel: event.classificationLabel,
+							weightOz: event.weightOz
+						}
+					];
+					this.onCatch?.({
 						species: event.species,
 						classificationLabel: event.classificationLabel,
-						weightOz: event.weightOz
-					}
-				];
-				this.onCatch?.({
-					species: event.species,
-					classificationLabel: event.classificationLabel,
-					weightOz: event.weightOz,
-					anglerName: player.name,
-					pegName: player.pegName
-				});
+						weightOz: event.weightOz,
+						anglerName: player.name,
+						pegName: player.pegName
+					});
+				}
 			}
 		}
 		this.syncPlayerState();
@@ -456,6 +468,7 @@ export class GameState {
 		this.sessionStartMs = 0;
 		this.initialTackleChosen = false;
 		this.onCatch = null;
+		this.botCaughtIndex.clear();
 	}
 }
 
