@@ -132,7 +132,7 @@
 			{@const imgUrl = fishImgUrl(s.name)}
 			{@const label = pb ? getClassificationLabel(s, pb.weightOz) : ''}
 			<div class="flex flex-col items-center gap-3 rounded-xl border border-olive bg-white/70 p-5">
-				<p class="text-lg font-bold text-dark-teal">{s.name}</p>
+				<p class="relative z-10 text-lg font-bold text-dark-teal [text-shadow:0_0_8px_white,0_0_4px_white]">{s.name}</p>
 				{#if imgUrl}
 					<div
 						class="flex items-center justify-center {pb ? '' : 'opacity-15'}"

@@ -2,6 +2,7 @@
 	import confetti from 'canvas-confetti';
 	import type { Species } from '$lib/data';
 	import { checkIsPB, recordPB, getPBs } from '$lib/game/pbs';
+	import { formatWeight } from '$lib/utils/format';
 
 	const fishImages = import.meta.glob<string>('$lib/assets/images/fish/*.PNG', {
 		eager: true,
@@ -106,9 +107,13 @@
 			</div>
 		{/if}
 		<p class="text-sm font-bold text-white">
-			{released
-				? `You caught a ${classificationLabel || ''} ${species.name}! — Released, not a qualifying species`
-				: `You caught a ${classificationLabel || ''} ${species.name}!`}
+			{#if released}
+				You caught a {formatWeight(weightOz)} {classificationLabel || ''} {species.name}
+				<br />
+				<span class="text-xs text-white/70">Released, not a target species</span>
+			{:else}
+				You caught a {formatWeight(weightOz)} {classificationLabel || ''} {species.name}!
+			{/if}
 		</p>
 	</div>
 </div>
