@@ -99,7 +99,7 @@ An NPC angler controlled by the game, with a skill level (1–10) that influence
 The UI control on the prep/rules page for selecting a win condition. Options: Total Weight, Fish Count, Biggest Fish. Defaults to Weight.
 
 **SpeciesFilterPicker**:
-The UI control on the prep/rules page for selecting a species filter. Grouped buttons: Any, Silver, Predator, Carps, Bottom. Defaults to Any.
+The UI control on the prep/rules & multiplayer/host pages for selecting a species filter. Dropdown options: All, Silver Fish, Predators, Carps, Bottom Dwellers. Defaults to All.
 
 **SelectMenu**:
 A reusable UI component for selecting one option from a short list. Rendered as a single button that expands to a drop-down panel on click.

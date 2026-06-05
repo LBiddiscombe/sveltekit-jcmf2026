@@ -20,7 +20,10 @@
 	];
 	const SPECIES_FILTER_ITEMS: SelectMenuItem[] = [
 		{ value: 'all', label: 'All' },
-		{ value: 'silverfish', label: 'Silver Fish' }
+		{ value: 'silverfish', label: 'Silver Fish' },
+		{ value: 'predators', label: 'Predators' },
+		{ value: 'carps', label: 'Carps' },
+		{ value: 'bottom-dwellers', label: 'Bottom Dwellers' }
 	];
 
 	let name = $state(browser ? (localStorage.getItem(NAME_KEY) ?? '') : '');
