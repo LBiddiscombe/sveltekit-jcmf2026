@@ -108,7 +108,9 @@
 		{/if}
 		<p class="text-sm font-bold text-white">
 			{#if released}
-				You caught a {formatWeight(weightOz)} {classificationLabel || ''} {species.name}
+				You caught a {formatWeight(weightOz)}
+				{classificationLabel || ''}
+				{species.name}
 				<br />
 				<span class="text-xs text-white/70">Released, not a target species</span>
 			{:else}

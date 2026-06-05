@@ -603,11 +603,11 @@
 							: gameState.matchRules.speciesFilterKind === 'carps'
 								? 'Carps'
 								: 'Bottom Dwellers'}
-			<div class="flex w-full max-w-sm items-center justify-center gap-2">
-				<span class="rounded-full bg-white/20 px-3 py-1 text-xs font-medium text-dark-teal">
-					Aim: {wcLabel}
+			<div class="flex w-full max-w-sm items-center justify-center gap-2 -mb-6 z-10">
+				<span class="rounded-full bg-dark-teal/60 px-3 py-1 text-xs font-medium text-white">
+					{wcLabel}
 				</span>
-				<span class="rounded-full bg-white/20 px-3 py-1 text-xs font-medium text-dark-teal">
+				<span class="rounded-full bg-dark-teal/60 px-3 py-1 text-xs font-medium text-white">
 					{speciesLabel}
 				</span>
 			</div>

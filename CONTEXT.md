@@ -9,7 +9,11 @@ A location with one or more fishing lakes. Each venue has an `image` for display
 _Avoid_: Location, site
 
 **Lake**:
-A body of water within a venue, containing multiple pegs. Each lake defines which species inhabit it and their relative abundance.
+A body of water within a venue, containing multiple pegs. Each lake defines which species inhabit it, their relative abundance, and the fish population per peg.
+
+**FishPerPeg**:
+The number of fish generated at each peg when a session or match starts. Every occupied peg receives this many fish independently — no splitting occurs regardless of how many pegs are occupied or how many anglers are fishing. A session peg and a match peg each get the same number.
+_Avoid_: Lake fish count, total population
 
 **LakeSpecies**:
 A species name and its abundance frequency within a specific lake.

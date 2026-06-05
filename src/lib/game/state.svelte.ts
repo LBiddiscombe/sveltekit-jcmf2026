@@ -339,15 +339,12 @@ export class GameState {
 
 	private generateFish(lake: Lake) {
 		this.pegPopulations.clear();
-		const isSession = this.anglers.length === 1;
 
 		for (const peg of lake.pegs) {
 			const hasAngler = this.anglers.some((a) => a.pegName === peg.name);
 			if (!hasAngler) continue;
 
-			const count = isSession ? lake.fishCount : Math.floor(lake.fishCount / lake.pegs.length);
-
-			this.pegPopulations.set(peg.name, populatePeg(lake, peg, species, count));
+			this.pegPopulations.set(peg.name, populatePeg(lake, peg, species, lake.fishPerPeg));
 		}
 	}
 

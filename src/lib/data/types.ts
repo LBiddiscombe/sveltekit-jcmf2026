@@ -34,7 +34,7 @@ export interface LakeSpecies {
 export interface Lake {
 	name: string;
 	image?: string;
-	fishCount: number;
+	fishPerPeg: number;
 	species: LakeSpecies[];
 	pegs: Peg[];
 }

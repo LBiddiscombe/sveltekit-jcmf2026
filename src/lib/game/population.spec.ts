@@ -81,7 +81,7 @@ const mockPeg: Peg = {
 
 const mockLake: Lake = {
 	name: 'Test Lake',
-	fishCount: 100,
+	fishPerPeg: 100,
 	species: [
 		{ name: 'Roach', frequency: 10 },
 		{ name: 'Perch', frequency: 8 },
