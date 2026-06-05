@@ -99,10 +99,13 @@ _Avoid_: Bot image, player image
 An NPC angler controlled by the game, with a skill level (1–10) that influences tackle choices (via skill-weighted species roll at draw and mid-match tackle changes) and strike/reel timing. Bots are defined in reference data (`src/lib/data/bots.ts`) with a name and fixed skill. Bots are available in Match mode only. Bot skill does NOT affect a separate strike accuracy roll — the HookRangeCheck alone determines strike outcome; skill only affects how quickly the bot reacts.
 
 **WinConditionPicker**:
-The UI control on the prep/rules page for selecting a win condition. Rendered as grouped buttons: Weight, Count, Biggest, Points. Defaults to Weight for backwards compatibility.
+The UI control on the prep/rules page for selecting a win condition. A single button showing the current selection that expands to reveal all options. Options: Total Weight, Fish Count, Biggest Fish. Defaults to Weight for backwards compatibility.
 
 **SpeciesFilterPicker**:
 The UI control on the prep/rules page for selecting a species filter. Rendered as grouped buttons: Any, Silver, Predator, Carps, Bottom. Defaults to Any for backwards compatibility.
+
+**SelectMenu**:
+A reusable UI component (`$lib/components/SelectMenu.svelte`) for selecting one option from a short list. Rendered as a single button showing the currently selected option that expands to a drop-down panel on click. Collapses when an option is selected or when the user clicks outside. Includes a chevron indicator (▼/▲) to signal interactivity. Used by WinConditionPicker and available for future picker controls.
 
 **AnglerScore**:
 The active score for an angler in a competitive match, computed by the WinCondition for qualifying (SpeciesFilter-passing) fish only. Stored as `AnglerState.score` and displayed as the primary metric on the game HUD and catch panel. The label varies by win condition (e.g. "Score", "Weight", "Fish", "Points"). Always derived through the Scorecard — never set directly. Runs alongside `totalWeightOz` (all fish, unfiltered) for reference display.

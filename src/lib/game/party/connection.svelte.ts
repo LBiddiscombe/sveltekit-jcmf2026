@@ -67,7 +67,12 @@ export class MultiplayerConnection {
 		this.roomId = '';
 	}
 
-	createRoom(name: string, timeLimitMinutes: number, image: string = '', winConditionKey: string = 'weight') {
+	createRoom(
+		name: string,
+		timeLimitMinutes: number,
+		image: string = '',
+		winConditionKey: string = 'weight'
+	) {
 		this.playerName = name;
 		this.playerAvatar = image;
 		this.timeLimitMinutes = timeLimitMinutes;

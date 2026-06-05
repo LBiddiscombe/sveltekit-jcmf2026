@@ -6,10 +6,17 @@
 	import { bots } from '$lib/data';
 	import Filmstrip from '$lib/components/Filmstrip.svelte';
 	import type { FilmstripItem } from '$lib/components/Filmstrip.svelte';
+	import SelectMenu from '$lib/components/SelectMenu.svelte';
+	import type { SelectMenuItem } from '$lib/components/SelectMenu.svelte';
 
 	const NAME_KEY = 'jcmf-player-name';
 	const AVATAR_KEY = 'jcmf-player-avatar';
 	const TIME_PRESETS = [1, 5, 10, 20, 30, 60];
+	const WIN_CONDITION_ITEMS: SelectMenuItem[] = [
+		{ value: 'weight', label: 'Total Weight' },
+		{ value: 'count', label: 'Fish Count' },
+		{ value: 'biggest', label: 'Biggest Fish' }
+	];
 
 	let name = $state(browser ? (localStorage.getItem(NAME_KEY) ?? '') : '');
 	let avatar = $state(browser ? (localStorage.getItem(AVATAR_KEY) ?? '') : '');
@@ -101,20 +108,12 @@
 
 			<div class="flex flex-col gap-1">
 				<span class="text-sm font-medium text-dark-teal">Win Condition</span>
-				<div class="grid grid-cols-2 gap-2" role="radiogroup">
-					{#each ['weight', 'count'] as key (key)}
-						{@const label = key === 'weight' ? 'Weight' : 'Count'}
-						<button
-							onclick={() => (prepState.matchRules = { ...prepState.matchRules, winConditionKey: key })}
-							class="rounded-xl border px-3 py-2 text-center text-sm font-medium transition-colors {prepState
-								.matchRules.winConditionKey === key
-								? 'border-accent bg-accent/10 text-accent'
-								: 'border-dark-teal/20 bg-white text-dark-teal hover:border-dark-teal/40'}"
-						>
-							{label}
-						</button>
-					{/each}
-				</div>
+				<SelectMenu
+					items={WIN_CONDITION_ITEMS}
+					selected={prepState.matchRules.winConditionKey}
+					onselect={(key) =>
+						(prepState.matchRules = { ...prepState.matchRules, winConditionKey: key })}
+				/>
 			</div>
 
 			<div class="flex flex-col gap-1">

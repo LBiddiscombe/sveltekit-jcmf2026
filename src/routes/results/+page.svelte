@@ -20,28 +20,10 @@
 		isMulti ? multiplayer.winConditionKey : gameState.matchRules.winConditionKey
 	);
 
-	let multiLeaderboard = $derived.by(() => {
-		if (!isMulti) return [];
-		const totals = new SvelteMap<string, { name: string; totalOz: number; count: number }>();
-		for (const c of multiplayer.catchEvents) {
-			const e = totals.get(c.anglerName) ?? {
-				name: c.anglerName,
-				totalOz: 0,
-				count: 0
-			};
-			e.totalOz += c.weightOz;
-			e.count += 1;
-			totals.set(c.anglerName, e);
-		}
-		return [...totals.values()].sort((a, b) => {
-			const byPrimary = winConditionKey === 'count' ? b.count - a.count : b.totalOz - a.totalOz;
-			if (byPrimary !== 0) return byPrimary;
-			return winConditionKey === 'count' ? b.totalOz - a.totalOz : b.count - a.count;
-		});
-	});
+	let catchEvents = $derived(multiplayer.catchEvents);
 
 	let leaderboardEmpty = $derived(
-		isMulti ? multiLeaderboard.length === 0 : anglers.every((a) => a.catch.length === 0)
+		isMulti ? catchEvents.length === 0 : anglers.every((a) => a.catch.length === 0)
 	);
 
 	let speciesGroups = $derived.by(() => {
@@ -100,9 +82,10 @@
 			{:else}
 				<Leaderboard
 					{anglers}
-					multiEntries={multiLeaderboard}
+					{catchEvents}
 					{isMulti}
 					multiPlayerName={multiplayer.playerName}
+					multiPlayerAvatar={multiplayer.playerAvatar}
 					{pegImg}
 					{botImg}
 					{formatWeight}
