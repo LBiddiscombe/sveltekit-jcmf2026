@@ -35,7 +35,7 @@ export class GameState {
 	matchTimer = new MatchTimer();
 	phase = $state<GamePhase>('idle');
 	anglers = $state<AnglerState[]>([]);
-	matchRules: MatchRules = defaultMatchRules();
+	matchRules: MatchRules = $state(defaultMatchRules());
 
 	get timeRemainingSeconds() {
 		return this.matchTimer.timeRemainingSeconds;

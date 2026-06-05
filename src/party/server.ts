@@ -24,6 +24,7 @@ interface RoomState {
 	hostConnectionId: string;
 	hostName: string;
 	timeLimitMinutes: number;
+	winConditionKey: string;
 	players: PlayerInfo[];
 	startTime: number | null;
 	catchAudit: CatchEvent[];
@@ -36,6 +37,7 @@ export default class GameRoom implements Party.Server {
 		hostConnectionId: '',
 		hostName: '',
 		timeLimitMinutes: 10,
+		winConditionKey: 'weight',
 		players: [],
 		startTime: null,
 		catchAudit: [],
@@ -93,6 +95,8 @@ export default class GameRoom implements Party.Server {
 				this.state.hostConnectionId = sender.id;
 				this.state.hostName = name || 'Host';
 				this.state.timeLimitMinutes = timeLimit;
+				this.state.winConditionKey =
+					typeof data.winConditionKey === 'string' ? data.winConditionKey : 'weight';
 				this.state.players = [];
 				this.state.startTime = null;
 				this.state.catchAudit = [];
@@ -158,6 +162,7 @@ export default class GameRoom implements Party.Server {
 					type: 'game-start',
 					startTime: this.state.startTime,
 					timeLimitMinutes: this.state.timeLimitMinutes,
+					winConditionKey: this.state.winConditionKey,
 					players: this.safePlayers()
 				});
 				break;
@@ -270,6 +275,7 @@ export default class GameRoom implements Party.Server {
 			hostName: this.state.hostName,
 			hostConnectionId: this.state.hostConnectionId,
 			timeLimitMinutes: this.state.timeLimitMinutes,
+			winConditionKey: this.state.winConditionKey,
 			joinCode: this.room.id,
 			players: this.safePlayers()
 		});

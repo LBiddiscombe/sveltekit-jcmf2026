@@ -209,12 +209,19 @@
 
 			<div class="flex flex-col gap-1">
 				<span class="text-sm font-medium text-dark-teal">Win Condition</span>
-				<div class="grid grid-cols-1 gap-2">
-					<button
-						class="rounded-xl border border-accent bg-accent/10 px-3 py-2 text-center text-sm font-medium text-accent"
-					>
-						Weight
-					</button>
+				<div class="grid grid-cols-2 gap-2" role="radiogroup">
+					{#each ['weight', 'count'] as key (key)}
+						{@const label = key === 'weight' ? 'Weight' : 'Count'}
+						<button
+							onclick={() => (prepState.matchRules = { ...prepState.matchRules, winConditionKey: key })}
+							class="rounded-xl border px-3 py-2 text-center text-sm font-medium transition-colors {prepState
+								.matchRules.winConditionKey === key
+								? 'border-accent bg-accent/10 text-accent'
+								: 'border-dark-teal/20 bg-white text-dark-teal hover:border-dark-teal/40'}"
+						>
+							{label}
+						</button>
+					{/each}
 				</div>
 			</div>
 

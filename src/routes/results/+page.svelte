@@ -16,6 +16,10 @@
 	let anglers = $derived(gameState.anglers);
 	let debugMode = $state(false);
 
+	let winConditionKey = $derived(
+		isMulti ? multiplayer.winConditionKey : gameState.matchRules.winConditionKey
+	);
+
 	let multiLeaderboard = $derived.by(() => {
 		if (!isMulti) return [];
 		const totals = new SvelteMap<string, { name: string; totalOz: number; count: number }>();
@@ -29,7 +33,11 @@
 			e.count += 1;
 			totals.set(c.anglerName, e);
 		}
-		return [...totals.values()].sort((a, b) => b.totalOz - a.totalOz);
+		return [...totals.values()].sort((a, b) => {
+			const byPrimary = winConditionKey === 'count' ? b.count - a.count : b.totalOz - a.totalOz;
+			if (byPrimary !== 0) return byPrimary;
+			return winConditionKey === 'count' ? b.totalOz - a.totalOz : b.count - a.count;
+		});
 	});
 
 	let leaderboardEmpty = $derived(
@@ -98,6 +106,7 @@
 					{pegImg}
 					{botImg}
 					{formatWeight}
+					{winConditionKey}
 				/>
 			{/if}
 			<a

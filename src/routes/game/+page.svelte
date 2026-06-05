@@ -363,7 +363,11 @@
 		};
 		const venue = venues[0];
 		const lake = venue.lakes[0];
-		gameState.beginFishing([angler], venue, lake, multiplayer.timeLimitMinutes, undefined);
+		gameState.beginFishing([angler], venue, lake, multiplayer.timeLimitMinutes, {
+			timeLimitMinutes: multiplayer.timeLimitMinutes,
+			winConditionKey: multiplayer.winConditionKey,
+			speciesFilterKind: 'all'
+		});
 	}
 
 	function onKeydown(e: KeyboardEvent) {
@@ -576,6 +580,40 @@
 				class="w-full max-w-sm rounded-xl border border-yellow-400/40 bg-yellow-50/50 p-3 text-center"
 			>
 				<p class="text-xs font-medium text-yellow-700">Game paused — debug mode</p>
+			</div>
+		{/if}
+
+		<!-- Match rules badges -->
+		{#if mode === 'match' || mode === 'multiplayer'}
+			{@const wcLabel =
+				gameState.matchRules.winConditionKey === 'weight'
+					? 'Total Weight'
+					: gameState.matchRules.winConditionKey === 'count'
+						? 'Fish Count'
+						: gameState.matchRules.winConditionKey === 'biggest'
+							? 'Biggest Fish'
+							: 'Points'}
+			{@const speciesLabel =
+				gameState.matchRules.speciesFilterKind === 'all'
+					? 'All Species'
+					: gameState.matchRules.speciesFilterKind === 'silverfish'
+						? 'Silver Fish'
+						: gameState.matchRules.speciesFilterKind === 'predators'
+							? 'Predators'
+							: gameState.matchRules.speciesFilterKind === 'carps'
+								? 'Carps'
+								: 'Bottom Dwellers'}
+			<div class="flex w-full max-w-sm items-center justify-center gap-2">
+				<span
+					class="rounded-full bg-white/20 px-3 py-1 text-xs font-medium text-dark-teal"
+				>
+					Aim: {wcLabel}
+				</span>
+				<span
+					class="rounded-full bg-white/20 px-3 py-1 text-xs font-medium text-dark-teal"
+				>
+					{speciesLabel}
+				</span>
 			</div>
 		{/if}
 

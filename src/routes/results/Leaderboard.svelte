@@ -17,7 +17,8 @@
 		multiPlayerName,
 		pegImg,
 		botImg,
-		formatWeight
+		formatWeight,
+		winConditionKey = 'weight'
 	}: {
 		anglers: AnglerState[];
 		multiEntries: MultiEntry[];
@@ -26,7 +27,10 @@
 		pegImg: (f: string | undefined) => string;
 		botImg: (f: string) => string;
 		formatWeight: (oz: number) => string;
+		winConditionKey?: string;
 	} = $props();
+
+	let primaryMetric = $derived(winConditionKey);
 
 	let sorted = $derived(
 		isMulti
@@ -38,8 +42,17 @@
 					isPlayer: e.name === multiPlayerName,
 					image: e.name === multiPlayerName ? multiplayer.playerAvatar : ''
 				}))
-			: [...anglers]
-					.sort((a, b) => b.totalWeightOz - a.totalWeightOz)
+				: [...anglers]
+					.sort((a, b) => {
+						const byPrimary =
+							primaryMetric === 'count'
+								? b.catch.length - a.catch.length
+								: b.totalWeightOz - a.totalWeightOz;
+						if (byPrimary !== 0) return byPrimary;
+						return primaryMetric === 'count'
+							? b.totalWeightOz - a.totalWeightOz
+							: b.catch.length - a.catch.length;
+					})
 					.map((a) => ({
 						name: a.name,
 						weight: a.totalWeightOz,
@@ -147,13 +160,20 @@
 						style="height: 120px"
 					>
 						<span class="text-2xl font-black text-white drop-shadow-md">🥈</span>
-						<span class="text-lg font-black text-white drop-shadow-md"
-							>{formatWeight(second.weight)}</span
+						<span
+							class="{primaryMetric === 'weight'
+								? 'text-lg font-black text-white drop-shadow-md'
+								: 'text-xs text-white/70'}">{formatWeight(second.weight)}</span
 						>
-						<span class="text-xs text-white/70">{second.fishCount} fish</span>
+						<span
+							class="{primaryMetric === 'count'
+								? 'text-lg font-black text-white drop-shadow-md'
+								: 'text-xs text-white/70'}">{second.fishCount} fish</span
+						>
 						{#if second.biggestFish}
+							<span class="text-xs text-white/50">Best</span>
 							<span class="text-xs text-white/50"
-								>Best: {formatWeight(second.biggestFish.weightOz)}
+								>{formatWeight(second.biggestFish.weightOz)}
 								{second.biggestFish.species}</span
 							>
 						{/if}
@@ -200,13 +220,20 @@
 						style="height: 160px"
 					>
 						<span class="text-2xl font-black text-white drop-shadow-md">🥇</span>
-						<span class="text-lg font-black text-white drop-shadow-md"
-							>{formatWeight(first.weight)}</span
+						<span
+							class="{primaryMetric === 'weight'
+								? 'text-lg font-black text-white drop-shadow-md'
+								: 'text-xs text-white/70'}">{formatWeight(first.weight)}</span
 						>
-						<span class="text-xs text-white/70">{first.fishCount} fish</span>
+						<span
+							class="{primaryMetric === 'count'
+								? 'text-lg font-black text-white drop-shadow-md'
+								: 'text-xs text-white/70'}">{first.fishCount} fish</span
+						>
 						{#if first.biggestFish}
+							<span class="text-xs text-white/50">Best</span>
 							<span class="text-xs text-white/50"
-								>Best: {formatWeight(first.biggestFish.weightOz)} {first.biggestFish.species}</span
+								>{formatWeight(first.biggestFish.weightOz)} {first.biggestFish.species}</span
 							>
 						{/if}
 					</div>
@@ -252,13 +279,20 @@
 						style="height: 100px"
 					>
 						<span class="text-2xl font-black text-white drop-shadow-md">🥉</span>
-						<span class="text-lg font-black text-white drop-shadow-md"
-							>{formatWeight(third.weight)}</span
+						<span
+							class="{primaryMetric === 'weight'
+								? 'text-lg font-black text-white drop-shadow-md'
+								: 'text-xs text-white/70'}">{formatWeight(third.weight)}</span
 						>
-						<span class="text-xs text-white/70">{third.fishCount} fish</span>
+						<span
+							class="{primaryMetric === 'count'
+								? 'text-lg font-black text-white drop-shadow-md'
+								: 'text-xs text-white/70'}">{third.fishCount} fish</span
+						>
 						{#if third.biggestFish}
+							<span class="text-xs text-white/50">Best</span>
 							<span class="text-xs text-white/50"
-								>Best: {formatWeight(third.biggestFish.weightOz)} {third.biggestFish.species}</span
+								>{formatWeight(third.biggestFish.weightOz)} {third.biggestFish.species}</span
 							>
 						{/if}
 					</div>
@@ -303,8 +337,16 @@
 							{/if}
 						</span>
 						<div class="text-right shrink-0">
-							<span class="text-base font-bold text-white">{formatWeight(entry.weight)}</span>
-							<p class="text-sm text-white/60">{entry.fishCount} fish</p>
+							<span
+								class="{primaryMetric === 'weight'
+									? 'text-base font-bold text-white'
+									: 'text-sm text-white/60'}">{formatWeight(entry.weight)}</span
+							>
+							<p
+								class="{primaryMetric === 'count'
+									? 'text-base font-bold text-white'
+									: 'text-sm text-white/60'}">{entry.fishCount} fish</p
+							>
 							{#if entry.biggestFish}
 								<p class="text-sm text-white/60">
 									Best: {formatWeight(entry.biggestFish.weightOz)}

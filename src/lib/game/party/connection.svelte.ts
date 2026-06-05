@@ -34,6 +34,7 @@ export class MultiplayerConnection {
 	players = $state<PlayerInfo[]>([]);
 	startTime = $state<number | null>(null);
 	timeLimitMinutes = $state(0);
+	winConditionKey = $state('weight');
 	catchEvents = $state<CatchInfo[]>([]);
 	ownPeg = $state<string | null>(null);
 	error = $state<string | null>(null);
@@ -66,10 +67,11 @@ export class MultiplayerConnection {
 		this.roomId = '';
 	}
 
-	createRoom(name: string, timeLimitMinutes: number, image: string = '') {
+	createRoom(name: string, timeLimitMinutes: number, image: string = '', winConditionKey: string = 'weight') {
 		this.playerName = name;
 		this.playerAvatar = image;
 		this.timeLimitMinutes = timeLimitMinutes;
+		this.winConditionKey = winConditionKey;
 		this.isHost = true;
 		this.roomId = this.generateCode();
 		this.phase = 'connecting';
@@ -106,7 +108,8 @@ export class MultiplayerConnection {
 					type: 'create-room',
 					name: this.playerName,
 					image: this.playerAvatar,
-					timeLimitMinutes: this.timeLimitMinutes
+					timeLimitMinutes: this.timeLimitMinutes,
+					winConditionKey: this.winConditionKey
 				});
 			} else {
 				this.send({ type: 'join-room', name: this.playerName, image: this.playerAvatar });
@@ -154,6 +157,8 @@ export class MultiplayerConnection {
 				this.hostName = typeof data.hostName === 'string' ? data.hostName : '';
 				this.timeLimitMinutes =
 					typeof data.timeLimitMinutes === 'number' ? data.timeLimitMinutes : 0;
+				this.winConditionKey =
+					typeof data.winConditionKey === 'string' ? data.winConditionKey : 'weight';
 				this.joinCode = typeof data.joinCode === 'string' ? data.joinCode : '';
 				this.ownPeg = this.players.find((p) => p.name === this.playerName)?.pegName ?? null;
 				break;
@@ -174,6 +179,9 @@ export class MultiplayerConnection {
 				this.startTime = typeof data.startTime === 'number' ? data.startTime : Date.now();
 				if (typeof data.timeLimitMinutes === 'number') {
 					this.timeLimitMinutes = data.timeLimitMinutes;
+				}
+				if (typeof data.winConditionKey === 'string') {
+					this.winConditionKey = data.winConditionKey;
 				}
 				break;
 			}
