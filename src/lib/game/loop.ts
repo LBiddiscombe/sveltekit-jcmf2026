@@ -27,6 +27,21 @@ export type FishingEvent =
 	| { type: 'fishGotAway' }
 	| { type: 'lineBroke' };
 
+export interface FishingLoopSaveData {
+	phase: FishingPhase;
+	currentFish: FishData | null;
+	remainingMs: number;
+	waitElapsedMs: number;
+	caughtFish: CaughtFish[];
+	biteWindowRemaining: number;
+	biteWindowTotal: number;
+	reelTimerMs: number;
+	reelTimerRemaining: number;
+	recastCountdown: number;
+	lastComputedBiteTime: number;
+	blankPatienceMs: number;
+}
+
 export interface PlayerLoopSnapshot {
 	phase: FishingPhase;
 	remainingMs: number;
@@ -54,6 +69,7 @@ export class FishingLoop {
 	biteWindowTotal = 0;
 	reelTimerMs = 0;
 	reelTimerRemaining = 0;
+	blankPatienceMs = 0;
 
 	get tackleSelection(): TackleSelection {
 		return this.tackle;
@@ -64,7 +80,6 @@ export class FishingLoop {
 	private removeFn: (id: string) => void = () => {};
 	private recastCountdown = 0;
 	private lastComputedBiteTime = 0;
-	blankPatienceMs = 0;
 	private redistributeFn: (() => void) | undefined;
 
 	static readonly BLANK_PATIENCE_DELAY = 30000;
@@ -78,6 +93,44 @@ export class FishingLoop {
 	) {
 		this.redistributeFn = redistributeFn;
 		this.speciesMap = new Map(speciesList.map((s) => [s.name, s]));
+	}
+
+	saveSnapshot(): FishingLoopSaveData {
+		return {
+			phase: this.phase,
+			currentFish: this.currentFish,
+			remainingMs: this.remainingMs,
+			waitElapsedMs: this.waitElapsedMs,
+			caughtFish: [...this.caughtFish],
+			biteWindowRemaining: this.biteWindowRemaining,
+			biteWindowTotal: this.biteWindowTotal,
+			reelTimerMs: this.reelTimerMs,
+			reelTimerRemaining: this.reelTimerRemaining,
+			recastCountdown: this.recastCountdown,
+			lastComputedBiteTime: this.lastComputedBiteTime,
+			blankPatienceMs: this.blankPatienceMs
+		};
+	}
+
+	loadSnapshot(
+		data: FishingLoopSaveData,
+		population: FishData[],
+		removeFn: (id: string) => void
+	): void {
+		this.phase = data.phase;
+		this.currentFish = data.currentFish;
+		this.remainingMs = data.remainingMs;
+		this.waitElapsedMs = data.waitElapsedMs;
+		this.caughtFish = data.caughtFish;
+		this.biteWindowRemaining = data.biteWindowRemaining;
+		this.biteWindowTotal = data.biteWindowTotal;
+		this.reelTimerMs = data.reelTimerMs;
+		this.reelTimerRemaining = data.reelTimerRemaining;
+		this.recastCountdown = data.recastCountdown;
+		this.lastComputedBiteTime = data.lastComputedBiteTime;
+		this.blankPatienceMs = data.blankPatienceMs;
+		this.population = population;
+		this.removeFn = removeFn;
 	}
 
 	preparePopulation(population: FishData[], removeFn: (id: string) => void): void {

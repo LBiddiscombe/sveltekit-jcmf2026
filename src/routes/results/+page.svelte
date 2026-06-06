@@ -1,13 +1,21 @@
 <script lang="ts">
 	import { SvelteMap } from 'svelte/reactivity';
+	import { onMount } from 'svelte';
 	import { page } from '$app/state';
 	import { prepState } from '$lib/game/prep-state.svelte';
 	import { gameState } from '$lib/game/state.svelte';
 	import { multiplayer } from '$lib/game/party/connection.svelte';
+	import { clearSavedMatch } from '$lib/game/save.svelte';
 	import DebugPanel from '$lib/components/DebugPanel.svelte';
 	import Leaderboard from './Leaderboard.svelte';
 	import CatchBreakdown from './CatchBreakdown.svelte';
 	import { formatWeight } from '$lib/utils/format';
+
+	onMount(() => {
+		if (mode === 'match') {
+			clearSavedMatch();
+		}
+	});
 
 	let isMulti = $derived(page.url.searchParams.has('multi'));
 	let mode = $derived(isMulti ? 'multiplayer' : prepState.mode);

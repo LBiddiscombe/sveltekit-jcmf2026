@@ -6,12 +6,15 @@ import type { FishData } from './population';
 import { FishingLoop } from './loop';
 import type { FishingEvent, PlayerLoopSnapshot } from './loop';
 import { BotController } from './bot-controller';
+import type { BotControllerSaveData } from './bot-controller';
 import { pickBotTackle } from './tackle-utils';
 import type { AnglerState, GamePhase } from './prep-state.svelte';
 import { MatchTimer } from './match-timer.svelte';
 import type { MatchRules } from './match-rules';
 import { defaultMatchRules } from './match-rules';
 import { recordCatch, type ScorecardResult } from './scorecard.svelte';
+import { saveMatch } from './save.svelte';
+import type { SavedMatchData } from './save.svelte';
 
 export { type GamePhase, type AnglerState } from './prep-state.svelte';
 
@@ -468,6 +471,129 @@ export class GameState {
 		this.initialTackleChosen = false;
 		this.onCatch = null;
 		this.botCaughtIndex.clear();
+	}
+
+	saveSnapshot(venueName?: string, lakeName?: string, matchStartTime?: number): SavedMatchData {
+		const botControllers: Record<string, BotControllerSaveData> = {};
+		for (const [id, controller] of this.botControllers) {
+			botControllers[id] = controller.saveSnapshot();
+		}
+
+		const botCaughtIndex: Record<string, number> = {};
+		for (const [id, index] of this.botCaughtIndex) {
+			botCaughtIndex[id] = index;
+		}
+
+		const pegPopulations: Record<string, FishData[]> = {};
+		for (const [name, pop] of this.pegPopulations) {
+			pegPopulations[name] = pop;
+		}
+
+		return {
+			version: 1,
+			venueName: venueName ?? '',
+			lakeName: lakeName ?? '',
+			playerPeg: this.playerPeg,
+			matchRules: this.matchRules,
+			timeLimitMinutes: Math.ceil(this.matchTimer.timeRemainingSeconds / 60),
+			matchStartTime: matchStartTime ?? 0,
+			anglers: this.anglers,
+			catchAudit: [...this.catchAudit],
+			sessionStartMs: this.sessionStartMs,
+			initialTackleChosen: this.initialTackleChosen,
+			timerRemainingSeconds: this.matchTimer.timeRemainingSeconds,
+			timerExpired: this.matchTimer.timeExpired,
+			weighInEarlyActive: this.matchTimer.weighInEarlyActive,
+			pegPopulations,
+			playerLoop: this.playerLoop?.saveSnapshot() ?? null,
+			botControllers,
+			botCaughtIndex
+		};
+	}
+
+	restoreFromSave(data: SavedMatchData, lake: Lake) {
+		this.phase = 'fishing';
+		this.anglers = data.anglers;
+		this.matchRules = data.matchRules;
+		this.catchAudit = data.catchAudit;
+		this.sessionStartMs = data.sessionStartMs;
+		this.initialTackleChosen = data.initialTackleChosen;
+		this.playerPeg = data.playerPeg;
+		this.botCatchFeed = [];
+		this.lastEvent = null;
+		this.onCatch = null;
+
+		this.matchTimer.timeRemainingSeconds = data.timerRemainingSeconds;
+		this.matchTimer.timeExpired = data.timerExpired;
+		this.matchTimer.weighInEarlyActive = data.weighInEarlyActive;
+
+		this.pegPopulations = new SvelteMap();
+		for (const [name, pop] of Object.entries(data.pegPopulations)) {
+			this.pegPopulations.set(name, pop);
+		}
+
+		const playerAngler = this.playerAngler;
+
+		if (data.playerLoop && playerAngler) {
+			const loop = new FishingLoop(
+				playerAngler.tackle,
+				playerAngler.skill,
+				species,
+				undefined,
+				() => {
+					const pop = this.pegPopulations.get(this.playerPeg);
+					if (pop) reassignDynamicProperties(pop, species);
+				}
+			);
+			const pop = this.pegPopulations.get(this.playerPeg) ?? [];
+			if (data.playerLoop.phase === 'reeling' || data.playerLoop.phase === 'striking') {
+				data.playerLoop.phase = 'idle';
+				data.playerLoop.currentFish = null;
+			}
+			loop.loadSnapshot(data.playerLoop, pop, (id) => this.removeFishFromPeg(this.playerPeg, id));
+			this.playerLoop = loop;
+		}
+
+		this.botControllers = new SvelteMap();
+		for (const angler of this.anglers) {
+			if (angler.isPlayer) continue;
+			const savedController = data.botControllers[angler.id];
+			if (!savedController) continue;
+
+			const peg = lake.pegs.find((p) => p.name === angler.pegName);
+			if (!peg) continue;
+
+			const loop = new FishingLoop(angler.tackle, angler.skill, species, undefined, () => {
+				const pop = this.pegPopulations.get(angler.pegName);
+				if (pop) reassignDynamicProperties(pop, species);
+			});
+
+			const controller = new BotController(loop, angler.skill, Math.random, () =>
+				pickBotTackle(angler.skill, peg, lake, this.matchRules.speciesFilterKind)
+			);
+
+			const pop = this.pegPopulations.get(angler.pegName) ?? [];
+			if (savedController.loop.phase === 'reeling' || savedController.loop.phase === 'striking') {
+				savedController.loop.phase = 'idle';
+				savedController.loop.currentFish = null;
+			}
+			controller.loadSnapshot(savedController, pop, (id) =>
+				this.removeFishFromPeg(angler.pegName, id)
+			);
+
+			this.botControllers.set(angler.id, controller);
+		}
+
+		this.botCaughtIndex = new SvelteMap();
+		for (const [id, index] of Object.entries(data.botCaughtIndex)) {
+			this.botCaughtIndex.set(id, index);
+		}
+
+		this.syncPlayerState();
+	}
+
+	saveToStorage(venueName?: string, lakeName?: string, matchStartTime?: number) {
+		saveMatch(this.saveSnapshot(venueName, lakeName, matchStartTime));
 	}
 }
 

@@ -1,10 +1,19 @@
 import type { TackleSelection } from '$lib/data';
+import type { FishData } from './population';
 import { FishingLoop } from './loop';
-import type { FishingEvent } from './loop';
+import type { FishingEvent, FishingLoopSaveData } from './loop';
 
 function skillDelay(skill: number, rng: () => number): number {
 	const maxDelay = 10_000 - (skill - 1) * (7_000 / 9);
 	return Math.floor(rng() * maxDelay);
+}
+
+export interface BotControllerSaveData {
+	changingTimer: number;
+	autoActionTimer: number;
+	blankCycleCount: number;
+	botBlankPatienceMs: number;
+	loop: FishingLoopSaveData;
 }
 
 export class BotController {
@@ -21,6 +30,28 @@ export class BotController {
 		onBlankCycle?: () => TackleSelection | null
 	) {
 		this.onBlankCycle = onBlankCycle;
+	}
+
+	saveSnapshot(): BotControllerSaveData {
+		return {
+			changingTimer: this.changingTimer,
+			autoActionTimer: this.autoActionTimer,
+			blankCycleCount: this.blankCycleCount,
+			botBlankPatienceMs: this.botBlankPatienceMs,
+			loop: this.loop.saveSnapshot()
+		};
+	}
+
+	loadSnapshot(
+		data: BotControllerSaveData,
+		population: FishData[],
+		removeFn: (id: string) => void
+	): void {
+		this.changingTimer = data.changingTimer;
+		this.autoActionTimer = data.autoActionTimer;
+		this.blankCycleCount = data.blankCycleCount;
+		this.botBlankPatienceMs = data.botBlankPatienceMs;
+		this.loop.loadSnapshot(data.loop, population, removeFn);
 	}
 
 	enterChanging(): void {

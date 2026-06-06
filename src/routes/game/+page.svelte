@@ -122,6 +122,7 @@
 	);
 	let intervalId: ReturnType<typeof setInterval> | null = null;
 	let now = $state(Date.now());
+	let lastSaveTime = $state(Date.now());
 	let waitingForPlayers = $derived(
 		gameState.phase === 'results' && isMulti && multiplayer.phase !== 'results'
 	);
@@ -249,6 +250,9 @@
 			hintsConsumed.reeling = true;
 		}
 		gameState.handleReelingOutcome(result);
+		if (result === 'caught' && mode === 'match') {
+			gameState.saveToStorage(prepState.venueName, prepState.lakeName, prepState.matchStartTime);
+		}
 	}
 
 	function handleChangeTackle() {
@@ -406,6 +410,22 @@
 			if (hintBlocking || waitingForPlayers) return;
 			now = Date.now();
 			gameState.tick(100);
+
+			if (
+				mode === 'match' &&
+				gameState.phase === 'fishing' &&
+				gameState.playerSnapshot?.phase !== 'reeling'
+			) {
+				const SAVE_INTERVAL_MS = 10_000;
+				if (now - lastSaveTime >= SAVE_INTERVAL_MS) {
+					lastSaveTime = now;
+					gameState.saveToStorage(
+						prepState.venueName,
+						prepState.lakeName,
+						prepState.matchStartTime
+					);
+				}
+			}
 		}, 100);
 
 		return () => {

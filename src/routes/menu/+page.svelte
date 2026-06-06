@@ -2,10 +2,13 @@
 	import { goto } from '$app/navigation';
 	import { onMount } from 'svelte';
 	import { prepState } from '$lib/game/prep-state.svelte';
+	import { gameState } from '$lib/game/state.svelte';
 	import { prepRulesUrl } from '$lib/game/prep-flow';
 	import type { GameMode } from '$lib/game/prep-flow';
 	import { multiplayer } from '$lib/game/party/connection.svelte';
 	import { venues } from '$lib/data';
+	import { loadMatch, clearSavedMatch } from '$lib/game/save.svelte';
+	import type { SavedMatchData } from '$lib/game/save.svelte';
 	import lakeHero from '$lib/assets/images/lakes/jcs-match.jpeg';
 	import matchThumb from '$lib/assets/images/pegs/jcs-match-2.jpeg';
 	import venueThumb from '$lib/assets/images/venues/jcs.jpeg';
@@ -13,9 +16,49 @@
 	const venue = venues[0];
 	const lake = venue.lakes[0];
 
+	let showResumeModal = $state(false);
+	let pendingSave: SavedMatchData | null = $state(null);
+
 	onMount(() => {
 		multiplayer.leave();
+		const saved = loadMatch();
+		if (saved) {
+			pendingSave = saved;
+			showResumeModal = true;
+		}
 	});
+
+	function handleResume() {
+		if (!pendingSave) return;
+		const data = pendingSave;
+		pendingSave = null;
+		showResumeModal = false;
+
+		gameState.restoreFromSave(data, lake);
+
+		prepState.mode = 'match';
+		prepState.venueName = data.venueName;
+		prepState.lakeName = data.lakeName;
+		prepState.playerPeg = data.playerPeg;
+		prepState.timeLimitMinutes = data.timeLimitMinutes;
+		prepState.matchRules = data.matchRules;
+		prepState.matchStartTime = data.matchStartTime;
+		prepState.anglers = data.anglers;
+
+		const player = data.anglers.find((a) => a.isPlayer);
+		if (player) {
+			prepState.playerName = player.name;
+			prepState.playerAvatar = player.image;
+		}
+
+		goto('/game');
+	}
+
+	function handleDeclineResume() {
+		pendingSave = null;
+		showResumeModal = false;
+		clearSavedMatch();
+	}
 
 	function pick(mode: GameMode) {
 		if (mode === 'match') {
@@ -118,3 +161,32 @@
 		</div>
 	</div>
 </div>
+
+{#if showResumeModal}
+	<div
+		class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4"
+		role="dialog"
+		aria-modal="true"
+	>
+		<div class="w-full max-w-sm rounded-2xl bg-white p-6 text-center shadow-xl">
+			<h2 class="text-xl font-bold text-dark-teal">Unfinished Match</h2>
+			<p class="mt-2 text-sm text-dark-teal/70">
+				You have an unfinished solo match. Would you like to resume?
+			</p>
+			<div class="mt-6 flex gap-4">
+				<button
+					onclick={handleDeclineResume}
+					class="flex-1 cursor-pointer rounded-lg bg-surface py-3 text-sm font-semibold text-dark-teal transition-colors hover:bg-surface/80"
+				>
+					Start Fresh
+				</button>
+				<button
+					onclick={handleResume}
+					class="flex-1 cursor-pointer rounded-lg bg-primary py-3 text-sm font-semibold text-white transition-colors hover:bg-primary/80"
+				>
+					Resume Match
+				</button>
+			</div>
+		</div>
+	</div>
+{/if}

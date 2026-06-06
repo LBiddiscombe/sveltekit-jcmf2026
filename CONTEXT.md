@@ -250,6 +250,12 @@ The time window to strike after a bite triggers, clamped between 1,000ms and 5,0
 **FishPullPattern**:
 A binary array per species defining the pulling cycle in the ReelingMinigame — `1` = fish pulls, `0` = fish rests. Each species has a unique pattern so players can identify species by feel during the reel.
 
+**SavedMatch**:
+A serialised Solo Match snapshot stored in localStorage that allows a player to close the app and resume an unfinished match later. Includes angler state (catches, scores), match timer, fish populations, player FishingLoop phase, and bot controller state. Saved periodically and after every catch. Cleared when the match finishes (navigating to Results) or when the player declines to resume on the Main Menu.
+
+**MatchSaveSlot**:
+A single localStorage key (`jcmf-saved-match`) used to store the JSON-serialised SavedMatch. Only one saved match is retained at a time — saving overwrites any previous save.
+
 ## Resolved ambiguities
 
 - "Zone" (3×3 grid per peg) was discussed but deferred — per-peg features only for initial build
