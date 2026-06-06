@@ -488,7 +488,7 @@
 			{/if}
 			<div class="absolute top-3 left-3 flex items-start gap-1 rounded-lg bg-black/40 px-2 py-1">
 				<div class="flex-1">
-					<p class="text-sm font-semibold tracking-wide text-white/80 uppercase">{venueName}</p>
+					<p class="text-sm font-semibold tracking-wide text-white/80">{venueName}</p>
 					<p class="text-xs text-white/60">{lakeName}</p>
 					<p class="text-lg font-bold text-white">Peg {pegName}</p>
 				</div>

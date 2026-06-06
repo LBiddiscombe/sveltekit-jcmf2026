@@ -51,7 +51,7 @@
 	const reelOptions = box.reels.filter((r) => r.name !== 'n/a');
 	const noReel = box.reels.find((r) => r.name === 'n/a') ?? reelOptions[0];
 
-	let tackle = $state({ ...initialTackle });
+	let tackle = $derived({ ...initialTackle });
 	let activePresetName = $state<string | null>(null);
 	let modified = $state(false);
 
@@ -235,7 +235,7 @@
 						</div>
 					{/if}
 					<div class="absolute top-3 left-3 rounded-lg bg-black/40 px-2 py-1">
-						<p class="text-sm font-semibold tracking-wide text-white/80 uppercase">{venueName}</p>
+						<p class="text-sm font-semibold tracking-wide text-white/80">{venueName}</p>
 						<p class="text-xs text-white/60">{lakeName}</p>
 						<p class="text-lg font-bold text-white">Peg {pegName}</p>
 					</div>
@@ -243,19 +243,11 @@
 				{#if selectedPegData?.description}
 					<p class="text-base leading-relaxed text-dark-teal/90">{selectedPegData.description}</p>
 				{/if}
+			</div>
+
+			<!-- Tackle + buttons -->
+			<div class="flex flex-col gap-3">
 				<div>
-					<div class="flex items-center gap-2 mb-2">
-						<span class="text-xs font-semibold text-dark-teal uppercase tracking-wide"
-							>Tackle Presets</span
-						>
-						{#if activePresetName}
-							<div class="rounded-full bg-surface/40 px-2.5 py-0.5">
-								<span class="text-xs font-medium text-dark-teal"
-									>{activePresetName}{modified ? '*' : ''}</span
-								>
-							</div>
-						{/if}
-					</div>
 					<div
 						bind:this={filmstripEl}
 						class="flex max-w-full gap-2 overflow-x-auto pb-1"
@@ -265,7 +257,7 @@
 							<button
 								data-preset-id={preset.name}
 								onclick={() => applyPreset(preset)}
-								class="flex-shrink-0 cursor-pointer rounded-xl border-2 p-2.5 text-left transition-all duration-200 hover:bg-surface/40
+								class="shrink-0 cursor-pointer rounded-xl border-2 p-2.5 text-left transition-all duration-200 hover:bg-surface/40
 									{activePresetName === preset.name
 									? 'border-primary bg-primary/10'
 									: 'border-olive bg-surface/30 hover:border-primary/50'}"
@@ -291,10 +283,6 @@
 						{/each}
 					</div>
 				</div>
-			</div>
-
-			<!-- Tackle + buttons -->
-			<div class="flex flex-col gap-3">
 				<div class="grid grid-cols-3 gap-2 sm:gap-3">
 					<!-- Rod -->
 					<button
