@@ -1,0 +1,5 @@
+{
+	"lsp": true,
+	"formatter": true,
+	"instructions": ["AGENTS.md"]
+}

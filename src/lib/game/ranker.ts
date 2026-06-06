@@ -44,7 +44,7 @@ function compareByWinCondition(a: RankEntry, b: RankEntry, winConditionKey: stri
 	if (winConditionKey === 'biggest') {
 		return (a.biggestFish?.caughtAtMs ?? Infinity) - (b.biggestFish?.caughtAtMs ?? Infinity);
 	}
-	if (winConditionKey === 'count') {
+	if (winConditionKey === 'count' || winConditionKey === 'points') {
 		return b.weight - a.weight;
 	}
 
@@ -67,6 +67,7 @@ export function rankFromCatchEvents(
 			name: string;
 			totalOz: number;
 			count: number;
+			points: number;
 			biggest: BiggestFishInfo | null;
 		}
 	>();
@@ -76,10 +77,12 @@ export function rankFromCatchEvents(
 			name: c.anglerName,
 			totalOz: 0,
 			count: 0,
+			points: 0,
 			biggest: null as BiggestFishInfo | null
 		};
 		entry.totalOz += c.weightOz;
 		entry.count += 1;
+		entry.points += c.points;
 		if (!entry.biggest || c.weightOz > entry.biggest.weightOz) {
 			entry.biggest = {
 				weightOz: c.weightOz,
@@ -100,7 +103,9 @@ export function rankFromCatchEvents(
 					? e.count
 					: winConditionKey === 'biggest'
 						? (e.biggest?.weightOz ?? 0)
-						: e.totalOz,
+						: winConditionKey === 'points'
+							? e.points
+							: e.totalOz,
 			biggestFish: e.biggest,
 			isPlayer: e.name === playerName,
 			image: e.name === playerName ? playerAvatar : '',

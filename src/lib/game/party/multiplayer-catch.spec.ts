@@ -15,7 +15,8 @@ describe('multiplayer — catch propagation (regression)', () => {
 			pegName: '3',
 			species: 'Carp',
 			classificationLabel: 'Common',
-			weightOz: 48
+			weightOz: 48,
+			points: 0
 		};
 		multiplayer.sendCatch(info);
 		expect(spy).toHaveBeenCalledWith(info);
@@ -32,7 +33,8 @@ describe('multiplayer — catch propagation (regression)', () => {
 			species: 'Carp',
 			classificationLabel: 'Common',
 			weightOz: 48,
-			caughtAtMs: 1000
+			caughtAtMs: 1000,
+			points: 0
 		};
 		const catch2: CatchInfo = {
 			anglerName: 'Alice',
@@ -40,7 +42,8 @@ describe('multiplayer — catch propagation (regression)', () => {
 			species: 'Bream',
 			classificationLabel: 'Skimmer',
 			weightOz: 14,
-			caughtAtMs: 5000
+			caughtAtMs: 5000,
+			points: 0
 		};
 
 		// Each catch would be broadcast back from the server as type 'catch'
@@ -100,7 +103,8 @@ describe('multiplayer — catch propagation (regression)', () => {
 				species: 'Carp',
 				classificationLabel: 'Common',
 				weightOz: 48,
-				caughtAtMs: 1000
+				caughtAtMs: 1000,
+				points: 0
 			},
 			{
 				anglerName: 'Bob',
@@ -108,7 +112,8 @@ describe('multiplayer — catch propagation (regression)', () => {
 				species: 'Roach',
 				classificationLabel: 'Roach',
 				weightOz: 6,
-				caughtAtMs: 3000
+				caughtAtMs: 3000,
+				points: 0
 			}
 		];
 		multiplayer.phase = 'results';

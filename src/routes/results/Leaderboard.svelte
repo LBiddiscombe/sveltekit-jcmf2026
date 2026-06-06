@@ -128,23 +128,29 @@
 						style="height: 120px"
 					>
 						<span class="text-2xl font-black text-white drop-shadow-md">🥈</span>
-						<span
-							class={winConditionKey === 'weight'
-								? 'text-lg font-black text-white drop-shadow-md'
-								: 'text-xs text-white/70'}>{formatWeight(second.weight)}</span
-						>
-						<span
-							class={winConditionKey === 'count'
-								? 'text-lg font-black text-white drop-shadow-md'
-								: 'text-xs text-white/70'}>{second.fishCount} fish</span
-						>
-						{#if second.biggestFish}
-							<span class="text-xs text-white/50">Best: {second.biggestFish.species}</span>
+						{#if winConditionKey === 'points'}
+							<span class="text-lg font-black text-white drop-shadow-md">{second.score} pts</span>
+							<span class="text-xs text-white/70">{formatWeight(second.weight)}</span>
+							<span class="text-xs text-white/50">{second.fishCount} fish</span>
+						{:else}
 							<span
-								class={winConditionKey === 'biggest'
+								class={winConditionKey === 'weight'
 									? 'text-lg font-black text-white drop-shadow-md'
-									: 'text-xs text-white/50'}>{formatWeight(second.biggestFish.weightOz)}</span
+									: 'text-xs text-white/70'}>{formatWeight(second.weight)}</span
 							>
+							<span
+								class={winConditionKey === 'count'
+									? 'text-lg font-black text-white drop-shadow-md'
+									: 'text-xs text-white/70'}>{second.fishCount} fish</span
+							>
+							{#if second.biggestFish}
+								<span class="text-xs text-white/50">Best: {second.biggestFish.species}</span>
+								<span
+									class={winConditionKey === 'biggest'
+										? 'text-lg font-black text-white drop-shadow-md'
+										: 'text-xs text-white/50'}>{formatWeight(second.biggestFish.weightOz)}</span
+								>
+							{/if}
 						{/if}
 					</div>
 				</div>
@@ -189,23 +195,29 @@
 						style="height: 160px"
 					>
 						<span class="text-2xl font-black text-white drop-shadow-md">🥇</span>
-						<span
-							class={winConditionKey === 'weight'
-								? 'text-lg font-black text-white drop-shadow-md'
-								: 'text-xs text-white/70'}>{formatWeight(first.weight)}</span
-						>
-						<span
-							class={winConditionKey === 'count'
-								? 'text-lg font-black text-white drop-shadow-md'
-								: 'text-xs text-white/70'}>{first.fishCount} fish</span
-						>
-						{#if first.biggestFish}
-							<span class="text-xs text-white/50">Best: {first.biggestFish.species}</span>
+						{#if winConditionKey === 'points'}
+							<span class="text-lg font-black text-white drop-shadow-md">{first.score} pts</span>
+							<span class="text-xs text-white/70">{formatWeight(first.weight)}</span>
+							<span class="text-xs text-white/50">{first.fishCount} fish</span>
+						{:else}
 							<span
-								class={winConditionKey === 'biggest'
+								class={winConditionKey === 'weight'
 									? 'text-lg font-black text-white drop-shadow-md'
-									: 'text-xs text-white/50'}>{formatWeight(first.biggestFish.weightOz)}</span
+									: 'text-xs text-white/70'}>{formatWeight(first.weight)}</span
 							>
+							<span
+								class={winConditionKey === 'count'
+									? 'text-lg font-black text-white drop-shadow-md'
+									: 'text-xs text-white/70'}>{first.fishCount} fish</span
+							>
+							{#if first.biggestFish}
+								<span class="text-xs text-white/50">Best: {first.biggestFish.species}</span>
+								<span
+									class={winConditionKey === 'biggest'
+										? 'text-lg font-black text-white drop-shadow-md'
+										: 'text-xs text-white/50'}>{formatWeight(first.biggestFish.weightOz)}</span
+								>
+							{/if}
 						{/if}
 					</div>
 				</div>
@@ -250,23 +262,29 @@
 						style="height: 100px"
 					>
 						<span class="text-2xl font-black text-white drop-shadow-md">🥉</span>
-						<span
-							class={winConditionKey === 'weight'
-								? 'text-lg font-black text-white drop-shadow-md'
-								: 'text-xs text-white/70'}>{formatWeight(third.weight)}</span
-						>
-						<span
-							class={winConditionKey === 'count'
-								? 'text-lg font-black text-white drop-shadow-md'
-								: 'text-xs text-white/70'}>{third.fishCount} fish</span
-						>
-						{#if third.biggestFish}
-							<span class="text-xs text-white/50">Best: {third.biggestFish.species}</span>
+						{#if winConditionKey === 'points'}
+							<span class="text-lg font-black text-white drop-shadow-md">{third.score} pts</span>
+							<span class="text-xs text-white/70">{formatWeight(third.weight)}</span>
+							<span class="text-xs text-white/50">{third.fishCount} fish</span>
+						{:else}
 							<span
-								class={winConditionKey === 'biggest'
+								class={winConditionKey === 'weight'
 									? 'text-lg font-black text-white drop-shadow-md'
-									: 'text-xs text-white/50'}>{formatWeight(third.biggestFish.weightOz)}</span
+									: 'text-xs text-white/70'}>{formatWeight(third.weight)}</span
 							>
+							<span
+								class={winConditionKey === 'count'
+									? 'text-lg font-black text-white drop-shadow-md'
+									: 'text-xs text-white/70'}>{third.fishCount} fish</span
+							>
+							{#if third.biggestFish}
+								<span class="text-xs text-white/50">Best: {third.biggestFish.species}</span>
+								<span
+									class={winConditionKey === 'biggest'
+										? 'text-lg font-black text-white drop-shadow-md'
+										: 'text-xs text-white/50'}>{formatWeight(third.biggestFish.weightOz)}</span
+								>
+							{/if}
 						{/if}
 					</div>
 				</div>
@@ -310,27 +328,33 @@
 							{/if}
 						</span>
 						<div class="text-right shrink-0">
-							<span
-								class={winConditionKey === 'weight'
-									? 'text-base font-bold text-white'
-									: 'text-sm text-white/60'}>{formatWeight(entry.weight)}</span
-							>
-							<p
-								class={winConditionKey === 'count'
-									? 'text-base font-bold text-white'
-									: 'text-sm text-white/60'}
-							>
-								{entry.fishCount} fish
-							</p>
-							{#if entry.biggestFish}
+							{#if winConditionKey === 'points'}
+								<span class="text-base font-bold text-white">{entry.score} pts</span>
+								<p class="text-sm text-white/60">{formatWeight(entry.weight)}</p>
+								<p class="text-sm text-white/60">{entry.fishCount} fish</p>
+							{:else}
+								<span
+									class={winConditionKey === 'weight'
+										? 'text-base font-bold text-white'
+										: 'text-sm text-white/60'}>{formatWeight(entry.weight)}</span
+								>
 								<p
-									class={winConditionKey === 'biggest'
+									class={winConditionKey === 'count'
 										? 'text-base font-bold text-white'
 										: 'text-sm text-white/60'}
 								>
-									Best: {formatWeight(entry.biggestFish.weightOz)}
-									{entry.biggestFish.species}
+									{entry.fishCount} fish
 								</p>
+								{#if entry.biggestFish}
+									<p
+										class={winConditionKey === 'biggest'
+											? 'text-base font-bold text-white'
+											: 'text-sm text-white/60'}
+									>
+										Best: {formatWeight(entry.biggestFish.weightOz)}
+										{entry.biggestFish.species}
+									</p>
+								{/if}
 							{/if}
 						</div>
 					</div>

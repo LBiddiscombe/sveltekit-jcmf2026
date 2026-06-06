@@ -16,7 +16,8 @@
 	const WIN_CONDITION_ITEMS: SelectMenuItem[] = [
 		{ value: 'weight', label: 'Total Weight' },
 		{ value: 'count', label: 'Fish Count' },
-		{ value: 'biggest', label: 'Biggest Fish' }
+		{ value: 'biggest', label: 'Biggest Fish' },
+		{ value: 'points', label: 'Points' }
 	];
 	const SPECIES_FILTER_ITEMS: SelectMenuItem[] = [
 		{ value: 'all', label: 'All' },

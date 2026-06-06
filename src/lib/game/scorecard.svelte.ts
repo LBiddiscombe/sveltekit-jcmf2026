@@ -5,6 +5,7 @@ import { speciesFilterAccepts, resolveWinCondition } from './match-rules';
 
 export interface ScorecardResult {
 	qualifies: boolean;
+	points: number;
 }
 
 export function recordCatch(
@@ -19,16 +20,19 @@ export function recordCatch(
 		angler.totalWeightOz += fish.weightOz;
 
 		const wc = resolveWinCondition(rules.winConditionKey);
+		const fishScore = wc.scoreFish(fish);
 		if (wc.aggregate === 'max') {
-			angler.score = Math.max(angler.score, wc.scoreFish(fish));
+			angler.score = Math.max(angler.score, fishScore);
 		} else {
-			angler.score += wc.scoreFish(fish);
+			angler.score += fishScore;
 		}
 
 		if (!angler.biggestFish || fish.weightOz > angler.biggestFish.weightOz) {
 			angler.biggestFish = { ...fish };
 		}
+
+		return { qualifies, points: fishScore };
 	}
 
-	return { qualifies };
+	return { qualifies, points: 0 };
 }

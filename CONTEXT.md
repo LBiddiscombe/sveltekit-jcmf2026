@@ -74,7 +74,7 @@ A competitive fishing session with a time limit and bots filling every other peg
 _Avoid_: Multiplayer, Party
 
 **WinCondition**:
-A strategy defining how a caught fish scores points and how per-fish scores are aggregated into a rank value. Concrete implementations: total weight (sum), biggest fish (max), fish count (count).
+A strategy defining how a caught fish scores points and how per-fish scores are aggregated into a rank value. Concrete implementations: total weight (sum), biggest fish (max), fish count (count), points (sum of 2^tierIndex per qualifying fish: small=1, medium=2, specimen=4, monster=8).
 
 **SpeciesGroup**:
 A named grouping of fish species sharing a filter criterion used in competitive matches (silverfish, predators, carps, bottom-dwellers). Each group defines its member species, suitable fallback tackle presets for bot selection, and optional tactical preferences (e.g., forced strata).
@@ -100,7 +100,7 @@ _Avoid_: Bot image, player image
 An NPC angler controlled by the game, with a skill level (1–10) that influences tackle choices and strike/reel timing. Bots are available in Match mode only. Skill affects how quickly the bot reacts — not strike accuracy.
 
 **WinConditionPicker**:
-The UI control on the prep/rules page for selecting a win condition. Options: Total Weight, Fish Count, Biggest Fish. Defaults to Weight.
+The UI control on the prep/rules page for selecting a win condition. Options: Total Weight, Fish Count, Biggest Fish, Points. Defaults to Weight.
 
 **SpeciesFilterPicker**:
 The UI control on the prep/rules & multiplayer/host pages for selecting a species filter. Dropdown options: All, Silver Fish, Predators, Carps, Bottom Dwellers. Defaults to All.

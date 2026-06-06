@@ -22,6 +22,7 @@ export interface CatchInfo {
 	classificationLabel: string;
 	weightOz: number;
 	caughtAtMs: number;
+	points: number;
 }
 
 export class MultiplayerConnection {
@@ -218,7 +219,8 @@ export class MultiplayerConnection {
 					classificationLabel:
 						typeof data.classificationLabel === 'string' ? data.classificationLabel : '',
 					weightOz: typeof data.weightOz === 'number' ? data.weightOz : 0,
-					caughtAtMs: typeof data.caughtAtMs === 'number' ? data.caughtAtMs : 0
+					caughtAtMs: typeof data.caughtAtMs === 'number' ? data.caughtAtMs : 0,
+					points: typeof data.points === 'number' ? data.points : 0
 				};
 				this.catchEvents = [...this.catchEvents, catchEvent];
 				break;

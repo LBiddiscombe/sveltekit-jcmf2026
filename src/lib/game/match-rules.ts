@@ -72,6 +72,11 @@ const WIN_CONDITIONS: Record<string, WinCondition> = {
 		name: 'Biggest',
 		aggregate: 'max',
 		scoreFish: (f) => f.weightOz
+	},
+	points: {
+		name: 'Points',
+		aggregate: 'sum',
+		scoreFish: (f) => 2 ** f.tierIndex
 	}
 };
 

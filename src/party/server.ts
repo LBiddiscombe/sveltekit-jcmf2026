@@ -17,6 +17,7 @@ interface CatchEvent {
 	classificationLabel: string;
 	weightOz: number;
 	caughtAtMs: number;
+	points: number;
 }
 
 interface RoomState {
@@ -182,7 +183,8 @@ export default class GameRoom implements Party.Server {
 					classificationLabel:
 						typeof data.classificationLabel === 'string' ? data.classificationLabel : '',
 					weightOz: typeof data.weightOz === 'number' ? data.weightOz : 0,
-					caughtAtMs: typeof data.caughtAtMs === 'number' ? data.caughtAtMs : 0
+					caughtAtMs: typeof data.caughtAtMs === 'number' ? data.caughtAtMs : 0,
+					points: typeof data.points === 'number' ? data.points : 0
 				};
 				this.state.catchAudit.push(catchEvent);
 				this.save();

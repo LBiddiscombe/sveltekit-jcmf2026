@@ -9,7 +9,7 @@
 	import { venues, species } from '$lib/data';
 	import type { TackleSelection } from '$lib/data';
 	import { defaultTackle } from '$lib/game/tackle-utils';
-	import { speciesFilterAccepts } from '$lib/game/match-rules';
+	import { speciesFilterAccepts, resolveWinCondition } from '$lib/game/match-rules';
 	import { formatWeight, formatShortDuration } from '$lib/utils/format';
 	import DebugPanel from '$lib/components/DebugPanel.svelte';
 	import { isTutorialCompleted, completeTutorial } from '$lib/game/tutorial';
@@ -95,6 +95,8 @@
 				return String(angler.score);
 			case 'biggest':
 				return formatWeight(angler.score);
+			case 'points':
+				return String(angler.score);
 			default:
 				return '';
 		}
@@ -108,6 +110,8 @@
 				return 'fish';
 			case 'biggest':
 				return 'best';
+			case 'points':
+				return 'pts';
 			default:
 				return 'score';
 		}
@@ -587,12 +591,7 @@
 
 		<!-- Match rules badges -->
 		{#if mode === 'match' || mode === 'multiplayer'}
-			{@const wcLabel =
-				gameState.matchRules.winConditionKey === 'weight'
-					? 'Total Weight'
-					: gameState.matchRules.winConditionKey === 'count'
-						? 'Fish Count'
-						: 'Biggest Fish'}
+			{@const wcLabel = resolveWinCondition(gameState.matchRules.winConditionKey).name}
 			{@const speciesLabel =
 				gameState.matchRules.speciesFilterKind === 'all'
 					? 'All Species'

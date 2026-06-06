@@ -66,6 +66,7 @@ export class GameState {
 				weightOz: number;
 				anglerName: string;
 				pegName: string;
+				points: number;
 		  }) => void)
 		| null = null;
 
@@ -391,7 +392,7 @@ export class GameState {
 					weightOz: event.weightOz,
 					caughtAtMs: Date.now()
 				};
-				const { qualifies } = recordCatch(player, fish, this.matchRules);
+				const { qualifies, points } = recordCatch(player, fish, this.matchRules);
 				if (qualifies) {
 					this.catchAudit = [
 						...this.catchAudit,
@@ -409,7 +410,8 @@ export class GameState {
 						classificationLabel: event.classificationLabel,
 						weightOz: event.weightOz,
 						anglerName: player.name,
-						pegName: player.pegName
+						pegName: player.pegName,
+						points
 					});
 				}
 			}
