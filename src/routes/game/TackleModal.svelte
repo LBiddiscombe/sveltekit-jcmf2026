@@ -218,7 +218,7 @@
 
 		<div class="grid gap-6 md:grid-cols-2">
 			<!-- Peg panel -->
-			<div class="flex min-w-0 flex-col gap-3">
+			<div class="flex flex-col gap-3">
 				<div
 					class="relative aspect-square overflow-hidden rounded-xl bg-surface/20 hidden md:block"
 				>
@@ -243,7 +243,7 @@
 			</div>
 
 			<!-- Tackle + buttons -->
-			<div class="flex flex-col gap-3">
+			<div class="flex flex-col gap-3 min-w-0">
 				<div>
 					<div
 						bind:this={filmstripEl}
