@@ -9,6 +9,8 @@
 	import SelectMenu from '$lib/components/SelectMenu.svelte';
 	import type { SelectMenuItem } from '$lib/components/SelectMenu.svelte';
 	import type { SpeciesFilterKind } from '$lib/game/match-rules';
+	import HelpModal from '$lib/components/HelpModal.svelte';
+	import { WIN_CONDITION_HELP, SPECIES_FILTER_HELP } from '$lib/game/help-content';
 
 	const NAME_KEY = 'jcmf-player-name';
 	const AVATAR_KEY = 'jcmf-player-avatar';
@@ -122,7 +124,9 @@
 			</div>
 
 			<div class="flex flex-col gap-1">
-				<span class="text-sm font-medium text-dark-teal">Win Condition</span>
+				<HelpModal title="Win Condition" content={WIN_CONDITION_HELP}>
+					Win Condition &#9432;
+				</HelpModal>
 				<SelectMenu
 					items={WIN_CONDITION_ITEMS}
 					selected={prepState.matchRules.winConditionKey}
@@ -132,7 +136,9 @@
 			</div>
 
 			<div class="flex flex-col gap-1">
-				<span class="text-sm font-medium text-dark-teal">Qualifying Species</span>
+				<HelpModal title="Qualifying Species" content={SPECIES_FILTER_HELP}>
+					Qualifying Species &#9432;
+				</HelpModal>
 				<SelectMenu
 					items={SPECIES_FILTER_ITEMS}
 					selected={prepState.matchRules.speciesFilterKind}
