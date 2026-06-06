@@ -44,7 +44,7 @@
 
 		<button
 			onclick={goToRules}
-			class="inline-flex min-h-[44px] items-center justify-center rounded bg-primary px-8 py-3 text-center text-white no-underline hover:bg-primary/80"
+			class="inline-flex min-h-11 items-center justify-center rounded bg-primary px-8 py-3 text-center text-white no-underline hover:bg-primary/80"
 		>
 			Next
 		</button>

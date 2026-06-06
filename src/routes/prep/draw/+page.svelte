@@ -71,7 +71,7 @@
 		<p class="text-muted">Start a match from the menu to see the draw.</p>
 		<a
 			href="/menu"
-			class="inline-flex min-h-[44px] items-center justify-center rounded bg-primary px-6 py-3 text-white no-underline hover:bg-primary/80"
+			class="inline-flex min-h-11 items-center justify-center rounded bg-primary px-6 py-3 text-white no-underline hover:bg-primary/80"
 		>
 			Back to Menu
 		</a>
@@ -93,7 +93,7 @@
 					<p class="text-lg font-bold text-white">Peg {playerPeg.name}</p>
 				</div>
 			</div>
-			<p class="min-h-[6.5rem] text-center text-xs leading-relaxed text-dark-teal/80">
+			<p class="min-h-26 text-center text-xs leading-relaxed text-dark-teal/80">
 				{playerPeg.description}
 			</p>
 		</div>

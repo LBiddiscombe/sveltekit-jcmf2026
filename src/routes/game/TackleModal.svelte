@@ -53,8 +53,6 @@
 
 	let tackle = $derived({ ...initialTackle });
 	let activePresetName = $state<string | null>(null);
-	let modified = $state(false);
-
 	let filmstripEl: HTMLDivElement | undefined = $state();
 	let initialScrollDone = $state(false);
 
@@ -192,7 +190,6 @@
 		tackle.strata = sel.strata;
 		tackle.castStrength = sel.castStrength;
 		activePresetName = preset.name;
-		modified = false;
 	}
 
 	function presetSpecs(preset: TacklePreset): string {
@@ -415,7 +412,7 @@
 				<div class="flex justify-center">
 					<button
 						onclick={handleConfirm}
-						class="inline-flex min-h-[44px] cursor-pointer items-center justify-center rounded bg-primary px-6 py-3 text-center text-white no-underline hover:bg-primary/80"
+						class="inline-flex min-h-11 cursor-pointer items-center justify-center rounded bg-primary px-6 py-3 text-center text-white no-underline hover:bg-primary/80"
 					>
 						{buttonLabel}
 					</button>
