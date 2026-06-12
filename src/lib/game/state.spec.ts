@@ -318,6 +318,156 @@ describe('GameState match ending', () => {
 		expect(gs.phase).toBe('fishing');
 	});
 
+	it('restore from save — idle phase auto-casts on next tick', () => {
+		gs.beginFishing(makePlayer(), venue, lake, 10);
+		gs.finishChangingTackle();
+		gs.tick(100);
+		expect(gs.playerSnapshot?.phase).toBe('waiting');
+
+		// Reset to idle (as if match was saved between casts)
+		gs.playerLoop!.returnToCast();
+		gs.tick(100);
+		expect(gs.playerSnapshot?.phase).toBe('waiting');
+
+		gs.playerLoop!.returnToCast();
+		const saved = gs.saveSnapshot(venue.name, lake.name, Date.now());
+		const gs2 = new GameState();
+		gs2.restoreFromSave(saved, lake);
+		expect(gs2.phase).toBe('fishing');
+
+		gs2.tick(100);
+		expect(gs2.playerSnapshot?.phase).toBe('waiting');
+	});
+
+	it('restore from save — waiting phase continues countdown', () => {
+		gs.beginFishing(makePlayer(), venue, lake, 10);
+
+		// Insert a controlled fish that WILL match the default tackle
+		const matchingFish: FishData = {
+			id: 'test-fish-1',
+			species: 'Roach',
+			strata: 'Bottom',
+			classificationLabel: 'Small',
+			tierIndex: 0,
+			weightOz: 12,
+			castStrength: 'Medium',
+			preferredBait: 'maggot',
+			pattern: [],
+			stepMs: 1000
+		};
+		gs.pegPopulations.set('1', [matchingFish]);
+		gs.playerLoop!.preparePopulation([matchingFish], () => {});
+
+		gs.finishChangingTackle();
+		gs.tick(100);
+		expect(gs.playerSnapshot?.phase).toBe('waiting');
+
+		// tick once more to advance elapsed counters
+		gs.tick(100);
+		const remainBefore = gs.playerLoop!.remainingMs;
+		const waitBefore = gs.playerLoop!.waitElapsedMs;
+		expect(remainBefore).toBeGreaterThan(0);
+		expect(waitBefore).toBeGreaterThan(0);
+
+		const saved = gs.saveSnapshot(venue.name, lake.name, Date.now());
+		const gs2 = new GameState();
+		gs2.restoreFromSave(saved, lake);
+		expect(gs2.playerSnapshot?.phase).toBe('waiting');
+		expect(gs2.playerLoop!.remainingMs).toBe(remainBefore);
+		expect(gs2.playerLoop!.waitElapsedMs).toBe(waitBefore);
+
+		gs2.tick(100);
+		expect(gs2.playerSnapshot?.phase).toBe('waiting');
+		expect(gs2.playerLoop!.remainingMs).toBe(remainBefore - 100);
+		expect(gs2.playerLoop!.waitElapsedMs).toBe(waitBefore + 100);
+	});
+
+	it('save/restore round-trip preserves loop fields', () => {
+		gs.beginFishing(makePlayer(), venue, lake, 10);
+
+		const matchingFish: FishData = {
+			id: 'test-fish-1',
+			species: 'Roach',
+			strata: 'Bottom',
+			classificationLabel: 'Small',
+			tierIndex: 0,
+			weightOz: 12,
+			castStrength: 'Medium',
+			preferredBait: 'maggot',
+			pattern: [],
+			stepMs: 1000
+		};
+		gs.pegPopulations.set('1', [matchingFish]);
+		gs.playerLoop!.preparePopulation([matchingFish], () => {});
+
+		gs.finishChangingTackle();
+		gs.tick(100);
+		gs.tick(100);
+		const origRemainingMs = gs.playerLoop!.remainingMs;
+		const origWaitElapsedMs = gs.playerLoop!.waitElapsedMs;
+
+		const saved = gs.saveSnapshot(venue.name, lake.name, Date.now());
+		expect(saved.playerLoop).not.toBeNull();
+		expect(saved.playerLoop!.phase).toBe('waiting');
+		expect(saved.playerLoop!.remainingMs).toBe(origRemainingMs);
+		expect(saved.playerLoop!.waitElapsedMs).toBe(origWaitElapsedMs);
+
+		const gs2 = new GameState();
+		gs2.restoreFromSave(saved, lake);
+		expect(gs2.playerLoop).not.toBeNull();
+		expect(gs2.playerLoop!.phase).toBe('waiting');
+		expect(gs2.playerLoop!.remainingMs).toBe(origRemainingMs);
+		expect(gs2.playerLoop!.waitElapsedMs).toBe(origWaitElapsedMs);
+	});
+
+	it('restore from save — caught phase resets to idle for auto-cast', () => {
+		gs.beginFishing(makePlayer(), venue, lake, 10);
+
+		const matchingFish: FishData = {
+			id: 'test-fish-1',
+			species: 'Roach',
+			strata: 'Bottom',
+			classificationLabel: 'Small',
+			tierIndex: 0,
+			weightOz: 12,
+			castStrength: 'Medium',
+			preferredBait: 'maggot',
+			pattern: [],
+			stepMs: 1000
+		};
+		gs.pegPopulations.set('1', [matchingFish]);
+		gs.playerLoop!.preparePopulation([matchingFish], () => {});
+
+		gs.finishChangingTackle();
+		gs.tick(100);
+		expect(gs.playerSnapshot?.phase).toBe('waiting');
+
+		// Go through the full catch flow to produce 'caught' with recastCountdown=0
+		vi.spyOn(Math, 'random').mockReturnValue(0.1);
+		gs.playerLoop!.tick(gs.playerLoop!.remainingMs);
+		expect(gs.playerLoop!.phase).toBe('bite');
+
+		gs.strike();
+		expect(gs.playerSnapshot?.phase).toBe('reeling');
+
+		vi.spyOn(Date, 'now').mockReturnValue(1000);
+		gs.handleReelingOutcome('caught');
+		expect(gs.playerSnapshot?.phase).toBe('caught');
+		expect(gs.lastEvent?.type).toBe('fishCaught');
+
+		const saved = gs.saveSnapshot(venue.name, lake.name, Date.now());
+		const gs2 = new GameState();
+		gs2.restoreFromSave(saved, lake);
+
+		// After fix: caught phase resets to idle, lastEvent cleared
+		expect(gs2.lastEvent).toBeNull();
+		expect(gs2.playerSnapshot?.phase).toBe('idle');
+
+		// Next tick auto-casts
+		gs2.tick(100);
+		expect(gs2.playerSnapshot?.phase).toBe('waiting');
+	});
+
 	it('multiple ticks after game is results are harmless', () => {
 		gs.beginFishing(makePlayer(), venue, lake, 0.001);
 		gs.tick(100);

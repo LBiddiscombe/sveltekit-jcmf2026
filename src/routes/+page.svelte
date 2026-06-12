@@ -33,6 +33,12 @@
 	</div>
 </div>
 
+<p
+	class="fixed bottom-0 left-0 right-0 z-20 px-4 pb-3 pt-8 text-center text-[10px] leading-tight text-white/80 sm:text-[11px] sm:text-white/40"
+>
+	Screenshot shown for historical reference.<br />All rights reserved by the original creators.
+</p>
+
 <style>
 	@keyframes ken-burns {
 		0% {

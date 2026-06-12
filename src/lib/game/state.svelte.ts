@@ -546,7 +546,13 @@ export class GameState {
 				}
 			);
 			const pop = this.pegPopulations.get(this.playerPeg) ?? [];
-			if (data.playerLoop.phase === 'reeling' || data.playerLoop.phase === 'striking') {
+			if (
+				data.playerLoop.phase === 'reeling' ||
+				data.playerLoop.phase === 'striking' ||
+				data.playerLoop.phase === 'caught' ||
+				data.playerLoop.phase === 'changing' ||
+				data.playerLoop.phase === 'lost'
+			) {
 				data.playerLoop.phase = 'idle';
 				data.playerLoop.currentFish = null;
 			}
@@ -573,7 +579,13 @@ export class GameState {
 			);
 
 			const pop = this.pegPopulations.get(angler.pegName) ?? [];
-			if (savedController.loop.phase === 'reeling' || savedController.loop.phase === 'striking') {
+			if (
+				savedController.loop.phase === 'reeling' ||
+				savedController.loop.phase === 'striking' ||
+				savedController.loop.phase === 'caught' ||
+				savedController.loop.phase === 'changing' ||
+				savedController.loop.phase === 'lost'
+			) {
 				savedController.loop.phase = 'idle';
 				savedController.loop.currentFish = null;
 			}
