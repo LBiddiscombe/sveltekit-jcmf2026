@@ -92,7 +92,7 @@
 			case 'weight':
 				return formatWeight(angler.score);
 			case 'count':
-				return String(angler.score);
+				return ''; // count is already shown in the fish badge
 			case 'biggest':
 				return formatWeight(angler.score);
 			case 'points':
