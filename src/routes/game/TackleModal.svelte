@@ -51,7 +51,7 @@
 	const reelOptions = box.reels.filter((r) => r.name !== 'n/a');
 	const noReel = box.reels.find((r) => r.name === 'n/a') ?? reelOptions[0];
 
-	let tackle = $derived({ ...initialTackle });
+	let tackle = $state({ ...initialTackle });
 	let activePresetName = $state<string | null>(null);
 	let filmstripEl: HTMLDivElement | undefined = $state();
 	let initialScrollDone = $state(false);
